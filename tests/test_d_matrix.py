@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from template.psplines.bspline import Bspline
-from template.psplines.penaltymat import Penaltymat
+from template.psplines.penalty_matrix import PenaltyMatrix
 
 
 D1 = np.array(
@@ -58,5 +58,5 @@ D3 = np.array(
 def test_D_matrix(x_sam, deg, n_int, prediction, ord_d, D):
 
     bsp = Bspline(deg=deg, xsample=x_sam, n_int=n_int, prediction=prediction)
-    D_out = Penaltymat(ord_d=ord_d, bspline=bsp).matrix_D()
+    D_out = PenaltyMatrix(bspline=bsp).get_diff_matrix(ord_d=ord_d)
     np.testing.assert_allclose(D_out, D)

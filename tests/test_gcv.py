@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from template.psplines.bspline import Bspline
-from template.psplines.penaltymat import Penaltymat
+from template.psplines.penalty_matrix import PenaltyMatrix
 from template.utils.gcv import gcv_mat, GCV
 from template.utils.fast_kron import matrix_by_transpose
 
@@ -204,7 +204,10 @@ def test_gcv(deg, regr_sample, n_int, prediction, ord_d, sp_list, y_sam, y_true)
         for d, xsam, n, pred in zip(deg, regr_sample, n_int, prediction)
     ]
     B = [bsp.matrixB for bsp in bsp_l]
-    D = [Penaltymat(bspline=bsp, ord_d=d).matrix_D() for bsp, d in zip(bsp_l, ord_d)]
+    D = [
+        PenaltyMatrix(bspline=bsp).get_diff_matrix(ord_d=d)
+        for bsp, d in zip(bsp_l, ord_d)
+    ]
     B_mul = list(map(matrix_by_transpose, B))
     D_mul = list(map(matrix_by_transpose, D))
     qua_term = gcv_mat(B_mul=B_mul, D_mul=D_mul)
