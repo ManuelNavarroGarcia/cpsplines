@@ -298,5 +298,5 @@ class OneSmoothing:
                 raise ValueError("Algo derecha")
             B_pred = []
             for i, bsp in enumerate(self.bspline_bases):
-                B_pred.append(bsp.B_eval(pts=x[i], derivative=0))
+                B_pred.append(bsp.bspline_basis.derivative(nu=0)(x[i]))
             return kron_tens_prod([mat for mat in B_pred], self.sol)

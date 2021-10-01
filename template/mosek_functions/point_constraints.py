@@ -2,6 +2,7 @@ import mosek.fusion
 import numpy as np
 from typing import Dict, Iterable, Tuple, Union
 
+from template.psplines.bspline import Bspline
 from template.mosek_functions.utils_mosek import kron_tens_prod_mosek
 
 
@@ -11,7 +12,7 @@ class PointConstraints:
         pts: Iterable[np.ndarray],
         value: Iterable[Union[int, float]],
         derivative: Iterable[int],
-        bsp_list: Iterable[np.ndarray],
+        bsp_list: Iterable[Bspline],
         tolerance: Union[int, float],
     ):
         self.pts = pts
@@ -27,7 +28,7 @@ class PointConstraints:
     ) -> Tuple[mosek.fusion.LinearConstraint]:
         bsp_pt = {}
         for i, bsp in enumerate(self.bsp_list):
-            bsp_pt[i] = bsp.B_eval(pts=self.pts[i], derivative=self.derivative[i])
+            bsp_pt[i] = bsp.bspline_basis.derivative(nu=self.derivative[i])(self.pts[i])
 
         list_cons = []
         for i, v in enumerate(self.value):
