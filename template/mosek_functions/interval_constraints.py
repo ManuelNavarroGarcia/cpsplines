@@ -34,10 +34,8 @@ class IntConstraints:
             ],
         )
         W = []
-        for i in range(
-            self.bsp_list[self.var_name].matrixB.shape[1]
-            - self.bsp_list[self.var_name].deg
-        ):
+        bsp = self.bsp_list[self.var_name]
+        for i in range(bsp.matrixB.shape[1] - bsp.deg):
             W_i = np.zeros(shape=(self.deg_w + 1, self.deg_w + 1))
             for q in range(self.deg_w + 1):
                 for m in range(q + 1):
@@ -45,8 +43,8 @@ class IntConstraints:
                         W_i[q, r] += (
                             comb(r, m)
                             * comb(self.deg_w - r, q - m)
-                            * (self.bsp_list[self.var_name].inner_knots[i]) ** (r - m)
-                            * (self.bsp_list[self.var_name].inner_knots[i + 1]) ** (m)
+                            * (bsp.knots[bsp.deg : -bsp.deg][i]) ** (r - m)
+                            * (bsp.knots[bsp.deg : -bsp.deg][i + 1]) ** (m)
                         )
             W.append(diff_coef * W_i)
         return W
