@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from template.mosek_functions.interval_constraints import IntConstraints
-from template.psplines.bspline import Bspline
+from template.psplines.bspline_basis import BsplineBasis
 
 W1 = [
     np.array(
@@ -66,7 +66,7 @@ W3 = [
     ],
 )
 def test_W_matrices(x_sam, deg, n_int, prediction, deriv, W):
-    bsp = Bspline(deg=deg, xsample=x_sam, n_int=n_int, prediction=prediction)
+    bsp = BsplineBasis(deg=deg, xsample=x_sam, n_int=n_int, prediction=prediction)
     W_out = IntConstraints(
         bsp_list=[bsp], var_name=0, derivative=deriv, constraints={}
     ).matricesW

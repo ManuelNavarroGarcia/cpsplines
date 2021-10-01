@@ -4,14 +4,14 @@ import numpy as np
 from scipy.special import comb, factorial
 from typing import Dict, List, Iterable, Tuple, Union
 
-from template.psplines.bspline import Bspline
+from template.psplines.bspline_basis import BsplineBasis
 from template.mosek_functions.utils_mosek import kron_tens_prod_mosek
 
 
 class IntConstraints:
     def __init__(
         self,
-        bsp_list: Iterable[Bspline],
+        bsp_list: Iterable[BsplineBasis],
         var_name: int,
         derivative: int,
         constraints: Dict[str, Union[int, float]],

@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from template.psplines.bspline import Bspline
+from template.psplines.bspline_basis import BsplineBasis
 from template.psplines.penalty_matrix import PenaltyMatrix
 from template.utils.gcv import gcv_mat, GCV
 from template.utils.fast_kron import matrix_by_transpose
@@ -200,7 +200,7 @@ y_true_3 = np.array(
 )
 def test_gcv(deg, regr_sample, n_int, prediction, ord_d, sp_list, y_sam, y_true):
     bsp_l = [
-        Bspline(deg=d, xsample=xsam, n_int=n, prediction=pred)
+        BsplineBasis(deg=d, xsample=xsam, n_int=n, prediction=pred)
         for d, xsam, n, pred in zip(deg, regr_sample, n_int, prediction)
     ]
     B = [bsp.matrixB for bsp in bsp_l]

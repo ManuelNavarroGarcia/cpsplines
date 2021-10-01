@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from template.psplines.bspline import Bspline
+from template.psplines.bspline_basis import BsplineBasis
 
 B2 = (1 / 8) * np.array(
     [
@@ -62,5 +62,5 @@ B4 = (1 / 240000) * np.array(
 )
 def test_B_matrix(x_sam, deg, n_int, B):
 
-    B_out = Bspline(deg=deg, xsample=x_sam, n_int=n_int).matrixB
+    B_out = BsplineBasis(deg=deg, xsample=x_sam, n_int=n_int).matrixB
     np.testing.assert_allclose(B_out, B)

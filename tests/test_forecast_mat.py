@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from template.psplines.bspline import Bspline
+from template.psplines.bspline_basis import BsplineBasis
 from template.utils.fast_forecast_mat import fast_B_weighted, get_idx_fitting_region
 
 BV1 = (1 / 50) * np.array(
@@ -69,7 +69,7 @@ BV3 = (1 / 98) * np.array(
 def test_forecast_matrix(x_sam, deg, n_int, prediction, VB):
     bsp_out = []
     for x, d, n, pred in zip(x_sam, deg, n_int, prediction):
-        bsp_out.append(Bspline(deg=d, xsample=x, n_int=n, prediction=pred))
+        bsp_out.append(BsplineBasis(deg=d, xsample=x, n_int=n, prediction=pred))
 
     out = fast_B_weighted(list_bs_basis=bsp_out)
 
@@ -106,7 +106,7 @@ def test_forecast_matrix(x_sam, deg, n_int, prediction, VB):
 def test_get_idx_fit(x_sam, deg, n_int, prediction, slice):
     bsp_out = []
     for x, d, n, pred in zip(x_sam, deg, n_int, prediction):
-        bsp_out.append(Bspline(deg=d, xsample=x, n_int=n, prediction=pred))
+        bsp_out.append(BsplineBasis(deg=d, xsample=x, n_int=n, prediction=pred))
 
     out = get_idx_fitting_region(list_bs_basis=bsp_out)
 

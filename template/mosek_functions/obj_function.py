@@ -2,7 +2,7 @@ import mosek.fusion
 import numpy as np
 from typing import Dict, Iterable, Tuple, Union
 
-from template.psplines.bspline import Bspline
+from template.psplines.bspline_basis import BsplineBasis
 
 
 class ObjectiveFunction:
@@ -26,7 +26,7 @@ class ObjectiveFunction:
         The resulting variable dictionary from the method ``_create_var_dict``.
     """
 
-    def __init__(self, bsp_list: Iterable[Bspline], model: mosek.fusion.Model):
+    def __init__(self, bsp_list: Iterable[BsplineBasis], model: mosek.fusion.Model):
         self.bsp_list = bsp_list
         self.model = model
         self.var_dict = self._create_var_dict()

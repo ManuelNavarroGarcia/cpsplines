@@ -10,7 +10,7 @@ from functools import reduce
 from template.mosek_functions.obj_function import ObjectiveFunction
 from template.mosek_functions.interval_constraints import IntConstraints
 from template.mosek_functions.point_constraints import PointConstraints
-from template.psplines.bspline import Bspline
+from template.psplines.bspline_basis import BsplineBasis
 from template.psplines.penalty_matrix import PenaltyMatrix
 from template.utils.fast_forecast_mat import fast_B_weighted, get_idx_fitting_region
 from template.utils.fast_kron import (
@@ -54,7 +54,7 @@ class OneSmoothing:
         self.int_constraints = int_constraints
         self.pt_constraints = pt_constraints
 
-    def _get_bspline_bases(self, x: Iterable[np.ndarray]) -> List[Bspline]:
+    def _get_bspline_bases(self, x: Iterable[np.ndarray]) -> List[BsplineBasis]:
 
         bspline_bases = []
         if self.x_range is None:
@@ -69,7 +69,7 @@ class OneSmoothing:
                 if pred_min < x_min:
                     prediction_dict["backwards"] = pred_min
             bspline_bases.append(
-                Bspline(
+                BsplineBasis(
                     deg=self.deg[i],
                     xsample=x[i],
                     n_int=self.n_int[i],

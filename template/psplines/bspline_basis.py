@@ -4,7 +4,7 @@ from scipy.interpolate import BSpline
 from typing import Dict, Union
 
 
-class Bspline:
+class BsplineBasis:
     def __init__(
         self,
         deg: int,

@@ -1,10 +1,10 @@
 import numpy as np
 
-from template.psplines.bspline import Bspline
+from template.psplines.bspline_basis import BsplineBasis
 
 
 class PenaltyMatrix:
-    def __init__(self, bspline: Bspline):
+    def __init__(self, bspline: BsplineBasis):
         self.bspline = bspline
 
     def get_diff_matrix(self, ord_d: int) -> np.ndarray:

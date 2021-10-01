@@ -1,11 +1,11 @@
 import numpy as np
 from typing import Iterable, Optional, Union
 
-from template.psplines.bspline import Bspline
+from template.psplines.bspline_basis import BsplineBasis
 
 
 def thin_prediction_range(
-    bspline_bases: Iterable[Bspline],
+    bspline_bases: Iterable[BsplineBasis],
     prediction_step: Optional[Iterable[Iterable[Union[int, float]]]] = None,
 ):
     if prediction_step is None:

@@ -2,7 +2,7 @@ import mosek.fusion
 import numpy as np
 from typing import Dict, Iterable, Tuple, Union
 
-from template.psplines.bspline import Bspline
+from template.psplines.bspline_basis import BsplineBasis
 from template.mosek_functions.utils_mosek import kron_tens_prod_mosek
 
 
@@ -12,7 +12,7 @@ class PointConstraints:
         pts: Iterable[np.ndarray],
         value: Iterable[Union[int, float]],
         derivative: Iterable[int],
-        bsp_list: Iterable[Bspline],
+        bsp_list: Iterable[BsplineBasis],
         tolerance: Union[int, float],
     ):
         self.pts = pts
