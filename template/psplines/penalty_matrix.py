@@ -8,6 +8,10 @@ class PenaltyMatrix:
         self.bspline = bspline
 
     def get_diff_matrix(self, ord_d: int) -> np.ndarray:
+        if self.bspline.deg <= ord_d:
+            raise ValueError(
+                "The penalty order must be less than the B-spline basis degree."
+            )
         dim = (
             self.bspline.n_int
             + self.bspline.int_forw

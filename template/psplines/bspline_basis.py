@@ -1,7 +1,7 @@
 import numpy as np
 import math
 from scipy.interpolate import BSpline
-from typing import Dict, Union
+from typing import Dict, List, Union
 
 
 class BsplineBasis:
@@ -19,7 +19,31 @@ class BsplineBasis:
         self.bspline_basis = self._construct_bspline_basis()
         self.matrixB = self.get_matrix_B()
 
-    def _construct_bspline_basis(self):
+    def _construct_bspline_basis(self) -> BSpline:
+
+        if self.deg < 1:
+            raise ValueError("The degree of the B-spline basis must be at least 1.")
+        if self.xsample.ndim != 1:
+            raise ValueError("Regressor vector must be one-dimensional.")
+        if self.n_int < 2:
+            raise ValueError(
+                "The fitting regions must be split in at least 2 intervals."
+            )
+        if len(set(self.prediction) - set(["backwards", "forward"])) > 0:
+            raise ValueError(
+                "Prediction only admits as keys `forward` and `backwards`."
+            )
+
+        if "backwards" in self.prediction:
+            if self.prediction["backwards"] >= self.xsample[0]:
+                raise ValueError(
+                    "Backwards prediction limit must stand on the left-hand side of the regressor vector."
+                )
+        if "forward" in self.prediction:
+            if self.prediction["forward"] <= self.xsample[-1]:
+                raise ValueError(
+                    "Forward prediction limit must stand on the right-hand side of the regressor vector."
+                )
 
         step_length = (self.xsample[-1] - self.xsample[0]) / self.n_int
 
@@ -53,7 +77,7 @@ class BsplineBasis:
             k=self.deg,
         )
 
-    def get_matrix_B(self):
+    def get_matrix_B(self) -> np.ndarray:
         return self.bspline_basis.derivative(nu=0)(
             np.concatenate(
                 [
@@ -64,7 +88,7 @@ class BsplineBasis:
             )
         )
 
-    def get_matrices_S(self) -> list[np.ndarray]:
+    def get_matrices_S(self) -> List[np.ndarray]:
 
         pt_mat = np.zeros(shape=(self.deg + 1, self.deg + 1))
         for i in range(self.deg + 1):
