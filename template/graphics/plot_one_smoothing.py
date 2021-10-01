@@ -76,8 +76,10 @@ def plot_curves(
             )
         # If it is required, plot the position of the knots
         if knot_positions:
-            for i in range(len(bsp.inner_knots)):
-                _ = ax.axvline(bsp.inner_knots[i], color="grey", alpha=0.25)
+            for i in range(len(bsp.knots[bsp.deg : -bsp.deg])):
+                _ = ax.axvline(
+                    bsp.knots[bsp.deg : -bsp.deg][i], color="grey", alpha=0.25
+                )
         if constant_constraints:
             if curve.int_constraints:
                 if 0 in curve.int_constraints[0].keys():
@@ -170,7 +172,9 @@ def plot_surfaces(
             _ = fig_contour.colorbar(surf, ax=ax_contour)
             fig_ax.append((fig_contour, ax_contour))
         if knot_positions:
-            for knot in surface.bspline_bases[0].inner_knots:
+            for knot in surface.bspline_bases[0].knots[
+                surface.bspline_bases[0].deg : -surface.bspline_bases[0].deg
+            ]:
                 _ = ax_contour.plot(
                     [knot] * len(surface.bspline_bases[1].xsample),
                     surface.bspline_bases[1].xsample,
@@ -178,7 +182,9 @@ def plot_surfaces(
                     linestyle="--",
                     alpha=0.3,
                 )
-            for knot in surface.bspline_bases[1].inner_knots:
+            for knot in surface.bspline_bases[1].knots[
+                surface.bspline_bases[1].deg : -surface.bspline_bases[1].deg
+            ]:
                 _ = ax_contour.plot(
                     surface.bspline_bases[0].xsample,
                     [knot] * len(surface.bspline_bases[0].xsample),
