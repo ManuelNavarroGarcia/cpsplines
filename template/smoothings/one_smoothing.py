@@ -137,7 +137,7 @@ class OneSmoothing:
         if self.int_constraints is not None:
             S_dict = {}
             for i, bsp in enumerate(self.bspline_bases):
-                S_dict[i] = bsp.matricesS()
+                S_dict[i] = bsp.get_matrices_S()
             for var_name in self.int_constraints.keys():
                 for deriv in self.int_constraints[var_name].keys():
                     S_dict_copy = S_dict.copy()
