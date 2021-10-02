@@ -141,7 +141,7 @@ class IntConstraints:
                     np.array(id, dtype=np.int32), np.array(last_id, dtype=np.int32)
                 )
                 poly_coef = mosek.fusion.Expr.flatten(
-                    kron_tens_prod_mosek(mat_list=mat, var=coef_theta)
+                    kron_tens_prod_mosek(matrices=mat, mosek_var=coef_theta)
                 )
                 for k, key in enumerate(self.constraints.keys()):
                     actual_index = k + num_cons * (j + w * num_inter)

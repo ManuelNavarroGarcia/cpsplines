@@ -127,7 +127,7 @@ class OneSmoothing:
     ) -> mosek.fusion.Model:
         M = mosek.fusion.Model()
         # Build the objective function of the problem
-        mos_obj_f = ObjectiveFunction(self.bspline_bases, model=M)
+        mos_obj_f = ObjectiveFunction(bspline=self.bspline_bases, model=M)
         sp = [M.parameter(f"sp_{i}", 1) for i in range(len(L_D))]
         mos_obj_f.create_obj_function(
             L_B=L_B,

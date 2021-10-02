@@ -35,7 +35,7 @@ class PointConstraints:
             mat_list = []
             for j in range(len(self.bsp_list)):
                 mat_list.append(np.expand_dims(bsp_pt[j][i, :], axis=1).T)
-            coef = kron_tens_prod_mosek(mat_list=mat_list, var=var_dict["theta"])
+            coef = kron_tens_prod_mosek(matrices=mat_list, mosek_var=var_dict["theta"])
             list_cons.append(
                 model.constraint(
                     coef,
