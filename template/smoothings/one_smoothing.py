@@ -131,8 +131,8 @@ class OneSmoothing:
         sp = [M.parameter(f"sp_{i}", 1) for i in range(len(L_D))]
         mos_obj_f.create_obj_function(
             L_B=L_B,
-            L_D_list=L_D,
-            sp_list=sp,
+            L_D=L_D,
+            sp=sp,
             lin_term=lin_term,
         )
 
@@ -161,7 +161,7 @@ class OneSmoothing:
                     pts=info[0],
                     value=info[1],
                     derivative=deriv,
-                    bsp_list=self.bspline_bases,
+                    bspline=self.bspline_bases,
                     tolerance=info[2],
                 )
                 cons2.point_cons(var_dict=mos_obj_f.var_dict, model=M)
@@ -278,9 +278,9 @@ class OneSmoothing:
             self.y_fitted = kron_tens_prod([mat for mat in matrix_dict["B"]], self.sol)
         except mosek.fusion.SolutionError as e:
             raise NumericalError(
-                f"The solution for the smoothing parameter {self.best_sp} \n"
-                f"could not be found due to numerical issues. The original error"
-                f"was {e}"
+                f"The solution for the smoothing parameter {self.best_sp} "
+                f"could not be found due to numerical issues. The original error "
+                f"was: {e}"
             )
 
         return None
