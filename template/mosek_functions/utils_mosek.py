@@ -18,6 +18,14 @@ def kron_tens_prod_mosek(
     computed. Finally, the resulting multidimensional array is reshaped so the
     final shape is (s_0, s_1, ..., s_N).
 
+    Parameters
+    ----------
+    matrices : Iterable[np.ndarray]
+        The matrices A_i with shapes s_i x k_i to be multiplied by the
+        multidimensional decision variable.
+    mosek_var : mosek.fusion.Variable
+        The k_1 x ··· x k_N MOSEK decision variable.
+
     Returns
     -------
     mosek.fusion.Expr with shape (s_0, s_1, ..., s_N)
