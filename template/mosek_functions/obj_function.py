@@ -14,7 +14,7 @@ class ObjectiveFunction:
 
     Parameters
     ----------
-    bsp_list: Iterable[Bspline]
+    bspline: Iterable[BsplineBasis]
         An iterable containing the B-spline bases objects used to approximate
         the function to estimate.
     M: mosek.fusion.Model
@@ -23,25 +23,24 @@ class ObjectiveFunction:
     Attributes
     ----------
     var_dict: Dict[str, mosek.fusion.LinearVariable]
-        The resulting variable dictionary from the method ``_create_var_dict``.
+        The resulting variable dictionary from the method `_create_var_dict`.
     """
 
-    def __init__(self, bsp_list: Iterable[BsplineBasis], model: mosek.fusion.Model):
-        self.bsp_list = bsp_list
+    def __init__(self, bspline: Iterable[BsplineBasis], model: mosek.fusion.Model):
+        self.bspline = bspline
         self.model = model
-        self.var_dict = self._create_var_dict()
 
     def _create_var_dict(self) -> Dict[str, mosek.fusion.LinearVariable]:
 
         """
         Creates the variables of the optimization problem. These variables are:
 
-        - The coefficient multidimensional array (theta) with dimensions
+        - The coefficient multidimensional array ("theta") with dimensions
           k_1 x ... x k_N, where k_i is the cardinal of B-spline basis along the
           i-th dimension.
-        - The artificial variable of the design matrix product (t_B) included in
-          the reformulation of the quadratic term.
-        - The artificial variable of the i-th penalty matrix product (t_D_i)
+        - The artificial variable of the design matrix product ("t_B") included
+          in the reformulation of the quadratic term.
+        - The artificial variable of the i-th penalty matrix product ("t_D_i")
           when restating this summand as a rotated quadratic cone constraint.
 
         Returns
@@ -53,13 +52,13 @@ class ObjectiveFunction:
 
         var_dict = {}
         # The coefficient multidimensional array
-        variable_shape = [bsp.matrixB.shape[1] for bsp in self.bsp_list]
+        variable_shape = [bsp.matrixB.shape[1] for bsp in self.bspline]
         var_dict["theta"] = self.model.variable(
             "theta",
             variable_shape,
             mosek.fusion.Domain.unbounded(),
         )
-        for i, _ in enumerate(self.bsp_list):
+        for i, _ in enumerate(self.bspline):
             var_dict[f"t_D_{i}"] = self.model.variable(
                 f"t_D_{i}", 1, mosek.fusion.Domain.greaterThan(0.0)
             )
@@ -117,6 +116,8 @@ class ObjectiveFunction:
         constraints resulting from reformulating the summands on the quadratic
         term.
         """
+        # Generate the decision variables involved in the objective function
+        self.var_dict = self._create_var_dict()
 
         # Linear term coefficients must be dot multiplied by the row major
         # vectorization of the basis expansion multidimensional array
