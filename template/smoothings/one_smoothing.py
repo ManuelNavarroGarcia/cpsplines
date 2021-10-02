@@ -105,14 +105,16 @@ class OneSmoothing:
     def _get_obj_func_arrays(self, y: np.ndarray) -> Dict[str, np.ndarray]:
         matrix_dict = {}
         matrix_dict["B"] = []
-        matrix_dict["D"] = []
+        matrix_dict["D_mul"] = []
         y_extended_dim = []
         for i, bsp in enumerate(self.bspline_bases):
             B = bsp.matrixB
             y_extended_dim.append(B.shape[0])
             matrix_dict["B"].append(B)
-            matrix_dict["D"].append(
-                PenaltyMatrix(bspline=bsp).get_diff_matrix(ord_d=self.ord_d[i])
+            matrix_dict["D_mul"].append(
+                PenaltyMatrix(bspline=bsp).get_penalty_matrix(
+                    **{"ord_d": self.ord_d[i]}
+                )
             )
 
         y_extended = np.zeros(tuple(y_extended_dim))
@@ -236,7 +238,6 @@ class OneSmoothing:
         # Auxiliary matrices
         B_pred = fast_B_weighted(list_bs_basis=self.bspline_bases)
         matrix_dict["B_mul"] = list(map(matrix_by_transpose, B_pred))
-        matrix_dict["D_mul"] = list(map(matrix_by_transpose, matrix_dict["D"]))
         lin_term = np.multiply(
             -2, kron_tens_prod([mat.T for mat in B_pred], matrix_dict["y"])
         ).flatten()

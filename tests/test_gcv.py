@@ -204,12 +204,11 @@ def test_gcv(deg, regr_sample, n_int, prediction, ord_d, sp_list, y_sam, y_true)
         for d, xsam, n, pred in zip(deg, regr_sample, n_int, prediction)
     ]
     B = [bsp.matrixB for bsp in bsp_l]
-    D = [
-        PenaltyMatrix(bspline=bsp).get_diff_matrix(ord_d=d)
+    D_mul = [
+        PenaltyMatrix(bspline=bsp).get_penalty_matrix(**{"ord_d": d})
         for bsp, d in zip(bsp_l, ord_d)
     ]
     B_mul = list(map(matrix_by_transpose, B))
-    D_mul = list(map(matrix_by_transpose, D))
     qua_term = gcv_mat(B_mul=B_mul, D_mul=D_mul)
     gcv_out = GCV(sp_list=sp_list, B_pred=B, qua_term=qua_term, y_sam=y_sam)
     gcv_brute = gcv_brute_force(
