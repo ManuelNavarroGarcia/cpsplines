@@ -203,7 +203,10 @@ def test_gcv(deg, regr_sample, n_int, prediction, ord_d, sp_list, y_sam, y_true)
         BsplineBasis(deg=d, xsample=xsam, n_int=n, prediction=pred)
         for d, xsam, n, pred in zip(deg, regr_sample, n_int, prediction)
     ]
-    B = [bsp.matrixB for bsp in bsp_l]
+    B = []
+    for bsp in bsp_l:
+        bsp.get_matrix_B()
+        B.append(bsp.matrixB)
     D_mul = [
         PenaltyMatrix(bspline=bsp).get_penalty_matrix(**{"ord_d": d})
         for bsp, d in zip(bsp_l, ord_d)

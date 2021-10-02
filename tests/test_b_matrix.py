@@ -62,5 +62,6 @@ B4 = (1 / 240000) * np.array(
 )
 def test_B_matrix(x_sam, deg, n_int, B):
 
-    B_out = BsplineBasis(deg=deg, xsample=x_sam, n_int=n_int).matrixB
-    np.testing.assert_allclose(B_out, B)
+    bsp = BsplineBasis(deg=deg, xsample=x_sam, n_int=n_int)
+    bsp.get_matrix_B()
+    np.testing.assert_allclose(bsp.matrixB, B)

@@ -17,15 +17,15 @@ class BsplineBasis:
 
     Parameters
     ----------
-    xsample: np.ndarray
+    xsample : np.ndarray
         The regressor vector. Must be a unidimensional array.
-    deg: int, default = 3
+    deg : int, default = 3
         The polynomial degree of the B-spline basis. Must be a non-negative
         integer.
-    n_int: int, default = 40
+    n_int : int, default = 40
         The number of equal intervals which [min(`xsample`), max(`xsample`)] is
         split. Must be greater or equal than 2.
-    prediction: Dict[str, Union[int, float]], default = {}
+    prediction : Dict[str, Union[int, float]], default = {}
         A dictionary containing the most extreme values that the extended
         basis needs to capture. The keys are 'backwards' and 'forward',
         depending on the direction which the basis must be extended, and the
@@ -35,15 +35,15 @@ class BsplineBasis:
 
     Attributes
     ----------
-    int_back: int
+    int_back : int
         The number of extra knots used to extend the B-spline basis to the left.
-    int_forw: int
+    int_forw : int
         The number of extra knots used to extend the B-spline basis to the right.
-    knots: np.ndarray of shape (`n_int` + 2 * `deg` + 1, )
+    knots : np.ndarray of shape (`n_int` + 2 * `deg` + 1, )
         The knot sequence of the B-spline basis.
-    bspline_basis: scipy.interpolate.Bspline
+    bspline_basis : scipy.interpolate.Bspline
         The `n_int` + `int_back` + `int_forw` + `deg` elements of the B-spline basis.
-    matrixB: np.ndarray of shape (`int_back` + len(`xsample`) + `int_forw`,
+    matrixB : np.ndarray of shape (`int_back` + len(`xsample`) + `int_forw`,
         `n_int` + `deg`)
         The design matrix of the B-spline basis. The ij-th element of the matrix
         contains the evaluation of the j-th B-spline from the basis at the i-th
@@ -68,23 +68,17 @@ class BsplineBasis:
         self.deg = deg
         self.n_int = n_int
         self.prediction = prediction
-        self.matrixB = self._get_matrix_B()
 
-    def _get_matrix_B(self) -> np.ndarray:
+    def get_matrix_B(self) -> None:
 
         """
         Defines the design matrix of the B-spline basis, consisting on the
         evaluation of the B-spline basis polynomials at `xsample`. This is
         achieved determining how many extra knots are needed to extend the basis
         on the desired range, defining the knot sequence of the basis, which is
-        constructed using`construct_fast` from scipy.interpolate.Bspline, and
-        finally evaluating this basis at `xsample`.
-
-        Returns
-        -------
-        np.ndarray
-            The design matrix of the B-spline basis, whose shape is
-            (`int_back` + len(`xsample`) + `int_forw`, `n_int` + `deg`)
+        constructed using `construct_fast` from scipy.interpolate.Bspline, and
+        finally evaluating this basis at `xsample`. Hence, the shape of the
+        matrix is  (`int_back` + len(`xsample`) + `int_forw`, `n_int` + `deg`)
 
         Raises
         ------
@@ -176,7 +170,7 @@ class BsplineBasis:
             k=self.deg,
         )
         # Return the design matrix of the B-spline basis
-        return self.bspline_basis.derivative(nu=0)(
+        self.matrixB = self.bspline_basis.derivative(nu=0)(
             np.concatenate(
                 [
                     self.knots[self.deg : self.deg + self.int_back],
@@ -185,6 +179,7 @@ class BsplineBasis:
                 ]
             )
         )
+        return None
 
     def get_matrices_S(self) -> List[np.ndarray]:
 

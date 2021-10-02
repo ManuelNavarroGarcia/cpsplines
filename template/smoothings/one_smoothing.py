@@ -68,14 +68,14 @@ class OneSmoothing:
                     prediction_dict["forward"] = pred_max
                 if pred_min < x_min:
                     prediction_dict["backwards"] = pred_min
-            bspline_bases.append(
-                BsplineBasis(
-                    deg=self.deg[i],
-                    xsample=x[i],
-                    n_int=self.n_int[i],
-                    prediction=prediction_dict,
-                )
+            bsp = BsplineBasis(
+                deg=self.deg[i],
+                xsample=x[i],
+                n_int=self.n_int[i],
+                prediction=prediction_dict,
             )
+            bsp.get_matrix_B()
+            bspline_bases.append(bsp)
         return bspline_bases
 
     def _fill_sp_args(self) -> dict:

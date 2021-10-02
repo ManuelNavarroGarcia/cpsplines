@@ -92,8 +92,8 @@ S2 = [
     ],
 )
 def test_S_matrices(x_sam, deg, n_int, prediction, S):
-    S_out = BsplineBasis(
-        deg=deg, xsample=x_sam, n_int=n_int, prediction=prediction
-    ).get_matrices_S()
+    bsp = BsplineBasis(deg=deg, xsample=x_sam, n_int=n_int, prediction=prediction)
+    bsp.get_matrix_B()
+    S_out = bsp.get_matrices_S()
     for mat, mat_out in zip(S, S_out):
         np.testing.assert_allclose(mat, mat_out, atol=1e-12)
