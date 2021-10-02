@@ -14,10 +14,10 @@ class ObjectiveFunction:
 
     Parameters
     ----------
-    bspline: Iterable[BsplineBasis]
+    bspline : Iterable[BsplineBasis]
         An iterable containing the B-spline bases objects used to approximate
         the function to estimate.
-    M: mosek.fusion.Model
+    M : mosek.fusion.Model
         The MOSEK model of the problem.
 
     Attributes
@@ -70,8 +70,8 @@ class ObjectiveFunction:
     def create_obj_function(
         self,
         L_B: np.ndarray,
-        L_D_list: Iterable[np.ndarray],
-        sp_list: Iterable[Union[int, float]],
+        L_D: Iterable[np.ndarray],
+        sp: Iterable[Union[int, float]],
         lin_term: np.ndarray,
     ) -> Tuple[Union[None, mosek.fusion.ConicConstraint]]:
 
@@ -88,18 +88,18 @@ class ObjectiveFunction:
         characterization as the (k+2)-vector (t, 1/2, L^Tx) belonging to the
         (k+2)-dimensional rotated quadratic cone, where L satisfies A = LL^T.
 
-        Inputs
-        ------
-        L_B: np.ndarray
+        Parameters
+        ----------
+        L_B : np.ndarray
             The lower triangular matrix from the Cholesky decomposition of B^TB,
             where B denotes the design matrix of the B-splines basis.
-        L_D_list: Iterable[np.ndarray]
+        L_D : Iterable[np.ndarray]
             An iterable containing the lower triangular matrices from the
             Cholesky decomposition of D^TD, where D denotes the difference
             matrix of the penalty term.
-        sp_list: Iterable[Union[int, float]]
+        sp : Iterable[Union[int, float]]
             An iterable containing the smoothing parameters.
-        lin_term: np.ndarray
+        lin_term : np.ndarray
             An array containing the coefficients of the linear term in the
             objective function. This array is dot multiplied with the row major
             vectorization of the array constituted by the coefficients in the
@@ -139,7 +139,7 @@ class ObjectiveFunction:
             )
         )
         # Create the rotated quadratic cone constraint of each D^TD
-        for i, L in enumerate(L_D_list):
+        for i, L in enumerate(L_D):
             cons.append(
                 self.model.constraint(
                     f"rot_cone_{i}",
@@ -159,7 +159,7 @@ class ObjectiveFunction:
         # The rotated cone reformulation on the penalty term yield summands on
         # the objective function of the form sp*t_D, where t_D is the new
         # artificial variable introduced in the characterization
-        for i, sp in enumerate(sp_list):
+        for i, sp in enumerate(sp):
             obj.append(mosek.fusion.Expr.dot(sp, self.var_dict[f"t_D_{i}"]))
         # The rotated cone reformulation on the basis term yield a summand of
         # the artificial variable t_B included during the reformulation
