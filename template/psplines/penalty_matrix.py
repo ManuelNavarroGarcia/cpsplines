@@ -40,7 +40,7 @@ class PenaltyMatrix:
         Parameters
         ----------
         ord_d : int
-            The order of the penalty
+            The order of the penalty. Must be a non-negative integer.
 
         Returns
         -------
@@ -53,12 +53,17 @@ class PenaltyMatrix:
         ------
         ValueError
             If penalty order is less than B-spline basis degree.
+        ValueError
+            If `ord_d` is not a non-negative integer.
         """
 
         if self.bspline.deg <= ord_d:
             raise ValueError(
                 "The penalty order must be less than the B-spline basis degree."
             )
+        if ord_d < 0:
+            raise ValueError("The penalty order must be a non-negative integer.")
+
         dim = (
             self.bspline.n_int
             + self.bspline.int_forw

@@ -26,9 +26,11 @@ class IntConstraints:
         An iterable containing the B-spline bases objects used to approximate
         the function to estimate.
     var_name : int
-        The name of the variable along the constraints are imposed.
+        The name of the variable along the constraints are imposed. Must be a
+        non-negative integer.
     derivative : int
-        The derivative order of the function that needs to be constrained.
+        The derivative order of the function that needs to be constrained. Must
+        be a non-negative integer.
     constraints : Dict[str, Union[int, float]]
         The constraints that are imposed. The keys of the dictionary are either
         "+" (the function (or some derivative) needs to be above some threshold)
@@ -78,11 +80,29 @@ class IntConstraints:
         -------
         List[np.ndarray]
             The list of matrices W.
+
+        Raises
+        ------
+        ValueError
+            If `var_name` is not a non-negative integer.
+        ValueError
+            If `derivative` is not a non-negative integer.
+        ValueError
+            If `deg_w` is not a non-negative integer.
         """
+
+        if self.var_name < 0:
+            raise ValueError("The variable name must be a non-negative integer.")
+        if self.derivative < 0:
+            raise ValueError("The derivative order must be a non-negative integer.")
 
         # Select the B-spline basis along the corresponding axis
         bsp = self.bspline[self.var_name]
         # Define deg_w, which coincides with the order of the matrices W
+        if bsp.deg - self.derivative < 0:
+            raise ValueError(
+                "The derivative order must be lower than the B-spline basis degree."
+            )
         self.deg_w = bsp.deg - self.derivative
         # Deriving a polynomial gives rise to a coefficient vector whose length
         # reduces by one the degree of the polynomial (only non-zero
@@ -213,6 +233,9 @@ class IntConstraints:
             the objective function of the problem.
         model : mosek.fusion.Model
             The MOSEK model of the problem.
+        S_dict : Dict[int, Iterable[np.ndarray]]
+            Contains as keys the indices of the variable, and as values the
+            matrices S.
 
         Returns
         -------
@@ -220,7 +243,14 @@ class IntConstraints:
             The set of constraints along the variable `var_name` and derivative
             order `derivative`.
 
+        Raises
+        ------
+        ValueError
+            If the constraints are not either "+" or "-".
         """
+
+        if len(set(self.constraints.keys()) - set(["+", "-"])) > 0:
+            raise ValueError("The constraint sign must be either `+` or `-`.")
 
         # Generate the matrices H and W, and the decision variables X
         self.matricesW = self._get_matrices_W()

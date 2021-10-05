@@ -73,7 +73,18 @@ class PointConstraints:
         -------
         Tuple[mosek.fusion.LinearConstraint]
             A tuple containing the point constraints.
+
+        Raises
+        ------
+        ValueError
+            If the array of coordinates `pts` and the derivative order vector
+            `derivative` have different length than the number of B-spline bases.
         """
+
+        if any(len(x) != len(self.bspline) for x in [self.pts, self.derivative]):
+            raise ValueError(
+                "`pts` and `derivative` lengths must be equal the number of covariates."
+            )
         # Get the evaluations of the coordinates at their respective B-spline
         # basis and the corresponding derivative order
         bsp_eval = {

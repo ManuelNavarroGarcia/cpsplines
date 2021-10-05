@@ -118,7 +118,18 @@ class ObjectiveFunction:
             The linear objective function and the rotated quadratic cone
             constraints resulting from reformulating the summands on the
             quadratic term.
+
+        Raises
+        ------
+        ValueError
+            If lengths of the smoothing parameter vector and penalty matrix
+            iterable differ.
         """
+
+        if len(sp) != len(L_D):
+            raise ValueError(
+                "The number of smoothing parameters and penalty matrices must agree."
+            )
 
         # Generate the decision variables involved in the objective function
         self.var_dict = self._create_var_dict()

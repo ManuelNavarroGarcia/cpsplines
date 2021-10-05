@@ -30,7 +30,16 @@ def kron_tens_prod_mosek(
     -------
     mosek.fusion.Expr with shape (s_0, s_1, ..., s_N)
         The output of the product.
+
+    Raises
+    ------
+    ValueError
+        If any matrix in `matrices` is one-dimensional.
+
     """
+
+    if any(x.ndim != 2 for x in matrices):
+        raise ValueError("Matrices must be two-dimensional. No vectors allowed.")
 
     init_shape = mosek_var.getShape()
     # The decision variable is unfolding along the 0-th mode and the product
