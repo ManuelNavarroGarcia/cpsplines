@@ -138,6 +138,9 @@ class IntConstraints:
             matrix corresponds to the independent term equation, the second to
             the linear term equation, and so on.
         """
+        # The elements from X in the homogeneous equations are located on its
+        # even antidiagonals, while the ones from the non-homogeneous equations
+        # are situated on the odd antidiagonals
         diag_zero = np.linspace(
             1 - self.deg_w, self.deg_w - 1, self.deg_w, dtype=np.int8
         )
@@ -148,6 +151,9 @@ class IntConstraints:
         for diag in [diag_zero, diag_nonzero]:
             H_by_diag = []
             for k in diag:
+                # Create an identity matrix along the corresponding diagonal and
+                # the rotate it 90 degrees to get the antidiagonal. Then convert
+                # it to a MOSEK sparse matrix
                 H_by_diag.append(
                     mosek.fusion.Matrix.sparse(
                         np.rot90(np.eye(self.deg_w + 1, k=k, dtype=np.int32))
