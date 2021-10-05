@@ -144,7 +144,7 @@ class OneSmoothing:
                 for deriv in self.int_constraints[var_name].keys():
                     S_dict_copy = S_dict.copy()
                     cons = IntConstraints(
-                        bsp_list=self.bspline_bases,
+                        bspline=self.bspline_bases,
                         var_name=var_name,
                         derivative=deriv,
                         constraints=self.int_constraints[var_name][deriv],

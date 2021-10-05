@@ -69,7 +69,7 @@ def test_W_matrices(x_sam, deg, n_int, prediction, deriv, W):
     bsp = BsplineBasis(deg=deg, xsample=x_sam, n_int=n_int, prediction=prediction)
     bsp.get_matrix_B()
     W_out = IntConstraints(
-        bsp_list=[bsp], var_name=0, derivative=deriv, constraints={}
-    ).matricesW
+        bspline=[bsp], var_name=0, derivative=deriv, constraints={}
+    )._get_matrices_W()
     for mat, mat_out in zip(W, W_out):
         np.testing.assert_allclose(mat, mat_out, atol=1e-12)
