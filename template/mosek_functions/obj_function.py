@@ -17,7 +17,7 @@ class ObjectiveFunction:
     bspline : Iterable[BsplineBasis]
         An iterable containing the B-spline bases objects used to approximate
         the function to estimate.
-    M : mosek.fusion.Model
+    model : mosek.fusion.Model
         The MOSEK model of the problem.
 
     Attributes
@@ -45,9 +45,11 @@ class ObjectiveFunction:
 
         Returns
         -------
-        (dict) A dictionary containing the variables involved on the objective
-        function of the optimization problem. The keys of the dictionary are the
-        names of the variables and the values are the variables themselves.
+        Dict[str, mosek.fusion.LinearVariable]
+            A dictionary containing the variables involved on the objective
+            function of the optimization problem. The keys of the dictionary are
+            the names of the variables and the values are the variables
+            themselves.
         """
 
         var_dict = {}
@@ -112,10 +114,12 @@ class ObjectiveFunction:
 
         Returns
         -------
-        (tuple) The linear objective function and the rotated quadratic cone
-        constraints resulting from reformulating the summands on the quadratic
-        term.
+        Tuple[Union[None, mosek.fusion.ConicConstraint]]
+            The linear objective function and the rotated quadratic cone
+            constraints resulting from reformulating the summands on the
+            quadratic term.
         """
+
         # Generate the decision variables involved in the objective function
         self.var_dict = self._create_var_dict()
 

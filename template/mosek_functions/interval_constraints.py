@@ -43,7 +43,7 @@ class IntConstraints:
         The matrices W used to impose the constraints by virtue of Proposition 1
         in Bertsimas and Popescu (2002).
     matricesH : mosek.fusion.Matrix
-        Auxiliary matrices to extract the correct coefficients from the
+        Auxiliary matrices to extract the correct coefficients from the positive
         semidefinite matrix variable in the left-hand side from the equations of
         Proposition 1 in Bertsimas and Popescu (2002).
 
@@ -123,11 +123,11 @@ class IntConstraints:
 
         """
         Generates matrices H used to extract the right coefficients from the
-        semidefinite matrices variables to fulfill the equations of Proposition
-        1 in Bertsimas and Popescu (2002). This is done by using the Frobenius
-        inner product and, as it is stated in the proposition, matrices have
-        order `deg_w`+ 1. For each interval of the B-spline basis, one matrix H
-        is defined.
+        positive semidefinite matrix variables to fulfill the equations of
+        Proposition 1 in Bertsimas and Popescu (2002). This is done by using the
+        Frobenius inner product and, as it is stated in the proposition,
+        matrices have order `deg_w`+ 1. For each interval of the B-spline basis,
+        one matrix H is defined.
 
         Returns
         -------
@@ -138,6 +138,7 @@ class IntConstraints:
             matrix corresponds to the independent term equation, the second to
             the linear term equation, and so on.
         """
+
         # The elements from X in the homogeneous equations are located on its
         # even antidiagonals, while the ones from the non-homogeneous equations
         # are situated on the odd antidiagonals
@@ -163,10 +164,33 @@ class IntConstraints:
         return H
 
     def _create_PSD_var(self, model: mosek.fusion.Model) -> mosek.fusion.PSDVariable:
-        shapes_B = [bsp.matrixB.shape[1] - bsp.deg for bsp in self.bspline]
+
+        """
+        Create the positive semidefinite matrix variables used to formulate the
+        constraints. They have shape (`deg_w` + 1, `deg_w` + 1) and one by
+        interval where constraints are applied is needed.
+
+        Parameters
+        ----------
+        model : mosek.fusion.Model
+            The MOSEK model of the problem.
+
+        Returns
+        -------
+        mosek.fusion.PSDVariable
+            A three-dimensional variable with shape (`deg_w` + 1, `deg_w` + 1,
+            n * m), where n is the number of interval where the constraint need
+            to be imposed, m is the number of sign constraints related to this
+            derivative order and variable, and each of the matrices (`deg_w` +
+            1, `deg_w` + 1) are required to be positive semidefinite.
+        """
+
+        # The number of intervals where the constraint need to be enforced can
+        # be computed as the product of interior intervals
+        n = [bsp.matrixB.shape[1] - bsp.deg for bsp in self.bspline]
         return model.variable(
             mosek.fusion.Domain.inPSDCone(
-                self.deg_w + 1, len(self.constraints.keys()) * np.prod(shapes_B)
+                self.deg_w + 1, len(self.constraints.keys()) * np.prod(n)
             )
         )
 
@@ -176,17 +200,51 @@ class IntConstraints:
         model: mosek.fusion.Model,
         S_dict: Dict[int, Iterable[np.ndarray]],
     ) -> Tuple[mosek.fusion.LinearConstraint]:
+
+        """
+        Defines the non-negative related constraints over a finite interval. For
+        each interval and each sign constraint, 2 * `deg_w` - 1 equations are
+        defined.
+
+        Parameters
+        ----------
+        var_dict :  Dict[str, mosek.fusion.LinearVariable]
+            The dictionary that contains the decision variables used to define
+            the objective function of the problem.
+        model : mosek.fusion.Model
+            The MOSEK model of the problem.
+
+        Returns
+        -------
+        Tuple[mosek.fusion.LinearConstraint]
+            The set of constraints along the variable `var_name` and derivative
+            order `derivative`.
+
+        """
+
+        # Generate the matrices H and W, and the decision variables X
         self.matricesW = self._get_matrices_W()
         self.matricesH = self._get_matrices_H()
-
-        X = self._create_PSD_var(model=model)
+        var_dict |= {"X": self._create_PSD_var(model=model)}
+        # Extract the weights related to the independent term, which is used
+        # when some derivative of the curve is constrained to be greater or
+        # lower than a certain threshold
         ind_term = self.matricesW[0][:, 0]
+        # For every axis, get the contribution to the estimated function at the
+        # knots
         for j, bsp in enumerate(self.bspline):
+            # The contribution along the direction where the constraints are
+            # imposed is W (that already include the vector coefficient arised
+            # when differentiate the polynomial) times S once the first
+            # `derivative` rows are deleted
             if self.var_name == j:
                 S_dict[self.var_name] = [
                     self.matricesW[i] @ np.delete(s, range(self.derivative), axis=0)
                     for i, s in enumerate(S_dict[self.var_name])
                 ]
+            # Since the knot sequence is evenly spaced, the value of the
+            # B-splines is periodic an it is always the same, so we pick up the
+            # value of all the B-splines at the first knot
             else:
                 value_at_knots = np.expand_dims(
                     bsp.matrixB[
@@ -195,11 +253,11 @@ class IntConstraints:
                     axis=0,
                 )
                 S_dict[j] = [value_at_knots for _ in range(len(S_dict[j]))]
-        list_cons = []
-        if len(S_dict.keys()) == 1:
-            num_inter = 1
-        else:
-            num_inter = np.prod(
+        # For every interval on the `var_name` axis, count how many interval
+        # constraints of the same sign and fixed derivative need to be
+        # considered
+        num_by_interval = (
+            np.prod(
                 np.array(
                     [
                         bsp.matrixB.shape[1] - bsp.deg
@@ -208,50 +266,73 @@ class IntConstraints:
                     ]
                 )
             )
-        num_cons = len(self.constraints.keys())
+            if len(S_dict.keys()) > 1
+            else 1
+        )
+        # For every interval on the `var_name` axis, count how many interval
+        # constraints types by sign there are
+        num_by_sign = len(self.constraints.keys())
+        list_cons = []
+        # Loop over every interval on the `var_name` axis
         for w in range(
             self.bspline[self.var_name].matrixB.shape[1]
             - self.bspline[self.var_name].deg
         ):
-            a = [v for i, v in enumerate(S_dict.values()) if i != self.var_name]
-            a_idx = [
-                range(len(v))
-                for i, v in enumerate(S_dict.values())
-                if i != self.var_name
-            ]
+            # Create a list containing the lists with the contribution to the
+            # estimated function at the knots
+            a = [v for i, v in S_dict.items() if i != self.var_name]
+            # Create a list containing ranges of the same length as previous list
+            a_idx = [range(len(v)) for i, v in S_dict.items() if i != self.var_name]
+            # Insert at the position `var_name` the correct value/index of S
+            # along the `var_name` direction
             a.insert(self.var_name, [S_dict[self.var_name][w]])
             a_idx.insert(self.var_name, range(w, w + 1))
+            # Generate all the combinations possible from previous lists
             iter_a = list(itertools.product(*a))
             iter_idx = list(itertools.product(*a_idx))
+            # Loop over the size of all the combinations (same length as
+            # positive semidefinite variables) and their corresponding values of
+            # the contribution
             for j, (id, mat) in enumerate(zip(iter_idx, iter_a)):
                 last_id = [id[i] + bsp.deg + 1 for i, bsp in enumerate(self.bspline)]
+                # Slice the multidimensional coefficient variable on the
+                # interval on the values the corresponding B-spline is non-zero
                 coef_theta = var_dict["theta"].slice(
                     np.array(id, dtype=np.int32), np.array(last_id, dtype=np.int32)
                 )
+                # Multiply the sliced variable on each face by the correct
+                # contribution
                 poly_coef = mosek.fusion.Expr.flatten(
                     kron_tens_prod_mosek(matrices=mat, mosek_var=coef_theta)
                 )
+                # Loop over the different sign constraints
                 for k, key in enumerate(self.constraints.keys()):
-                    actual_index = k + num_cons * (j + w * num_inter)
-                    slice_X = X.slice(
-                        [actual_index, 0, 0],
-                        [
-                            actual_index + 1,
-                            self.deg_w + 1,
-                            self.deg_w + 1,
-                        ],
-                    ).reshape([self.deg_w + 1, self.deg_w + 1])
+                    # Get current index
+                    actual_index = k + num_by_sign * (j + w * num_by_interval)
+                    # Get current positive semidefinite variable
+                    slice_X = (
+                        var_dict["X"]
+                        .slice(
+                            [actual_index, 0, 0],
+                            [
+                                actual_index + 1,
+                                self.deg_w + 1,
+                                self.deg_w + 1,
+                            ],
+                        )
+                        .reshape([self.deg_w + 1, self.deg_w + 1])
+                    )
+                    # Creates the homogeneous equations
                     for i in range(self.deg_w):
-                        # Creates the homogeneous equations
                         list_cons.append(
                             model.constraint(
                                 mosek.fusion.Expr.dot(self.matricesH[0][i], slice_X),
                                 mosek.fusion.Domain.equalsTo(0.0),
                             )
                         )
-                    if key == "+":
-                        for i in range(self.deg_w + 1):
-                            # Creates the nonhomogeneous equations
+                    # Creates the non-homogeneous equations
+                    for i in range(self.deg_w + 1):
+                        if key == "+":
                             list_cons.append(
                                 model.constraint(
                                     mosek.fusion.Expr.sub(
@@ -265,9 +346,7 @@ class IntConstraints:
                                     ),
                                 )
                             )
-                    elif key == "-":
-                        for i in range(self.deg_w + 1):
-                            # Creates the nonhomogeneous equations
+                        else:
                             list_cons.append(
                                 model.constraint(
                                     mosek.fusion.Expr.add(
@@ -281,8 +360,4 @@ class IntConstraints:
                                     ),
                                 )
                             )
-                    else:
-                        raise TypeError(
-                            "Only interval constraints related to the sign are allowed"
-                        )
         return tuple(list_cons)
