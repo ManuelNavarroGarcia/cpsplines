@@ -12,7 +12,11 @@ from template.mosek_functions.interval_constraints import IntConstraints
 from template.mosek_functions.point_constraints import PointConstraints
 from template.psplines.bspline_basis import BsplineBasis
 from template.psplines.penalty_matrix import PenaltyMatrix
-from template.utils.fast_forecast_mat import fast_B_weighted, get_idx_fitting_region
+from template.utils.fast_forecast_mat import (
+    get_weighted_B,
+    get_idx_fitting_region,
+    get_weighted_B,
+)
 from template.utils.fast_kron import (
     fast_kronecker_product,
     kron_tens_prod,
@@ -236,7 +240,7 @@ class OneSmoothing:
         matrix_dict = self._get_obj_func_arrays(y=y)
 
         # Auxiliary matrices
-        B_pred = fast_B_weighted(list_bs_basis=self.bspline_bases)
+        B_pred = get_weighted_B(bspline_bases=self.bspline_bases)
         matrix_dict["B_mul"] = list(map(matrix_by_transpose, B_pred))
         lin_term = np.multiply(
             -2, kron_tens_prod([mat.T for mat in B_pred], matrix_dict["y"])

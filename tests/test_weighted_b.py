@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from template.psplines.bspline_basis import BsplineBasis
-from template.utils.fast_forecast_mat import fast_B_weighted, get_idx_fitting_region
+from template.utils.fast_forecast_mat import get_weighted_B, get_idx_fitting_region
 
 BV1 = (1 / 50) * np.array(
     [
@@ -66,14 +66,14 @@ BV3 = (1 / 98) * np.array(
         ),
     ],
 )
-def test_forecast_matrix(x_sam, deg, n_int, prediction, VB):
+def test_weighted_B(x_sam, deg, n_int, prediction, VB):
     bsp_out = []
     for x, d, n, pred in zip(x_sam, deg, n_int, prediction):
         bsp = BsplineBasis(deg=d, xsample=x, n_int=n, prediction=pred)
         bsp.get_matrix_B()
         bsp_out.append(bsp)
 
-    out = fast_B_weighted(list_bs_basis=bsp_out)
+    out = get_weighted_B(bspline_bases=bsp_out)
 
     for mat_out, mat_in in zip(out, VB):
         np.testing.assert_allclose(mat_in, mat_out)
@@ -112,7 +112,7 @@ def test_get_idx_fit(x_sam, deg, n_int, prediction, slice):
         bsp.get_matrix_B()
         bsp_out.append(bsp)
 
-    out = get_idx_fitting_region(list_bs_basis=bsp_out)
+    out = get_idx_fitting_region(bspline_bases=bsp_out)
 
     for slice_out, slice_in in zip(out, slice):
         assert slice_in == slice_out
