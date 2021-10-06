@@ -12,7 +12,7 @@ from template.mosek_functions.interval_constraints import IntConstraints
 from template.mosek_functions.point_constraints import PointConstraints
 from template.psplines.bspline_basis import BsplineBasis
 from template.psplines.penalty_matrix import PenaltyMatrix
-from template.utils.fast_forecast_mat import (
+from template.utils.weighted_b import (
     get_weighted_B,
     get_idx_fitting_region,
     get_weighted_B,

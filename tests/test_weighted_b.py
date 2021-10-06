@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 from template.psplines.bspline_basis import BsplineBasis
-from template.utils.fast_forecast_mat import get_weighted_B, get_idx_fitting_region
+from template.utils.weighted_b import get_weighted_B, get_idx_fitting_region
 
 BV1 = (1 / 50) * np.array(
     [
