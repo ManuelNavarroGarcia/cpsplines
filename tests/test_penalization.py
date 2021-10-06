@@ -5,26 +5,26 @@ from template.utils.fast_kron import penalization_term
 from template.utils.timer import timer
 
 
-def penalization_brute_force(mat_list, sp):
-    dim_list = [mat.shape[0] for mat in mat_list]
+def penalization_brute_force(matrices, sp):
+    dim_list = [mat.shape[0] for mat in matrices]
     if len(dim_list) == 1:
-        return np.multiply(sp[0], mat_list[0])
+        return np.multiply(sp[0], matrices[0])
     elif len(dim_list) == 2:
-        return np.kron(np.multiply(sp[0], mat_list[0]), np.eye(dim_list[1])) + np.kron(
-            np.eye(dim_list[0]), np.multiply(sp[1], mat_list[1])
+        return np.kron(np.multiply(sp[0], matrices[0]), np.eye(dim_list[1])) + np.kron(
+            np.eye(dim_list[0]), np.multiply(sp[1], matrices[1])
         )
     elif len(dim_list) == 3:
         return (
             np.kron(
-                np.multiply(sp[0], mat_list[0]),
+                np.multiply(sp[0], matrices[0]),
                 np.eye(dim_list[1] * dim_list[2]),
             )
             + np.kron(
                 np.eye(dim_list[0]),
-                np.kron(np.multiply(sp[1], mat_list[1]), np.eye(dim_list[2])),
+                np.kron(np.multiply(sp[1], matrices[1]), np.eye(dim_list[2])),
             )
             + np.kron(
-                np.eye(dim_list[0] * dim_list[1]), np.multiply(sp[2], mat_list[2])
+                np.eye(dim_list[0] * dim_list[1]), np.multiply(sp[2], matrices[2])
             )
         )
     else:
@@ -41,20 +41,20 @@ def penalization_brute_force(mat_list, sp):
     ],
 )
 def test_penalty_matrix(dim_list, sp_list):
-    mat_list = []
+    matrices = []
     for dim in dim_list:
-        mat_list.append(np.random.rand(dim, dim))
+        matrices.append(np.random.rand(dim, dim))
 
     with timer():
         print("Using brute force computation")
-        penalty_out = penalization_brute_force(mat_list=mat_list, sp=sp_list)
+        penalty_out = penalization_brute_force(matrices=matrices, sp=sp_list)
 
     with timer():
         print("Using fast kronecker products")
         penalty = np.add.reduce(
             [
                 np.multiply(sp, mat)
-                for sp, mat in zip(sp_list, penalization_term(mat_list=mat_list))
+                for sp, mat in zip(sp_list, penalization_term(matrices=matrices))
             ]
         )
     np.testing.assert_allclose(penalty_out, penalty)

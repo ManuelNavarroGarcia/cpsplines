@@ -252,7 +252,7 @@ class OneSmoothing:
         )
 
         L_D = penalization_term(
-            mat_list=list(map(cholesky_semidef, matrix_dict["D_mul"]))
+            matrices=list(map(cholesky_semidef, matrix_dict["D_mul"]))
         )
 
         # Initialize the model

@@ -10,7 +10,7 @@ from template.utils.fast_kron import (
 
 def gcv_mat(B_mul, D_mul) -> tuple:
     qua_term = reduce(fast_kronecker_product, B_mul[::-1])
-    pen = penalization_term(mat_list=D_mul[::-1])
+    pen = penalization_term(matrices=D_mul[::-1])
     return tuple([qua_term] + pen)
 
 

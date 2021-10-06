@@ -6,15 +6,15 @@ from template.utils.fast_kron import kron_tens_prod
 from template.utils.timer import timer
 
 
-def tensor_prod_brute_force(mat_list, tensor):
-    if len(mat_list) == 1:
-        return mat_list[0] @ tensor
-    elif len(mat_list) == 2:
-        return mat_list[0] @ tensor @ mat_list[1].T
-    elif len(mat_list) == 3:
-        dim = tuple([mat.shape[0] for mat in mat_list])
+def tensor_prod_brute_force(matrices, tensor):
+    if len(matrices) == 1:
+        return matrices[0] @ tensor
+    elif len(matrices) == 2:
+        return matrices[0] @ tensor @ matrices[1].T
+    elif len(matrices) == 3:
+        dim = tuple([mat.shape[0] for mat in matrices])
         return tl.fold(
-            mat_list[0] @ tl.unfold(tensor, 0) @ np.kron(mat_list[1], mat_list[2]).T,
+            matrices[0] @ tl.unfold(tensor, 0) @ np.kron(matrices[1], matrices[2]).T,
             0,
             dim,
         )
@@ -39,10 +39,10 @@ def test_tensor_product(common_dim, different_dim):
 
     with timer():
         print("Using np.kron")
-        exp_out = tensor_prod_brute_force(mat_list=random_mat, tensor=random_tensor)
+        exp_out = tensor_prod_brute_force(matrices=random_mat, tensor=random_tensor)
 
     with timer():
         print("Using folding and unfolding")
-        out = kron_tens_prod(mat_list=random_mat, T=random_tensor)
+        out = kron_tens_prod(matrices=random_mat, T=random_tensor)
 
     np.testing.assert_allclose(exp_out, out)
