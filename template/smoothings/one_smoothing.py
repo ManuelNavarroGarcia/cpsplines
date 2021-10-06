@@ -176,24 +176,24 @@ class OneSmoothing:
 
     def _get_sp_grid_search(
         self,
-        B_pred: Iterable[np.ndarray],
+        B_weighted: Iterable[np.ndarray],
         gcv_tuple: Iterable[np.ndarray],
-        y_sam: np.ndarray,
+        y: np.ndarray,
     ) -> Tuple[Union[int, float]]:
         # Computes all the possible combinations for the smoothing parameters
         iter_sp = list(itertools.product(*self.sp_args["grid"]))
         if self.sp_args["parallel"] == True:
             gcv_list = Parallel(n_jobs=self.sp_args["n_jobs"])(
-                delayed(GCV)(sp, B_pred, gcv_tuple, y_sam) for sp in iter_sp
+                delayed(GCV)(sp, B_weighted, gcv_tuple, y) for sp in iter_sp
             )
         else:
             gcv_list = []
             for sp in iter_sp:
                 gcv = GCV(
-                    sp_list=sp,
-                    B_pred=B_pred,
+                    sp=sp,
+                    B_weighted=B_weighted,
                     qua_term=gcv_tuple,
-                    y_sam=y_sam,
+                    y=y,
                 )
                 gcv_list.append(gcv)
         if self.sp_args["verbose"] == True:
@@ -203,18 +203,18 @@ class OneSmoothing:
 
     def _get_sp_optimizer(
         self,
-        B_pred: Iterable[np.ndarray],
+        B_weighted: Iterable[np.ndarray],
         gcv_tuple: Iterable[np.ndarray],
-        y_sam: np.ndarray,
+        y: np.ndarray,
     ) -> Tuple[Union[int, float]]:
         gcv_sim = Simulator(GCV)
         best_sp = scipy.optimize.minimize(
             gcv_sim.simulate if self.sp_args["verbose"] else GCV,
             self.sp_args["sp_guess"],
             args=(
-                B_pred,
+                B_weighted,
                 gcv_tuple,
-                y_sam,
+                y,
             ),
             callback=gcv_sim.callback if self.sp_args["verbose"] else None,
             method=self.sp_args["optim_method"],
@@ -240,10 +240,10 @@ class OneSmoothing:
         matrix_dict = self._get_obj_func_arrays(y=y)
 
         # Auxiliary matrices
-        B_pred = get_weighted_B(bspline_bases=self.bspline_bases)
-        matrix_dict["B_mul"] = list(map(matrix_by_transpose, B_pred))
+        B_weighted = get_weighted_B(bspline_bases=self.bspline_bases)
+        matrix_dict["B_mul"] = list(map(matrix_by_transpose, B_weighted))
         lin_term = np.multiply(
-            -2, kron_tens_prod([mat.T for mat in B_pred], matrix_dict["y"])
+            -2, kron_tens_prod([mat.T for mat in B_weighted], matrix_dict["y"])
         ).flatten()
 
         # Compute the Cholesky factorization (A = L @ L.T)
@@ -265,11 +265,11 @@ class OneSmoothing:
 
         if self.sp_method == "grid_search":
             self.best_sp = self._get_sp_grid_search(
-                B_pred=B_pred, gcv_tuple=gcv_tuple, y_sam=matrix_dict["y"]
+                B_weighted=B_weighted, gcv_tuple=gcv_tuple, y=matrix_dict["y"]
             )
         else:
             self.best_sp = self._get_sp_optimizer(
-                B_pred=B_pred, gcv_tuple=gcv_tuple, y_sam=matrix_dict["y"]
+                B_weighted=B_weighted, gcv_tuple=gcv_tuple, y=matrix_dict["y"]
             )
 
         theta_shape = model_params["theta"].getShape()
@@ -301,7 +301,7 @@ class OneSmoothing:
                 raise ValueError(f"Algo izquierda")
             if (x_max > bsp_max).sum() > 0:
                 raise ValueError("Algo derecha")
-            B_pred = []
+            B_weighted = []
             for i, bsp in enumerate(self.bspline_bases):
-                B_pred.append(bsp.bspline_basis.derivative(nu=0)(x[i]))
-            return kron_tens_prod([mat for mat in B_pred], self.sol)
+                B_weighted.append(bsp.bspline_basis.derivative(nu=0)(x[i]))
+            return kron_tens_prod([mat for mat in B_weighted], self.sol)

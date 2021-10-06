@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.linalg import block_diag
 import tensorly as tl
-from typing import Iterable
+from typing import Iterable, List
 
 
 def matrix_by_transpose(A: np.ndarray) -> np.ndarray:
@@ -134,7 +134,7 @@ def kron_tens_prod(matrices: Iterable[np.ndarray], T: np.ndarray) -> np.ndarray:
     return T
 
 
-def penalization_term(matrices: Iterable[np.ndarray]) -> np.ndarray:
+def penalization_term(matrices: Iterable[np.ndarray]) -> List[np.ndarray]:
 
     """
     Given the penalty matrices defined over every axis, computes the
@@ -148,8 +148,8 @@ def penalization_term(matrices: Iterable[np.ndarray]) -> np.ndarray:
     Returns
     -------
     np.ndarray
-        The penalization term of the objective function, whose order is the
-        product over all the n_i.
+        The penalization term items of the objective function, whose orders are
+        the product over all the n_i.
 
     Raises
     ------

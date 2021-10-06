@@ -7,15 +7,15 @@ from template.utils.gcv import gcv_mat, GCV
 from template.utils.fast_kron import matrix_by_transpose
 
 
-def gcv_brute_force(B_mul, D_mul, sp_list, y_sam, y_true):
+def gcv_brute_force(B_mul, D_mul, sp, y, y_true):
     dim_list = [mat.shape[0] for mat in B_mul]
     if len(dim_list) == 1:
-        H = np.linalg.solve(B_mul[0] + np.multiply(sp_list[0], D_mul[0]), B_mul[0])
+        H = np.linalg.solve(B_mul[0] + np.multiply(sp[0], D_mul[0]), B_mul[0])
     elif len(dim_list) == 2:
         Q = (
             np.kron(B_mul[1], B_mul[0])
-            + np.kron(np.eye(D_mul[1].shape[1]), np.multiply(sp_list[0], D_mul[0]))
-            + np.kron(np.multiply(sp_list[1], D_mul[1]), np.eye(D_mul[0].shape[1]))
+            + np.kron(np.eye(D_mul[1].shape[1]), np.multiply(sp[0], D_mul[0]))
+            + np.kron(np.multiply(sp[1], D_mul[1]), np.eye(D_mul[0].shape[1]))
         )
         H = np.linalg.solve(Q, np.kron(B_mul[1], B_mul[0]))
     elif len(dim_list) == 3:
@@ -23,14 +23,14 @@ def gcv_brute_force(B_mul, D_mul, sp_list, y_sam, y_true):
             np.kron(B_mul[2], np.kron(B_mul[1], B_mul[0]))
             + np.kron(
                 np.eye(D_mul[2].shape[1] * D_mul[1].shape[1]),
-                np.multiply(sp_list[0], D_mul[0]),
+                np.multiply(sp[0], D_mul[0]),
             )
             + np.kron(
-                np.kron(np.eye(D_mul[2].shape[1]), np.multiply(sp_list[1], D_mul[1])),
+                np.kron(np.eye(D_mul[2].shape[1]), np.multiply(sp[1], D_mul[1])),
                 np.eye(D_mul[0].shape[1]),
             )
             + np.kron(
-                np.multiply(sp_list[2], D_mul[2]),
+                np.multiply(sp[2], D_mul[2]),
                 np.eye(D_mul[1].shape[1] * D_mul[0].shape[1]),
             )
         )
@@ -38,13 +38,13 @@ def gcv_brute_force(B_mul, D_mul, sp_list, y_sam, y_true):
     else:
         print("This test method is not implemented for dimensions greater than 3.")
         return None
-    len_prod = np.prod(y_sam.shape)
-    return (np.linalg.norm((y_sam - y_true)) ** 2 * len_prod) / (
+    len_prod = np.prod(y.shape)
+    return (np.linalg.norm((y - y_true)) ** 2 * len_prod) / (
         len_prod - np.trace(H)
     ) ** 2
 
 
-y_sam_1 = np.array(
+y_1 = np.array(
     [
         1.04412275,
         0.77592998,
@@ -76,7 +76,7 @@ y_true_1 = np.array(
     ]
 )
 
-y_sam_2 = np.array(
+y_2 = np.array(
     [
         [0.44122749, -0.33087015, 2.43077119, -0.25209213, 0.10960984],
         [1.58248112, 0.0907676, -0.59163666, -0.81239677, -0.32986996],
@@ -100,7 +100,7 @@ y_true_2 = np.array(
     ]
 )
 
-y_sam_3 = np.array(
+y_3 = np.array(
     [
         [
             [0.11030687, -0.08271754, 0.6076928, -0.06302303, 0.02740246],
@@ -160,7 +160,7 @@ y_true_3 = np.array(
 
 
 @pytest.mark.parametrize(
-    "deg, regr_sample, n_int, prediction, ord_d, sp_list, y_sam, y_true",
+    "deg, regr_sample, n_int, prediction, ord_d, sp, y, y_true",
     [
         (
             [3],
@@ -169,7 +169,7 @@ y_true_3 = np.array(
             [{}],
             [2],
             [0.123],
-            y_sam_1,
+            y_1,
             y_true_1,
         ),
         (
@@ -179,7 +179,7 @@ y_true_3 = np.array(
             [{}, {}],
             [2, 1],
             [0.456, 7.89],
-            y_sam_2,
+            y_2,
             y_true_2,
         ),
         (
@@ -193,12 +193,12 @@ y_true_3 = np.array(
             [{}, {}, {}],
             [1, 3, 2],
             [0.12, 1.345, 0.011],
-            y_sam_3,
+            y_3,
             y_true_3,
         ),
     ],
 )
-def test_gcv(deg, regr_sample, n_int, prediction, ord_d, sp_list, y_sam, y_true):
+def test_gcv(deg, regr_sample, n_int, prediction, ord_d, sp, y, y_true):
     bsp_l = [
         BsplineBasis(deg=d, xsample=xsam, n_int=n, prediction=pred)
         for d, xsam, n, pred in zip(deg, regr_sample, n_int, prediction)
@@ -213,8 +213,8 @@ def test_gcv(deg, regr_sample, n_int, prediction, ord_d, sp_list, y_sam, y_true)
     ]
     B_mul = list(map(matrix_by_transpose, B))
     qua_term = gcv_mat(B_mul=B_mul, D_mul=D_mul)
-    gcv_out = GCV(sp_list=sp_list, B_pred=B, qua_term=qua_term, y_sam=y_sam)
+    gcv_out = GCV(sp=sp, B_weighted=B, qua_term=qua_term, y=y)
     gcv_brute = gcv_brute_force(
-        B_mul=B_mul, D_mul=D_mul, sp_list=sp_list, y_sam=y_sam, y_true=y_true
+        B_mul=B_mul, D_mul=D_mul, sp=sp, y=y, y_true=y_true
     )
     np.testing.assert_allclose(gcv_out, gcv_brute)
