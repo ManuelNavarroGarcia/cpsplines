@@ -31,7 +31,7 @@ class PenaltyMatrix:
         self.bspline = bspline
         self.variation = variation
 
-    def _get_diff_matrix(self, ord_d: int) -> np.ndarray:
+    def _get_diff_matrix(self, ord_d: int = 2) -> np.ndarray:
 
         """
         Generate the penalty matrix based on finite differences of the
@@ -40,7 +40,8 @@ class PenaltyMatrix:
         Parameters
         ----------
         ord_d : int
-            The order of the penalty. Must be a non-negative integer.
+            The order of the penalty. Must be a non-negative integer. By
+            default, 2.
 
         Returns
         -------

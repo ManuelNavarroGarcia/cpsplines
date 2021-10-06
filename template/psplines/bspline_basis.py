@@ -19,19 +19,19 @@ class BsplineBasis:
     ----------
     xsample : np.ndarray
         The regressor vector. Must be a unidimensional array.
-    deg : int, default = 3
+    deg : int, optional
         The polynomial degree of the B-spline basis. Must be a non-negative
-        integer.
-    n_int : int, default = 40
+        integer. By default, 3.
+    n_int : int, optional
         The number of equal intervals which [min(`xsample`), max(`xsample`)] is
-        split. Must be greater or equal than 2.
-    prediction : Dict[str, Union[int, float]], default = {}
+        split. Must be greater or equal than 2. By default, 40.
+    prediction : Dict[str, Union[int, float]], optional
         A dictionary containing the most extreme values that the extended
         basis needs to capture. The keys are 'backwards' and 'forward',
         depending on the direction which the basis must be extended, and the
         values are the points on the basis axis. If 'backwards' ('forward') keys
         is not empty, the value must be at the left (right) of the minimum
-        (maximum) value of 'xsample'.
+        (maximum) value of 'xsample'. By default, {}.
 
     Attributes
     ----------
