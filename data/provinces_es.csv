@@ -1,0 +1,53 @@
+code,postal_code,name,phone_code
+VI,1,Álava,945
+AB,2,Albacete,967
+A,3,Alacant,950
+AL,4,Almería,920
+AV,5,Ávila,924
+BA,6,Badajoz,924
+PM,7,Illes Balears,971
+B,8,Barcelona,93
+BU,9,Burgos,947
+CC,10,Cáceres,927
+CA,11,Cádiz,956
+CS,12,Castelló,964
+CR,13,Ciudad Real,926
+CO,14,Córdoba,957
+C,15,A Coruña,981
+CU,16,Cuenca,969
+GI,17,Girona,972
+GR,18,Granada,958
+GU,19,Guadalajara,949
+SS,20,Gipuzkoa,943
+H,21,Huelva,959
+HU,22,Huesca,974
+J,23,Jaén,953
+LE,24,León,987
+L,25,Lleida,973
+LO,26,La Rioja,941
+LU,27,Lugo,982
+M,28,Madrid,91
+MA,29,Málaga,95
+MU,30,Murcia,968
+,31,Nafarroa,948
+OR,32,Ourense,988
+O,33,Asturias,98
+P,34,Palencia,979
+GC,35,Las Palmas,928
+PO,36,Pontevedra,986
+SA,37,Salamanca,923
+TF,38,Sta. Cruz de Tenerife,922
+S,39,Cantabria,942
+SG,40,Segovia,921
+SE,41,Sevilla,95
+SO,42,Soria,975
+T,43,Tarragona,977
+TE,44,Teruel,978
+TO,45,Toledo,925
+V,46,Valéncia,96
+VA,47,Valladolid,983
+BI,48,Bizkaia,94
+ZA,49,Zamora,980
+Z,50,Zaragoza,976
+CE,51,Ceuta,956
+ML,52,Melilla,95
