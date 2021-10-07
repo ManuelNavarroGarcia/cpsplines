@@ -47,10 +47,10 @@ def get_weighted_B(bspline_bases: Iterable[BsplineBasis]) -> List[np.ndarray]:
         The weighted matrices B.
     """
 
-    weighted_mat = []
-    idx_fitting_region = get_idx_fitting_region(bspline_bases=bspline_bases)
+    mat = []
+    idx_fit = get_idx_fitting_region(bspline_bases=bspline_bases)
     for i, bsp in enumerate(bspline_bases):
         B_weighted = np.zeros((bsp.matrixB.shape))
-        B_weighted[idx_fitting_region[i], :] = bsp.matrixB[idx_fitting_region[i], :]
-        weighted_mat.append(B_weighted)
-    return weighted_mat
+        B_weighted[idx_fit[i], :] = bsp.matrixB[idx_fit[i], :]
+        mat.append(B_weighted)
+    return mat
