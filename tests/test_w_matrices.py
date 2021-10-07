@@ -56,7 +56,8 @@ W3 = [
     np.array([[2, 12, 48], [4, 30, 144], [2, 18, 108]]),
 ]
 
-
+# Test the creation of the weigth matrices W in the Proposition 1 of Bertsimas
+# and Popescu (2002)
 @pytest.mark.parametrize(
     "x_sam, deg, n_int, prediction, deriv, W",
     [
