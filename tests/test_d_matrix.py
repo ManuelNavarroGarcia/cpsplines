@@ -53,7 +53,9 @@ D3 = np.array(
     ]
 )
 
-
+# Test the computation of the penalty matrices, for a variety of parameters on
+# the B-spline basis construction and the arguments of the penalty (such as the
+# penalty order for discrete difference matrices)
 @pytest.mark.parametrize(
     "x_sam, deg, n_int, prediction, ord_d, D",
     [
