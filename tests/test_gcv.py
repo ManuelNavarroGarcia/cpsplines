@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from typing import Iterable, Union
 
 from template.psplines.bspline_basis import BsplineBasis
 from template.psplines.penalty_matrix import PenaltyMatrix
@@ -7,18 +8,63 @@ from template.utils.gcv import gcv_mat, GCV
 from template.utils.fast_kron import matrix_by_transpose
 
 
-def gcv_brute_force(B_mul, D_mul, sp, y, y_true):
-    dim_list = [mat.shape[0] for mat in B_mul]
-    if len(dim_list) == 1:
+def gcv_brute_force(
+    B_mul: Iterable[np.ndarray],
+    D_mul: Iterable[np.ndarray],
+    sp: Iterable[Union[int, float]],
+    y: np.ndarray,
+    y_fit: np.ndarray,
+) -> float:
+    """Computes the Generalized Cross Validation using the exact definition
+    including all the matrices involved. It only supports three or less
+    dimensions.
+
+    Parameters
+    ----------
+    B_mul : Iterable[np.ndarray]
+        The product of the design matrices from the B-splines bases. Must have
+        length less or equal than 3.
+    D_mul : Iterable[np.ndarray]
+        The univariate penalty matrices. Must have length less or equal than 3.
+    sp : Iterable[Union[int, float]]
+        The smoothing parameter vector.
+    y : np.ndarray
+        The response variable sample
+    y_fit : np.ndarray
+        The fitted response variable array.
+
+    Returns
+    -------
+    float
+        The Generalized Cross Validation value.
+
+    Raises
+    ------
+    ValueError
+        If the shapes of response variable arrays differ.
+    ValueError
+        If the number of input B and D matrices differ.
+    ValueError
+        If the number of input B matrices is greater than 3.
+    """
+
+    if y.shape != y_fit.shape:
+        raise ValueError("The shape of the response variable array must agree.")
+    if len(B_mul) != len(D_mul):
+        raise ValueError("Number of B elements must be equal to number of D elements.")
+    if len(B_mul) > 3:
+        raise ValueError("Not implemented for more than three dimensions.")
+    # Compute the hat matrix depending on the number of dimensions
+    if len(B_mul) == 1:
         H = np.linalg.solve(B_mul[0] + np.multiply(sp[0], D_mul[0]), B_mul[0])
-    elif len(dim_list) == 2:
+    elif len(B_mul) == 2:
         Q = (
             np.kron(B_mul[1], B_mul[0])
             + np.kron(np.eye(D_mul[1].shape[1]), np.multiply(sp[0], D_mul[0]))
             + np.kron(np.multiply(sp[1], D_mul[1]), np.eye(D_mul[0].shape[1]))
         )
         H = np.linalg.solve(Q, np.kron(B_mul[1], B_mul[0]))
-    elif len(dim_list) == 3:
+    else:
         Q = (
             np.kron(B_mul[2], np.kron(B_mul[1], B_mul[0]))
             + np.kron(
@@ -35,12 +81,9 @@ def gcv_brute_force(B_mul, D_mul, sp, y, y_true):
             )
         )
         H = np.linalg.solve(Q, np.kron(B_mul[2], np.kron(B_mul[1], B_mul[0])))
-    else:
-        print("This test method is not implemented for dimensions greater than 3.")
-        return None
-    len_prod = np.prod(y.shape)
-    return (np.linalg.norm((y - y_true)) ** 2 * len_prod) / (
-        len_prod - np.trace(H)
+    # Get the Generalized Cross Validation value
+    return (np.linalg.norm((y - y_fit)) ** 2 * np.prod(y.shape)) / (
+        np.prod(y.shape) - np.trace(H)
     ) ** 2
 
 
@@ -60,7 +103,7 @@ y_1 = np.array(
     ]
 )
 
-y_true_1 = np.array(
+y_fit_1 = np.array(
     [
         1.14934175,
         0.71452073,
@@ -88,7 +131,7 @@ y_2 = np.array(
     ]
 )
 
-y_true_2 = np.array(
+y_fit_2 = np.array(
     [
         [0.39583918, 0.37761835, 0.347656, 0.29440816, 0.25379401],
         [0.10072316, 0.0758906, 0.03645742, -0.01922271, -0.06118704],
@@ -129,7 +172,7 @@ y_3 = np.array(
     ]
 )
 
-y_true_3 = np.array(
+y_fit_3 = np.array(
     [
         [
             [0.14620947, -0.02079486, 0.03249839, -0.01959649, 0.04563657],
@@ -160,7 +203,7 @@ y_true_3 = np.array(
 
 
 @pytest.mark.parametrize(
-    "deg, regr_sample, n_int, prediction, ord_d, sp, y, y_true",
+    "deg, regr_sample, n_int, prediction, ord_d, sp, y, y_fit",
     [
         (
             [3],
@@ -170,7 +213,7 @@ y_true_3 = np.array(
             [2],
             [0.123],
             y_1,
-            y_true_1,
+            y_fit_1,
         ),
         (
             [3, 2],
@@ -180,7 +223,7 @@ y_true_3 = np.array(
             [2, 1],
             [0.456, 7.89],
             y_2,
-            y_true_2,
+            y_fit_2,
         ),
         (
             [2, 4, 3],
@@ -194,27 +237,25 @@ y_true_3 = np.array(
             [1, 3, 2],
             [0.12, 1.345, 0.011],
             y_3,
-            y_true_3,
+            y_fit_3,
         ),
     ],
 )
-def test_gcv(deg, regr_sample, n_int, prediction, ord_d, sp, y, y_true):
-    bsp_l = [
+def test_gcv(deg, regr_sample, n_int, prediction, ord_d, sp, y, y_fit):
+    bspline = [
         BsplineBasis(deg=d, xsample=xsam, n_int=n, prediction=pred)
         for d, xsam, n, pred in zip(deg, regr_sample, n_int, prediction)
     ]
     B = []
-    for bsp in bsp_l:
+    for bsp in bspline:
         bsp.get_matrix_B()
         B.append(bsp.matrixB)
     D_mul = [
-        PenaltyMatrix(bspline=bsp).get_penalty_matrix(**{"ord_d": d})
-        for bsp, d in zip(bsp_l, ord_d)
+        PenaltyMatrix(bspline=bsp).get_penalty_matrix(**{"ord_d": o})
+        for bsp, o in zip(bspline, ord_d)
     ]
     B_mul = list(map(matrix_by_transpose, B))
     Q_matrices = gcv_mat(B_mul=B_mul, D_mul=D_mul)
     gcv_out = GCV(sp=sp, B_weighted=B, Q_matrices=Q_matrices, y=y)
-    gcv_brute = gcv_brute_force(
-        B_mul=B_mul, D_mul=D_mul, sp=sp, y=y, y_true=y_true
-    )
+    gcv_brute = gcv_brute_force(B_mul=B_mul, D_mul=D_mul, sp=sp, y=y, y_fit=y_fit)
     np.testing.assert_allclose(gcv_out, gcv_brute)
