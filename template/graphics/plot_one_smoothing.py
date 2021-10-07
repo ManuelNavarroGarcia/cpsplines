@@ -11,13 +11,13 @@ from template.graphics.plot_utils import thin_prediction_range
 def plot_curves(
     fittings: Iterable[OneSmoothing],
     col_curve: Optional[Iterable[str]] = None,
-    prediction_step: Iterable[Union[int, float]] = (0.5, 0.5),
-    knot_positions: bool = False,
-    constant_constraints: bool = False,
     x: Optional[Iterable[np.ndarray]] = None,
     y: Optional[Iterable[np.ndarray]] = None,
     col_pt: Optional[Iterable[str]] = None,
     alpha: Union[int, float] = 0.25,
+    prediction_step: Iterable[Union[int, float]] = (0.5, 0.5),
+    knot_positions: bool = False,
+    constant_constraints: bool = False,
     figsize: Tuple[Union[int, float]] = (15, 10),
 ) -> Tuple[matplotlib.figure.Figure, plt.axes]:
 
@@ -29,15 +29,12 @@ def plot_curves(
             for _ in range(len(fittings))
         ]
 
-    if (x is not None) or (y is not None):
-        if len({len(i) for i in [x, y]}) != 1:
-            raise ValueError("The lengths of `x` and `y` must agree.")
+    if (x is not None) and (y is not None):
         if col_pt is None:
             col_pt = [
                 "#" + "".join([random.choice("0123456789ABCDEF") for _ in range(6)])
                 for _ in range(len(x))
             ]
-            print(len(col_pt))
         for i, (pt_x, pt_y) in enumerate(zip(x, y)):
             _ = ax.scatter(
                 x=pt_x,
