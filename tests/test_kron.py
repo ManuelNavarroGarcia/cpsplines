@@ -10,26 +10,28 @@ from template.utils.fast_kron import (
 from template.utils.timer import timer
 
 
+# Take the Kronecker product of a list of random matrices with different shapes
+# with a fast method and the NumPy method
 @pytest.mark.parametrize(
-    "dim_list",
+    "dim",
     [
-        ([[4, 7], [5, 6], [8, 3], [1, 9], [10, 2]]),
+        ((4, 7), (5, 6), (8, 3), (1, 9), (10, 2)),
     ],
 )
-def test_fast_kronecker(dim_list):
-    random_mat = []
-    for dim in dim_list:
-        random_mat.append(np.random.rand(*dim))
+def test_fast_kronecker(dim):
+    matrices = [np.random.rand(*d) for d in dim]
 
     with timer(tag="Using np.kron"):
-        exp_out = reduce(np.kron, random_mat)
+        exp_out = reduce(np.kron, matrices)
 
     with timer(tag="Using broadcasting"):
-        out = reduce(fast_kronecker_product, random_mat)
+        out = reduce(fast_kronecker_product, matrices)
 
     np.testing.assert_allclose(exp_out, out)
 
 
+# Take the Kronecker product of a random matrix and an identity matrix
+# with a fast method, the fast Kronecker product and the NumPy method
 @pytest.mark.parametrize(
     "A, n",
     [
@@ -52,6 +54,8 @@ def test_mat_kron_identity(A, n):
     np.testing.assert_allclose(exp_out2, out)
 
 
+# Take the Kronecker product of an identity matrix and a random matrix
+# with a fast method, the fast Kronecker product and the NumPy method
 @pytest.mark.parametrize(
     "n, A",
     [
