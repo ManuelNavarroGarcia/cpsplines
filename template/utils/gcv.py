@@ -3,7 +3,7 @@ from functools import reduce
 from typing import Iterable, Tuple, Union
 
 from template.utils.fast_kron import (
-    kron_tens_prod,
+    matrix_by_tensor_product,
     fast_kronecker_product,
     penalization_term,
 )
@@ -102,13 +102,13 @@ def explicit_y_hat(
     np.ndarray
         The fitted values for the response variable.
     """
-    y_contribution = kron_tens_prod([B.T for B in B_weighted], y).flatten("F")
+    y_contribution = matrix_by_tensor_product([B.T for B in B_weighted], y).flatten("F")
     theta = np.reshape(
         np.linalg.solve(Q, y_contribution),
         tuple([mat.shape[1] for mat in B_weighted]),
         order="F",
     )
-    return kron_tens_prod([mat for mat in B_weighted], theta)
+    return matrix_by_tensor_product([mat for mat in B_weighted], theta)
 
 
 def GCV(

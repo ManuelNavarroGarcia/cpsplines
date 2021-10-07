@@ -19,7 +19,7 @@ from template.utils.weighted_b import (
 )
 from template.utils.fast_kron import (
     fast_kronecker_product,
-    kron_tens_prod,
+    matrix_by_tensor_product,
     penalization_term,
     matrix_by_transpose,
 )
@@ -246,7 +246,8 @@ class OneSmoothing:
         B_weighted = get_weighted_B(bspline_bases=self.bspline_bases)
         matrix_dict["B_mul"] = list(map(matrix_by_transpose, B_weighted))
         lin_term = np.multiply(
-            -2, kron_tens_prod([mat.T for mat in B_weighted], matrix_dict["y"])
+            -2,
+            matrix_by_tensor_product([mat.T for mat in B_weighted], matrix_dict["y"]),
         ).flatten()
 
         # Compute the Cholesky factorization (A = L @ L.T)
@@ -282,7 +283,9 @@ class OneSmoothing:
             M.solve()
             self.sol = model_params["theta"].level().reshape(theta_shape)
             # Compute the fitted values of the response variable
-            self.y_fitted = kron_tens_prod([mat for mat in matrix_dict["B"]], self.sol)
+            self.y_fitted = matrix_by_tensor_product(
+                [mat for mat in matrix_dict["B"]], self.sol
+            )
         except mosek.fusion.SolutionError as e:
             raise NumericalError(
                 f"The solution for the smoothing parameter {self.best_sp} "
@@ -307,4 +310,4 @@ class OneSmoothing:
             B_weighted = []
             for i, bsp in enumerate(self.bspline_bases):
                 B_weighted.append(bsp.bspline_basis.derivative(nu=0)(x[i]))
-            return kron_tens_prod([mat for mat in B_weighted], self.sol)
+            return matrix_by_tensor_product([mat for mat in B_weighted], self.sol)

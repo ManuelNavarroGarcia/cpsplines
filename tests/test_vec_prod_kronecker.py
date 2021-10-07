@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from functools import reduce
 
-from template.utils.fast_kron import kron_tens_prod
+from template.utils.fast_kron import matrix_by_tensor_product
 from template.utils.timer import timer
 
 # Test the efficiency of folding and unfolding matrices compared to brute force
@@ -25,6 +25,8 @@ def test_matrices_by_tensor(common_dim, different_dim):
         )
 
     with timer(tag="Using folding and unfolding"):
-        out = kron_tens_prod(matrices=[A.T for A in random_mat], T=random_tensor)
+        out = matrix_by_tensor_product(
+            matrices=[A.T for A in random_mat], T=random_tensor
+        )
 
     np.testing.assert_allclose(exp_out, out)

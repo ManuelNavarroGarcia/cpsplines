@@ -3,7 +3,7 @@ import numpy as np
 from typing import Dict, Iterable, Tuple, Union
 
 from template.psplines.bspline_basis import BsplineBasis
-from template.mosek_functions.utils_mosek import kron_tens_prod_mosek
+from template.mosek_functions.utils_mosek import matrix_by_tensor_product_mosek
 
 
 class PointConstraints:
@@ -98,7 +98,9 @@ class PointConstraints:
         # array of the expansion coefficients
         for i, v in enumerate(self.value):
             bsp_x = [np.expand_dims(val[i, :], axis=1).T for val in bsp_eval.values()]
-            coef = kron_tens_prod_mosek(matrices=bsp_x, mosek_var=var_dict["theta"])
+            coef = matrix_by_tensor_product_mosek(
+                matrices=bsp_x, mosek_var=var_dict["theta"]
+            )
             # The output should be constrained on the interval (v - tol, v + tol)
             list_cons.append(
                 model.constraint(

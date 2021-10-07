@@ -5,7 +5,7 @@ from scipy.special import comb, factorial
 from typing import Dict, List, Iterable, Tuple, Union
 
 from template.psplines.bspline_basis import BsplineBasis
-from template.mosek_functions.utils_mosek import kron_tens_prod_mosek
+from template.mosek_functions.utils_mosek import matrix_by_tensor_product_mosek
 
 
 class IntConstraints:
@@ -333,7 +333,7 @@ class IntConstraints:
                 # Multiply the sliced variable on each face by the correct
                 # contribution
                 poly_coef = mosek.fusion.Expr.flatten(
-                    kron_tens_prod_mosek(matrices=mat, mosek_var=coef_theta)
+                    matrix_by_tensor_product_mosek(matrices=mat, mosek_var=coef_theta)
                 )
                 # Loop over the different sign constraints
                 for k, key in enumerate(self.constraints.keys()):

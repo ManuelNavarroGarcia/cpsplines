@@ -95,7 +95,9 @@ def fast_kronecker_product(A: np.ndarray, B: np.ndarray) -> np.ndarray:
     return (A[:, None, :, None] * B[None, :, None, :]).reshape(m * p, n * q)
 
 
-def kron_tens_prod(matrices: Iterable[np.ndarray], T: np.ndarray) -> np.ndarray:
+def matrix_by_tensor_product(
+    matrices: Iterable[np.ndarray], T: np.ndarray
+) -> np.ndarray:
 
     """
     Given a n_1 x n_2 x ... x n_N multidimensional array T, computes efficiently

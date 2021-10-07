@@ -6,7 +6,7 @@ from typing import Iterable
 from template.utils.fast_kron import fast_kronecker_product
 
 
-def kron_tens_prod_mosek(
+def matrix_by_tensor_product_mosek(
     matrices: Iterable[np.ndarray], mosek_var: mosek.fusion.Variable
 ) -> mosek.fusion.Expr:
 
