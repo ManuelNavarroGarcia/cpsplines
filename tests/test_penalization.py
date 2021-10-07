@@ -63,6 +63,8 @@ def penalty_brute_force(
     return P
 
 
+# Test the computation of the penalization term in the objective function for a
+# variety of number of dimensions
 @pytest.mark.parametrize(
     "dim, sp",
     [
