@@ -9,7 +9,9 @@ from template.utils.timer import timer
 def penalty_brute_force(
     D_mul: Iterable[np.ndarray], sp: Iterable[Union[int, float]]
 ) -> np.ndarray:
-    """Computes the penalization term using the exact definition including all
+
+    """
+    Computes the penalization term using the exact definition including all
     the matrices involved. It only supports three or less dimensions.
 
     Parameters
@@ -78,8 +80,8 @@ def test_penalty_matrix(dim, sp):
     with timer(tag="Using fast kronecker products"):
         penalty = np.add.reduce(
             [
-                np.multiply(s, mat)
-                for s, mat in zip(sp, penalization_term(matrices=matrices))
+                np.multiply(s, A)
+                for s, A in zip(sp, penalization_term(matrices=matrices))
             ]
         )
     np.testing.assert_allclose(penalty_out, penalty)
