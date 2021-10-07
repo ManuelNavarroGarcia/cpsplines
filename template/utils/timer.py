@@ -1,9 +1,20 @@
 from contextlib import contextmanager
 from timeit import default_timer
+from typing import Optional
 
 
 @contextmanager
-def timer(tag=None):
+def timer(tag: Optional[str] = None) -> None:
+
+    """
+    Computes the elapsed time that a task last.
+
+    Parameters
+    ----------
+    tag : str, optional
+        The name of the task. By default, None.
+    """
+
     start = default_timer()
     try:
         yield

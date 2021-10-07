@@ -45,12 +45,10 @@ def test_penalty_matrix(dim_list, sp_list):
     for dim in dim_list:
         matrices.append(np.random.rand(dim, dim))
 
-    with timer():
-        print("Using brute force computation")
+    with timer(tag="Using brute force computation"):
         penalty_out = penalization_brute_force(matrices=matrices, sp=sp_list)
 
-    with timer():
-        print("Using fast kronecker products")
+    with timer(tag="Using fast kronecker products"):
         penalty = np.add.reduce(
             [
                 np.multiply(sp, mat)

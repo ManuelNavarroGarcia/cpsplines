@@ -21,12 +21,10 @@ def test_fast_kronecker(dim_list):
     for dim in dim_list:
         random_mat.append(np.random.rand(*dim))
 
-    with timer():
-        print("Using np.kron")
+    with timer(tag="Using np.kron"):
         exp_out = reduce(np.kron, random_mat)
 
-    with timer():
-        print("Using broadcasting")
+    with timer(tag="Using broadcasting"):
         out = reduce(fast_kronecker_product, random_mat)
 
     np.testing.assert_allclose(exp_out, out)
@@ -41,16 +39,13 @@ def test_fast_kronecker(dim_list):
 )
 def test_mat_kron_identity(A, n):
 
-    with timer():
-        print("Using fast kronecker product by identity")
+    with timer(tag="Using fast kronecker product by identity"):
         out = kronecker_matrix_by_identity(A, n)
 
-    with timer():
-        print("Using np.kron")
+    with timer(tag="Using np.kron"):
         exp_out = np.kron(A, np.eye(n))
 
-    with timer():
-        print("Using broadcasting")
+    with timer(tag="Using broadcasting"):
         exp_out2 = fast_kronecker_product(A=A, B=np.eye(n))
 
     np.testing.assert_allclose(exp_out, out)
@@ -66,16 +61,13 @@ def test_mat_kron_identity(A, n):
 )
 def test_identity_kron_mat(n, A):
 
-    with timer():
-        print("Using fast kronecker product identity times matrix")
+    with timer(tag="Using fast kronecker product identity times matrix"):
         out = block_diag(*[A] * n)
 
-    with timer():
-        print("Using np.kron")
+    with timer(tag="Using np.kron"):
         exp_out = np.kron(np.eye(n), A)
 
-    with timer():
-        print("Using broadcasting")
+    with timer(tag="Using broadcasting"):
         exp_out2 = fast_kronecker_product(A=np.eye(n), B=A)
 
     np.testing.assert_allclose(exp_out, out)

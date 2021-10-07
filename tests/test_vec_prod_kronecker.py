@@ -37,12 +37,10 @@ def test_tensor_product(common_dim, different_dim):
     for c, d in zip(common_dim, different_dim):
         random_mat.append(np.random.rand(d, c))
 
-    with timer():
-        print("Using np.kron")
+    with timer(tag="Using np.kron"):
         exp_out = tensor_prod_brute_force(matrices=random_mat, tensor=random_tensor)
 
-    with timer():
-        print("Using folding and unfolding")
+    with timer(tag="Using folding and unfolding"):
         out = kron_tens_prod(matrices=random_mat, T=random_tensor)
 
     np.testing.assert_allclose(exp_out, out)
