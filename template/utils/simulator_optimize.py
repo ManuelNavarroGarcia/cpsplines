@@ -1,19 +1,21 @@
 import numpy as np
-from typing import Callable, Union
+from typing import Callable, Iterable, Union
 
 
 class Simulator:
 
     """
-    Builds and solves the optimization problem to find the optimal coefficients of the B-splines
-    basis for the case of one curve (one covariate, one response variable and one group). It is
-    able to incorporate interval and point constraints, together with backwards and forward
-    prediction.
+    A callback function to display the current value of the arguments and the
+    value of the objective function at each iteration. Based on the class
+    developed in https://stackoverflow.com/a/59330005/4983192
+
+    Parameters
+    ----------
+    func: Callable
+        The objective function to be optimized.
 
     Attributes
     ----------
-    func: Callable
-        The objective function of the optimization problem.
     callback_count: int
         Number of times the callback is called.
     sol_eval: list
@@ -22,60 +24,27 @@ class Simulator:
         A list that contains all the evaluations of the objective function of the problem.
     """
 
-    def __init__(self, function):
-        self._func = function
-        self._callback_count = 0
-        self._sol_eval = []
-        self._func_eval = []
+    def __init__(self, function: Callable):
+        self.func = function
+        self.callback_count = 0
+        self.sol_eval = []
+        self.func_eval = []
 
-    @property
-    def func(self):
-        return self._func
-
-    @property
-    def callback_count(self):
-        return self._callback_count
-
-    @property
-    def sol_eval(self):
-        return self._sol_eval
-
-    @property
-    def func_eval(self):
-        return self._func_eval
-
-    @func.setter
-    def func(self, func: Callable):
-        self._func = func
-
-    @callback_count.setter
-    def callback_count(self, callback_count: int):
-        self._callback_count = callback_count
-
-    @sol_eval.setter
-    def sol_eval(self, sol_eval: list):
-        self._sol_eval = sol_eval
-
-    @func_eval.setter
-    def func_eval(self, func_eval: list):
-        self._func_eval = func_eval
-
-    def simulate(self, x_k, *args) -> Union[int, float]:
+    def simulate(self, x_k: Iterable[Union[int, float]], *args) -> Union[int, float]:
 
         """
-        Executes the actual simulation and returns the result, while
-        updating the lists too. Pass to optimizer without arguments or
-        parentheses.
+        Executes the actual simulation and returns the result, while updating
+        the attributes `sol_eval` and `func_eval`. This must be passed to the
+        optimizer without arguments or parentheses.
 
         Inputs
         ------
-        x_k: list
+        x_k: Iterable[Union[int, float]]
             The actual value for the solution.
 
         Returns
         -------
         (Union[int, float]) The objective function evaluated at x_k.
-
         """
 
         result = self.func(x_k, *args)
@@ -83,7 +52,7 @@ class Simulator:
         self.func_eval.append(result)
         return result
 
-    def callback(self, x_k, *_):
+    def callback(self, x_k: Iterable[Union[int, float]], *_) -> None:
         """
         Callback function that can be used by optimizers of scipy.optimize.
         The third argument "*_" makes sure that it still works when the
@@ -94,7 +63,6 @@ class Simulator:
         ------
         x_k: list
             The actual value for the solution.
-
         """
 
         # Locate the position in sol_eval that coincides with x_k. Once this
@@ -114,8 +82,9 @@ class Simulator:
         # objective function label
         if not self.callback_count:
             title_list = [f"sp{j+1}" for j, _ in enumerate(x_k)] + ["Objective"]
-            print("Starting Gradient Descent algorithm")
+            print("Starting the optimization algorithm")
             print(*title_list, sep="\t\t")
         # Print the actual solution and the actual objective function value
         print(sp_info)
         self.callback_count += 1
+        return None

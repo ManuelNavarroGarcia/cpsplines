@@ -92,6 +92,7 @@ class OneSmoothing:
             )
             self.sp_args["parallel"] = self.sp_args.get("parallel", False)
             self.sp_args["n_jobs"] = self.sp_args.get("n_jobs", -2)
+            self.sp_args["top_n"] = self.sp_args.get("top_n", 5)
         elif self.sp_method == "optimizer":
             self.sp_args["sp_guess"] = self.sp_args.get(
                 "sp_guess", [1 for _ in range(len(self.deg))]
@@ -183,23 +184,25 @@ class OneSmoothing:
         # Computes all the possible combinations for the smoothing parameters
         iter_sp = list(itertools.product(*self.sp_args["grid"]))
         if self.sp_args["parallel"] == True:
-            gcv_list = Parallel(n_jobs=self.sp_args["n_jobs"])(
+            gcv = Parallel(n_jobs=self.sp_args["n_jobs"])(
                 delayed(GCV)(sp, B_weighted, Q_matrices, y) for sp in iter_sp
             )
         else:
-            gcv_list = []
-            for sp in iter_sp:
-                gcv = GCV(
+            gcv = [
+                GCV(
                     sp=sp,
                     B_weighted=B_weighted,
                     Q_matrices=Q_matrices,
                     y=y,
                 )
-                gcv_list.append(gcv)
+                for sp in iter_sp
+            ]
         if self.sp_args["verbose"] == True:
-            print_grid_search_results(input_values=iter_sp, objective=gcv_list)
+            print_grid_search_results(
+                x_val=iter_sp, obj_val=gcv, top_n=self.sp_args["top_n"]
+            )
 
-        return iter_sp[gcv_list.index(min(gcv_list))]
+        return iter_sp[gcv.index(min(gcv))]
 
     def _get_sp_optimizer(
         self,
