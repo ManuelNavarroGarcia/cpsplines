@@ -815,6 +815,10 @@ sol17 = np.array(
         ),
     ],
 )
+
+
+# Test the decision variable with the expansion coefficients of the B-spline
+# basis
 def test_sol(
     deg,
     ord_d,
