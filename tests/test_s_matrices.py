@@ -83,6 +83,9 @@ S2 = [
     ),
 ]
 
+# Test the matrices S list for different parameters on the B-spline basis and
+# with and without prediction
+
 
 @pytest.mark.parametrize(
     "x_sam, deg, n_int, prediction, S",
