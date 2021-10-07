@@ -212,8 +212,8 @@ def test_gcv(deg, regr_sample, n_int, prediction, ord_d, sp, y, y_true):
         for bsp, d in zip(bsp_l, ord_d)
     ]
     B_mul = list(map(matrix_by_transpose, B))
-    qua_term = gcv_mat(B_mul=B_mul, D_mul=D_mul)
-    gcv_out = GCV(sp=sp, B_weighted=B, qua_term=qua_term, y=y)
+    Q_matrices = gcv_mat(B_mul=B_mul, D_mul=D_mul)
+    gcv_out = GCV(sp=sp, B_weighted=B, Q_matrices=Q_matrices, y=y)
     gcv_brute = gcv_brute_force(
         B_mul=B_mul, D_mul=D_mul, sp=sp, y=y, y_true=y_true
     )

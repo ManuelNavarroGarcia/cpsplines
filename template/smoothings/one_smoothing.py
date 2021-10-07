@@ -177,14 +177,14 @@ class OneSmoothing:
     def _get_sp_grid_search(
         self,
         B_weighted: Iterable[np.ndarray],
-        gcv_tuple: Iterable[np.ndarray],
+        Q_matrices: Iterable[np.ndarray],
         y: np.ndarray,
     ) -> Tuple[Union[int, float]]:
         # Computes all the possible combinations for the smoothing parameters
         iter_sp = list(itertools.product(*self.sp_args["grid"]))
         if self.sp_args["parallel"] == True:
             gcv_list = Parallel(n_jobs=self.sp_args["n_jobs"])(
-                delayed(GCV)(sp, B_weighted, gcv_tuple, y) for sp in iter_sp
+                delayed(GCV)(sp, B_weighted, Q_matrices, y) for sp in iter_sp
             )
         else:
             gcv_list = []
@@ -192,7 +192,7 @@ class OneSmoothing:
                 gcv = GCV(
                     sp=sp,
                     B_weighted=B_weighted,
-                    qua_term=gcv_tuple,
+                    Q_matrices=Q_matrices,
                     y=y,
                 )
                 gcv_list.append(gcv)
@@ -204,7 +204,7 @@ class OneSmoothing:
     def _get_sp_optimizer(
         self,
         B_weighted: Iterable[np.ndarray],
-        gcv_tuple: Iterable[np.ndarray],
+        Q_matrices: Iterable[np.ndarray],
         y: np.ndarray,
     ) -> Tuple[Union[int, float]]:
         gcv_sim = Simulator(GCV)
@@ -213,7 +213,7 @@ class OneSmoothing:
             self.sp_args["sp_guess"],
             args=(
                 B_weighted,
-                gcv_tuple,
+                Q_matrices,
                 y,
             ),
             callback=gcv_sim.callback if self.sp_args["verbose"] else None,
@@ -261,15 +261,15 @@ class OneSmoothing:
         for i in range(len(self.bspline_bases)):
             model_params[f"sp_{i}"] = M.getParameter(f"sp_{i}")
 
-        gcv_tuple = gcv_mat(B_mul=matrix_dict["B_mul"], D_mul=matrix_dict["D_mul"])
+        Q_matrices = gcv_mat(B_mul=matrix_dict["B_mul"], D_mul=matrix_dict["D_mul"])
 
         if self.sp_method == "grid_search":
             self.best_sp = self._get_sp_grid_search(
-                B_weighted=B_weighted, gcv_tuple=gcv_tuple, y=matrix_dict["y"]
+                B_weighted=B_weighted, Q_matrices=Q_matrices, y=matrix_dict["y"]
             )
         else:
             self.best_sp = self._get_sp_optimizer(
-                B_weighted=B_weighted, gcv_tuple=gcv_tuple, y=matrix_dict["y"]
+                B_weighted=B_weighted, Q_matrices=Q_matrices, y=matrix_dict["y"]
             )
 
         theta_shape = model_params["theta"].getShape()

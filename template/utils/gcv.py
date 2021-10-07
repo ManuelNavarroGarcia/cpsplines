@@ -41,17 +41,67 @@ def gcv_mat(
     return tuple([bases_term] + penalty_term)
 
 
-def quadratic_matrix(
-    sp: Iterable[Union[int, float]], qua_term: Iterable[np.ndarray]
+def quadratic_term(
+    sp: Iterable[Union[int, float]], Q_matrices: Iterable[np.ndarray]
 ) -> np.ndarray:
-    penalty_term = np.zeros(qua_term[0].shape)
+
+    """
+    Given a smoothing parameter vector and the set of matrices used in the
+    computation of the hat matrix, computes the matrix to be inverted in this
+    computation.
+
+    Parameters
+    ----------
+    sp : Iterable[Union[int, float]]
+        The smoothing paramater vector.
+    Q_matrices : Iterable[np.ndarray]
+        The array of matrices of the matrices to be inverted. The first is
+        related to the B-spline bases and the rest to the penalty terms along
+        each dimension.
+
+    Returns
+    -------
+    np.ndarray
+        The matrix to be inverted on the computation of the Generalized Cross
+        Validation.
+
+    Raises
+    ------
+    ValueError
+        If matrices dimensions are different.
+    """
+
+    if len(set([A.shape for A in Q_matrices])) > 1:
+        raise ValueError("Matrices dimensions must agree.")
+    penalty_term = np.zeros(Q_matrices[0].shape)
     reversed_sp = sp[::-1]
     for i, s in enumerate(reversed_sp):
-        penalty_term += np.multiply(s, qua_term[i + 1])
-    return qua_term[0] + penalty_term
+        penalty_term += np.multiply(s, Q_matrices[i + 1])
+    return Q_matrices[0] + penalty_term
 
 
-def explicit_y_hat(Q: np.ndarray, B_weighted: Iterable[np.ndarray], y: np.ndarray):
+def explicit_y_hat(
+    Q: np.ndarray, B_weighted: Iterable[np.ndarray], y: np.ndarray
+) -> np.ndarray:
+
+    """
+    Computes the fitted values for the response variable using the explicit
+    formula on the unconstrained framework.
+
+    Parameters
+    ----------
+    Q : np.ndarray
+        The resulting matrix from `quadratic_term`.
+    B_weighted : Iterable[np.ndarray]
+        The weighted design matrices from B-spline basis.
+    y : np.ndarray
+        The response variable sample.
+
+    Returns
+    -------
+    np.ndarray
+        The fitted values for the response variable.
+    """
     y_contribution = kron_tens_prod([B.T for B in B_weighted], y).flatten("F")
     theta = np.reshape(
         np.linalg.solve(Q, y_contribution),
@@ -64,11 +114,42 @@ def explicit_y_hat(Q: np.ndarray, B_weighted: Iterable[np.ndarray], y: np.ndarra
 def GCV(
     sp: Iterable[Union[int, float]],
     B_weighted: Iterable[np.ndarray],
-    qua_term: Iterable[np.ndarray],
+    Q_matrices: Iterable[np.ndarray],
     y: np.ndarray,
 ) -> float:
-    Q = quadratic_matrix(sp=sp, qua_term=qua_term)
+
+    """Computes the Generalized Cross Validation (Golub et al., 1979).
+
+    Parameters
+    ----------
+    sp : Iterable[Union[int, float]]
+        The smoothing paramater vector.
+    B_weighted : Iterable[np.ndarray]
+        The weighted design matrices from B-spline basis.
+    Q_matrices : Iterable[np.ndarray]
+        The array of matrices of the matrices to be inverted. The first is
+        related to the B-spline bases and the rest to the penalty terms along
+        each dimension.
+    y : np.ndarray
+        The response variable sample.
+
+    References
+    ----------
+    - Golub, G. H., Heath, M., & Wahba, G. (1979). Generalized cross-validation
+      as a method for choosing a good ridge parameter. Technometrics, 21(2),
+      215-223.
+
+    Returns
+    -------
+    float
+        The GCV value.
+    """
+    Q = quadratic_term(sp=sp, Q_matrices=Q_matrices)
+    # The fitted y
     y_hat = explicit_y_hat(Q=Q, B_weighted=B_weighted, y=y)
+    # Return the GCV value, which is RSS * n / (n - tr(H))**2, where RSS is the
+    # residual sum of squares, n is the product of the dimensions of y and H is
+    # the hat matrix of the unconstrained problem
     return (np.linalg.norm((y - y_hat)) ** 2 * np.prod(y.shape)) / (
-        np.prod(y.shape) - np.trace(np.linalg.solve(Q, qua_term[0]))
+        np.prod(y.shape) - np.trace(np.linalg.solve(Q, Q_matrices[0]))
     ) ** 2
