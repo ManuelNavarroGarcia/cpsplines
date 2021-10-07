@@ -1,58 +1,85 @@
 import numpy as np
 import pytest
+from typing import Iterable, Union
 
 from template.utils.fast_kron import penalization_term
 from template.utils.timer import timer
 
 
-def penalization_brute_force(matrices, sp):
-    dim_list = [mat.shape[0] for mat in matrices]
-    if len(dim_list) == 1:
-        return np.multiply(sp[0], matrices[0])
-    elif len(dim_list) == 2:
-        return np.kron(np.multiply(sp[0], matrices[0]), np.eye(dim_list[1])) + np.kron(
-            np.eye(dim_list[0]), np.multiply(sp[1], matrices[1])
+def penalty_brute_force(
+    D_mul: Iterable[np.ndarray], sp: Iterable[Union[int, float]]
+) -> np.ndarray:
+    """Computes the penalization term using the exact definition including all
+    the matrices involved. It only supports three or less dimensions.
+
+    Parameters
+    ----------
+    D_mul : Iterable[np.ndarray]
+        The univariate penalty matrices. Must have length less or equal than 3.
+    sp : Iterable[Union[int, float]]
+        The smoothing parameter vector. Must have length less or equal than 3.
+
+    Returns
+    -------
+    np.ndarray
+        The penalization term.
+
+    Raises
+    ------
+    ValueError
+        If the number of input smoothing paramters and penalty matrices differ.
+    ValueError
+        If the number of input penalty matrices is greater than 3.
+    """
+
+    if len(sp) != len(D_mul):
+        raise ValueError(
+            "Number of smoothing parameters must be equal to number of D elements."
         )
-    elif len(dim_list) == 3:
-        return (
-            np.kron(
-                np.multiply(sp[0], matrices[0]),
-                np.eye(dim_list[1] * dim_list[2]),
-            )
-            + np.kron(
-                np.eye(dim_list[0]),
-                np.kron(np.multiply(sp[1], matrices[1]), np.eye(dim_list[2])),
-            )
-            + np.kron(
-                np.eye(dim_list[0] * dim_list[1]), np.multiply(sp[2], matrices[2])
-            )
+    if len(D_mul) > 3:
+        raise ValueError("Not implemented for more than three dimensions.")
+
+    dim = [P.shape[0] for P in D_mul]
+    if len(dim) == 1:
+        P = np.multiply(sp[0], D_mul[0])
+    elif len(dim) == 2:
+        P = np.kron(np.multiply(sp[0], D_mul[0]), np.eye(dim[1])) + np.kron(
+            np.eye(dim[0]), np.multiply(sp[1], D_mul[1])
         )
     else:
-        print("This test method is not implemented for dimensions greater than 3.")
-        return None
+        P = (
+            np.kron(
+                np.multiply(sp[0], D_mul[0]),
+                np.eye(dim[1] * dim[2]),
+            )
+            + np.kron(
+                np.eye(dim[0]),
+                np.kron(np.multiply(sp[1], D_mul[1]), np.eye(dim[2])),
+            )
+            + np.kron(np.eye(dim[0] * dim[1]), np.multiply(sp[2], D_mul[2]))
+        )
+    return P
 
 
 @pytest.mark.parametrize(
-    "dim_list, sp_list",
+    "dim, sp",
     [
         ([41], [17]),
         ([37, 5], [19, 29]),
         ([23, 11, 17], [31, 67, 93]),
     ],
 )
-def test_penalty_matrix(dim_list, sp_list):
-    matrices = []
-    for dim in dim_list:
-        matrices.append(np.random.rand(dim, dim))
+def test_penalty_matrix(dim, sp):
+    matrices = [np.random.rand(d, d) for d in dim]
 
     with timer(tag="Using brute force computation"):
-        penalty_out = penalization_brute_force(matrices=matrices, sp=sp_list)
+        penalty_out = penalty_brute_force(D_mul=matrices, sp=sp)
 
     with timer(tag="Using fast kronecker products"):
         penalty = np.add.reduce(
             [
-                np.multiply(sp, mat)
-                for sp, mat in zip(sp_list, penalization_term(matrices=matrices))
+                np.multiply(s, mat)
+                for s, mat in zip(sp, penalization_term(matrices=matrices))
             ]
         )
     np.testing.assert_allclose(penalty_out, penalty)
