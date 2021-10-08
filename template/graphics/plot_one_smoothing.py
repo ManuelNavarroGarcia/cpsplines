@@ -5,7 +5,7 @@ import random
 from typing import Iterable, Optional, Tuple, Union
 
 from template.smoothings.one_smoothing import OneSmoothing
-from template.graphics.plot_utils import thin_prediction_range
+from template.graphics.plot_utils import granulate_prediction_range
 
 
 def plot_curves(
@@ -110,11 +110,11 @@ def plot_curves(
     for i, curve in enumerate(fittings):
         # The curves need to be fitted
         if not hasattr(curve, "y_fitted"):
-            raise AttributeError(f"The curve {i} has not been fitted.")
+            raise AttributeError("All curves must be fitted.")
         bsp = curve.bspline_bases[0]
         # Generate extra points at the prediction regions with the
         # `prediction_step` parameter so the curves are plotted smoother
-        x_left, x_right = thin_prediction_range(
+        x_left, x_right = granulate_prediction_range(
             bspline_bases=[bsp], prediction_step=[prediction_step]
         )
         # Define the number of points to be removed since they are in the
@@ -175,31 +175,99 @@ def plot_surfaces(
     orientation: Optional[Tuple[Union[int, float]]] = None,
 ) -> Tuple[Tuple[matplotlib.figure.Figure, plt.axes]]:
 
-    # Create the figure and provide the required orientation
+    """
+    Plot a set of curves fitted using the method `OneSmoothing`.
+
+    Parameters
+    ----------
+    fittings : Iterable[OneSmoothing]
+        An iterable of fitted `OneSmoothing` objects.
+    col_surface : Optional[Iterable[str]], optional
+        An iterable with the colours used to graph the surfaces (in the same
+        order as the corresponding curve). If None, the colours are chosen as
+        random. By default, None.
+    contour_plot : bool, optional
+        If True, the contour plot of the surface is plotted with the same
+        colormap that the surface plot. By default, True.
+    prediction_step : Iterable[Iterable[Union[int, float]]], optional
+        The step used to produce equidistant extra points at the prediction
+        regions so the graph of the surfaces seems smoother. The first element
+        of the iterable corresponds to the first direction while the second
+        element to the second direction. For each tuple, first element is the
+        step on the backwards prediction and the second element corresponds to
+        the step on the forward prediction. By default, ((0.5, 0.5), (0.5, 0.5)).
+    figsize : Tuple[Union[int, float]], optional
+        The size of the figure. By default, (12, 6).
+    knot_positions : bool, optional
+        If True, the positions where the inner knots are located are marked as
+        red dashed lines. By default, False.
+    zlim : Optional[Tuple[Union[int, float]]], optional
+        An iterable with two elements used to restrict the range on the z-axis.
+        First element is the lower bound and second element corresponds to upper
+        bound. By default, None.
+    orientation : Optional[Tuple[Union[int, float]]], optional
+        Set the elevation angle in the z plane and azimuth angle in the xy plane
+        of the axes. If None, the default value is (30,-60).
+
+    Returns
+    -------
+    Tuple[Tuple[matplotlib.figure.Figure, plt.axes]]
+        A tuple of tuples containing the figure objects and the axes.
+
+    Raises
+    ------
+    ValueError
+        If wrong values are passed to `orientation`.
+    ValueError
+        If wrong values are passed to `zlim`.
+    ValueError
+        If the number of the surface colours do not coincide with the number of
+        surfaces.
+    AttributeError
+        If any of the surface objects is not fitted yet.
+    """
+
     fig = plt.figure(figsize=figsize)
     ax = fig.add_subplot(111, projection="3d")
+    # Provide the required orientation
     if orientation is not None:
+        if len(orientation) != 2:
+            raise ValueError("Only two angle coordinates may be passed.")
         _ = ax.view_init(*orientation)
+    # Restrict to the required bounds the z-axis.
     if zlim is not None:
+        if len(orientation) != 2:
+            raise ValueError("Only two z-axis limits may be passed.")
         _ = ax.set_zlim3d(zlim)
         kwargs_surf = {"vmin": zlim[0], "vmax": zlim[1]}
     else:
         kwargs_surf = {}
+    # If no colormaps are provided, get random colormaps
     if col_surface is None:
         col_surface = random.sample(plt.colormaps(), len(fittings))
 
+    if len(col_surface) != len(fittings):
+        raise ValueError("Number of colours and number of surfaces must agree.")
     fig_ax = [(fig, ax)]
 
     for i, surface in enumerate(fittings):
-        x_left, x_right = thin_prediction_range(
+        if not hasattr(surface, "y_fitted"):
+            raise AttributeError("All surfaces must be fitted.")
+
+        # Generate extra points at the prediction regions with the
+        # `prediction_step` parameter so the surfaces are plotted smoother
+        x_left, x_right = granulate_prediction_range(
             bspline_bases=surface.bspline_bases, prediction_step=prediction_step
         )
+        # Get the extended regressor samples
         ext_x0 = np.concatenate(
             [x_left[0], surface.bspline_bases[0].xsample, x_right[0]]
         )
         ext_x1 = np.concatenate(
             [x_left[1], surface.bspline_bases[1].xsample, x_right[1]]
         )
+        # Define the number of points to be removed since they are in the
+        # forecasting regions
         y_end_0 = (
             None
             if surface.bspline_bases[0].int_forw == 0
@@ -215,6 +283,7 @@ def plot_surfaces(
             surface.bspline_bases[0].int_back : y_end_0,
             surface.bspline_bases[1].int_back : y_end_1,
         ]
+        # Add the predictions of the new points to the extended response matrix
         if x_left[1].size > 0:
             pred_left = surface.predict(x=[surface.bspline_bases[0].xsample, x_left[1]])
             ext_y = np.concatenate([pred_left, ext_y], axis=1)
@@ -229,26 +298,35 @@ def plot_surfaces(
         if x_right[0].size > 0:
             pred_down = surface.predict(x=[x_right[0], ext_x1])
             ext_y = np.concatenate([ext_y, pred_down], axis=0)
+
+        # Plot the surface and include the colorbar
         Z, X = np.meshgrid(ext_x0, ext_x1)
         surf = ax.plot_surface(
             Z, X, ext_y.T, cmap=col_surface[i], rstride=2, cstride=2, **kwargs_surf
         )
         _ = fig.colorbar(surf, ax=ax)
 
+        # If required, plot the contour plot of the surface
         if contour_plot:
             fig_contour, ax_contour = plt.subplots(figsize=figsize)
             _ = ax_contour.contourf(
                 Z, X, ext_y.T, 100, cmap=col_surface[i], **kwargs_surf
             )
             _ = fig_contour.colorbar(surf, ax=ax_contour)
+            # Establish the limits on the two axis (otherwise some extra knots
+            # in the prediction regions may be further apart from extreme points
+            # of the extended regressor samples)
+            _ = ax_contour.set_xlim(ext_x0[0], ext_x0[-1])
+            _ = ax_contour.set_ylim(ext_x1[0], ext_x1[-1])
             fig_ax.append((fig_contour, ax_contour))
+        # If it is required, plot the position of the knots
         if knot_positions:
             for knot in surface.bspline_bases[0].knots[
                 surface.bspline_bases[0].deg : -surface.bspline_bases[0].deg
             ]:
                 _ = ax_contour.plot(
-                    [knot] * len(surface.bspline_bases[1].xsample),
-                    surface.bspline_bases[1].xsample,
+                    [knot] * len(ext_x1),
+                    ext_x1,
                     color="red",
                     linestyle="--",
                     alpha=0.3,
@@ -257,8 +335,8 @@ def plot_surfaces(
                 surface.bspline_bases[1].deg : -surface.bspline_bases[1].deg
             ]:
                 _ = ax_contour.plot(
-                    surface.bspline_bases[0].xsample,
-                    [knot] * len(surface.bspline_bases[0].xsample),
+                    ext_x0,
+                    [knot] * len(ext_x0),
                     color="red",
                     linestyle="--",
                     alpha=0.3,
