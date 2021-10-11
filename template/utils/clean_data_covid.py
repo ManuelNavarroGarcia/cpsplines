@@ -8,8 +8,8 @@ from template.utils.normalize_data import normalize_data
 def filter_covid_df(
     response_var: str,
     df: Optional[pd.DataFrame] = None,
-    min_date: Optional[pd.Timedelta] = None,
-    max_date: Optional[pd.Timedelta] = None,
+    min_date: Optional[pd.Timestamp] = None,
+    max_date: Optional[pd.Timestamp] = None,
     gender: Optional[Iterable[str]] = None,
     region: Optional[Iterable[str]] = None,
 ) -> pd.DataFrame:
