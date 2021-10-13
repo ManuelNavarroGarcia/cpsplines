@@ -201,7 +201,7 @@ class GridCPsplines:
             self.sp_args = {}
         if self.sp_method == "grid_search":
             self.sp_args["grid"] = self.sp_args.get(
-                "grid", [[10 ** i for i in range(-2, 2)] for _ in range(len(self.deg))]
+                "grid", [(0.01, 0.1, 1, 10) for _ in range(len(self.deg))]
             )
             self.sp_args["parallel"] = self.sp_args.get("parallel", False)
             self.sp_args["n_jobs"] = self.sp_args.get("n_jobs", -2)
