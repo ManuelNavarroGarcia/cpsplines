@@ -4,12 +4,12 @@ import numpy as np
 import random
 from typing import Iterable, Optional, Tuple, Union
 
-from template.smoothings.one_smoothing import OneSmoothing
+from template.fittings.grid_cpsplines import GridCPsplines
 from template.graphics.plot_utils import granulate_prediction_range
 
 
 def plot_curves(
-    fittings: Iterable[OneSmoothing],
+    fittings: Iterable[GridCPsplines],
     col_curve: Optional[Iterable[str]] = None,
     x: Optional[Iterable[np.ndarray]] = None,
     y: Optional[Iterable[np.ndarray]] = None,
@@ -22,12 +22,12 @@ def plot_curves(
 ) -> Tuple[matplotlib.figure.Figure, plt.axes]:
 
     """
-    Plot a set of curves fitted using the method `OneSmoothing`.
+    Plot a set of curves fitted using the method `GridCPsplines`.
 
     Parameters
     ----------
-    fittings : Iterable[OneSmoothing]
-        An iterable of fitted `OneSmoothing` objects
+    fittings : Iterable[GridCPsplines]
+        An iterable of fitted `GridCPsplines` objects
     col_curve : Optional[Iterable[str]], optional
         An iterable with the colours used to graph the curves (in the same order
         as the corresponding curve). If None, the colours are chosen as random.
@@ -165,7 +165,7 @@ def plot_curves(
 
 
 def plot_surfaces(
-    fittings: Iterable[OneSmoothing],
+    fittings: Iterable[GridCPsplines],
     col_surface: Optional[Iterable[str]] = None,
     contour_plot: bool = True,
     prediction_step: Iterable[Iterable[Union[int, float]]] = ((0.5, 0.5), (0.5, 0.5)),
@@ -176,12 +176,12 @@ def plot_surfaces(
 ) -> Tuple[Tuple[matplotlib.figure.Figure, plt.axes]]:
 
     """
-    Plot a set of curves fitted using the method `OneSmoothing`.
+    Plot a set of curves fitted using the method `GridCPsplines`.
 
     Parameters
     ----------
-    fittings : Iterable[OneSmoothing]
-        An iterable of fitted `OneSmoothing` objects.
+    fittings : Iterable[GridCPsplines]
+        An iterable of fitted `GridCPsplines` objects.
     col_surface : Optional[Iterable[str]], optional
         An iterable with the colours used to graph the surfaces (in the same
         order as the corresponding curve). If None, the colours are chosen as

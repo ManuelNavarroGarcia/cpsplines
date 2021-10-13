@@ -218,7 +218,7 @@ class IntConstraints:
         self,
         var_dict: Dict[str, mosek.fusion.LinearVariable],
         model: mosek.fusion.Model,
-        S_dict: Dict[int, Iterable[np.ndarray]],
+        matrices_S: Dict[int, Iterable[np.ndarray]],
     ) -> Tuple[mosek.fusion.LinearConstraint]:
 
         """
@@ -233,7 +233,7 @@ class IntConstraints:
             the objective function of the problem.
         model : mosek.fusion.Model
             The MOSEK model of the problem.
-        S_dict : Dict[int, Iterable[np.ndarray]]
+        matrices_S : Dict[int, Iterable[np.ndarray]]
             Contains as keys the indices of the variable, and as values the
             matrices S.
 
@@ -268,9 +268,9 @@ class IntConstraints:
             # when differentiate the polynomial) times S once the first
             # `derivative` rows are deleted
             if self.var_name == j:
-                S_dict[self.var_name] = [
+                matrices_S[self.var_name] = [
                     self.matricesW[i] @ np.delete(s, range(self.derivative), axis=0)
-                    for i, s in enumerate(S_dict[self.var_name])
+                    for i, s in enumerate(matrices_S[self.var_name])
                 ]
             # Since the knot sequence is evenly spaced, the value of the
             # B-splines is periodic an it is always the same, so we pick up the
@@ -282,7 +282,7 @@ class IntConstraints:
                     ],
                     axis=0,
                 )
-                S_dict[j] = [value_at_knots for _ in range(len(S_dict[j]))]
+                matrices_S[j] = [value_at_knots for _ in range(len(matrices_S[j]))]
         # For every interval on the `var_name` axis, count how many interval
         # constraints of the same sign and fixed derivative need to be
         # considered
@@ -296,7 +296,7 @@ class IntConstraints:
                     ]
                 )
             )
-            if len(S_dict.keys()) > 1
+            if len(matrices_S.keys()) > 1
             else 1
         )
         # For every interval on the `var_name` axis, count how many interval
@@ -310,12 +310,12 @@ class IntConstraints:
         ):
             # Create a list containing the lists with the contribution to the
             # estimated function at the knots
-            a = [v for i, v in S_dict.items() if i != self.var_name]
+            a = [v for i, v in matrices_S.items() if i != self.var_name]
             # Create a list containing ranges of the same length as previous list
-            a_idx = [range(len(v)) for i, v in S_dict.items() if i != self.var_name]
+            a_idx = [range(len(v)) for i, v in matrices_S.items() if i != self.var_name]
             # Insert at the position `var_name` the correct value/index of S
             # along the `var_name` direction
-            a.insert(self.var_name, [S_dict[self.var_name][w]])
+            a.insert(self.var_name, [matrices_S[self.var_name][w]])
             a_idx.insert(self.var_name, range(w, w + 1))
             # Generate all the combinations possible from previous lists
             iter_a = list(itertools.product(*a))
