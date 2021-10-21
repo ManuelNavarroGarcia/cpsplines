@@ -30,7 +30,7 @@ class ObjectiveFunction:
         self.bspline = bspline
         self.model = model
 
-    def _create_var_dict(self) -> Dict[str, mosek.fusion.LinearVariable]:
+    def _create_var_dict(self, n: int) -> Dict[str, mosek.fusion.LinearVariable]:
 
         """
         Creates the variables of the optimization problem. These variables are:
@@ -42,6 +42,11 @@ class ObjectiveFunction:
           in the reformulation of the quadratic term.
         - The artificial variable of the i-th penalty matrix product ("t_D_i")
           when restating this summand as a rotated quadratic cone constraint.
+
+        Parameters
+        ----------
+        n : int
+            Number of smoothing parameters needed in the optimization function.
 
         Returns
         -------
@@ -60,7 +65,7 @@ class ObjectiveFunction:
             variable_shape,
             mosek.fusion.Domain.unbounded(),
         )
-        for i, _ in enumerate(self.bspline):
+        for i in range(n):
             var_dict[f"t_D_{i}"] = self.model.variable(
                 f"t_D_{i}", 1, mosek.fusion.Domain.greaterThan(0.0)
             )
@@ -132,7 +137,7 @@ class ObjectiveFunction:
             )
 
         # Generate the decision variables involved in the objective function
-        self.var_dict = self._create_var_dict()
+        self.var_dict = self._create_var_dict(n=len(sp))
 
         # Linear term coefficients must be dot multiplied by the row major
         # vectorization of the basis expansion multidimensional array
