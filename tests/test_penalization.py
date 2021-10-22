@@ -1,9 +1,9 @@
-import numpy as np
-import pytest
 from typing import Iterable, Union
 
-from template.utils.fast_kron import penalization_term
-from template.utils.timer import timer
+import numpy as np
+import pytest
+from cpsplines.utils.fast_kron import penalization_term
+from cpsplines.utils.timer import timer
 
 
 def penalty_brute_force(

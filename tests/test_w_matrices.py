@@ -1,8 +1,7 @@
 import numpy as np
 import pytest
-
-from template.mosek_functions.interval_constraints import IntConstraints
-from template.psplines.bspline_basis import BsplineBasis
+from cpsplines.mosek_functions.interval_constraints import IntConstraints
+from cpsplines.psplines.bspline_basis import BsplineBasis
 
 W1 = [
     np.array(

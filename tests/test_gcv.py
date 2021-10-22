@@ -1,11 +1,11 @@
-import numpy as np
-import pytest
 from typing import Iterable, Union
 
-from template.psplines.bspline_basis import BsplineBasis
-from template.psplines.penalty_matrix import PenaltyMatrix
-from template.utils.gcv import gcv_mat, GCV
-from template.utils.fast_kron import matrix_by_transpose
+import numpy as np
+import pytest
+from cpsplines.psplines.bspline_basis import BsplineBasis
+from cpsplines.psplines.penalty_matrix import PenaltyMatrix
+from cpsplines.utils.fast_kron import matrix_by_transpose
+from cpsplines.utils.gcv import GCV, gcv_mat
 
 
 def gcv_brute_force(

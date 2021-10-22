@@ -1,9 +1,10 @@
-import numpy as np
-import pytest
 from functools import reduce
 
-from template.utils.fast_kron import matrix_by_tensor_product
-from template.utils.timer import timer
+import numpy as np
+import pytest
+from cpsplines.utils.fast_kron import matrix_by_tensor_product
+from cpsplines.utils.timer import timer
+
 
 # Test the efficiency of folding and unfolding matrices compared to brute force
 # approximation

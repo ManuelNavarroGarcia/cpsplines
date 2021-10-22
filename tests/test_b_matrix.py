@@ -1,9 +1,7 @@
 import numpy as np
 import pytest
-
-from template.psplines.bspline_basis import BsplineBasis
-from template.utils.weighted_b import get_weighted_B, get_idx_fitting_region
-
+from cpsplines.psplines.bspline_basis import BsplineBasis
+from cpsplines.utils.weighted_b import get_idx_fitting_region, get_weighted_B
 
 B1 = (1 / 8) * np.array(
     [

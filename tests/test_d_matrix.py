@@ -1,9 +1,7 @@
 import numpy as np
 import pytest
-
-from template.psplines.bspline_basis import BsplineBasis
-from template.psplines.penalty_matrix import PenaltyMatrix
-
+from cpsplines.psplines.bspline_basis import BsplineBasis
+from cpsplines.psplines.penalty_matrix import PenaltyMatrix
 
 D1 = np.array(
     [

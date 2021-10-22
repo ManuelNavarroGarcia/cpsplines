@@ -1,6 +1,4 @@
 # cpsplines
-![testing workflow](https://github.com/Komorebi-AI/python-template/actions/workflows/test.yml/badge.svg)
-[![codecov](https://codecov.io/gh/Komorebi-AI/python-template/branch/main/graph/badge.svg?token=DQXLBOUDPX)](https://codecov.io/gh/Komorebi-AI/python-template)
 
 A template for python repositories using `setup.py`, tests and usual workflows
 
@@ -8,7 +6,7 @@ A template for python repositories using `setup.py`, tests and usual workflows
 
 The repository is structured into the following directories:
 
-- `/template`: where the python code is.
+- `/cpsplines`: where the python code is.
 - `/data`: where the data files are (or their DVC pointers).
 - `/tests`: python code for testing via `pytest`.
 

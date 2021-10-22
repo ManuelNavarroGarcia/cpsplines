@@ -1,13 +1,13 @@
 from functools import reduce
+
 import numpy as np
 import pytest
-from scipy.linalg import block_diag
-
-from template.utils.fast_kron import (
+from cpsplines.utils.fast_kron import (
     fast_kronecker_product,
     kronecker_matrix_by_identity,
 )
-from template.utils.timer import timer
+from cpsplines.utils.timer import timer
+from scipy.linalg import block_diag
 
 
 # Take the Kronecker product of a list of random matrices with different shapes

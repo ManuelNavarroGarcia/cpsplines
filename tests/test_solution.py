@@ -1,7 +1,6 @@
 import numpy as np
 import pytest
-
-from template.fittings.grid_cpsplines import GridCPsplines
+from cpsplines.fittings.grid_cpsplines import GridCPsplines
 
 # np.cos(x) (unconstrained)
 # Using grid search
