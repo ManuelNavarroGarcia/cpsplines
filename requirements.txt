@@ -9,7 +9,7 @@ attrs==21.2.0
 backcall==0.2.0
     # via ipython
 black==21.9b0
-    # via template (setup.py)
+    # via cpsplines (setup.py)
 click==8.0.1
     # via
     #   black
@@ -25,7 +25,7 @@ entrypoints==0.3
 iniconfig==1.1.1
     # via pytest
 ipykernel==6.4.1
-    # via template (setup.py)
+    # via cpsplines (setup.py)
 ipython==7.28.0
     # via ipykernel
 ipython-genutils==0.2.0
@@ -33,7 +33,7 @@ ipython-genutils==0.2.0
 jedi==0.18.0
     # via ipython
 joblib==1.0.1
-    # via template (setup.py)
+    # via cpsplines (setup.py)
 jupyter-client==7.0.5
     # via ipykernel
 jupyter-core==4.8.1
@@ -41,15 +41,15 @@ jupyter-core==4.8.1
 kiwisolver==1.3.2
     # via matplotlib
 matplotlib==3.4.3
-    # via template (setup.py)
+    # via cpsplines (setup.py)
 matplotlib-inline==0.1.3
     # via
     #   ipykernel
     #   ipython
 mosek==9.3.6
-    # via template (setup.py)
+    # via cpsplines (setup.py)
 mypy==0.910
-    # via template (setup.py)
+    # via cpsplines (setup.py)
 mypy-extensions==0.4.3
     # via
     #   black
@@ -64,12 +64,12 @@ numpy==1.21.2
     #   mosek
     #   pandas
     #   scipy
-    #   template (setup.py)
+    #   cpsplines (setup.py)
     #   tensorly
 packaging==21.0
     # via pytest
 pandas==1.3.3
-    # via template (setup.py)
+    # via cpsplines (setup.py)
 parso==0.8.2
     # via jedi
 pathspec==0.9.0
@@ -83,7 +83,7 @@ pickleshare==0.7.5
 pillow==8.3.2
     # via matplotlib
 pip-tools==6.3.0
-    # via template (setup.py)
+    # via cpsplines (setup.py)
 platformdirs==2.4.0
     # via black
 pluggy==1.0.0
@@ -101,7 +101,7 @@ pyparsing==2.4.7
     #   matplotlib
     #   packaging
 pytest==6.2.5
-    # via template (setup.py)
+    # via cpsplines (setup.py)
 python-dateutil==2.8.2
     # via
     #   jupyter-client
@@ -115,14 +115,14 @@ regex==2021.9.24
     # via black
 scipy==1.7.1
     # via
-    #   template (setup.py)
+    #   cpsplines (setup.py)
     #   tensorly
 six==1.16.0
     # via
     #   cycler
     #   python-dateutil
 tensorly==0.6.0
-    # via template (setup.py)
+    # via cpsplines (setup.py)
 toml==0.10.2
     # via
     #   mypy
