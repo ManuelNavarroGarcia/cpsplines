@@ -29,7 +29,7 @@ The current version of the project is structured as follows:
 * [Scipy](https://www.scipy.org/).
 * [Tensorly](http://tensorly.org/).
 
-MOSEK requires a license to be used. For research or educational purposes, an free yearly and renewable [academic license](https://www.mosek.com/products/academic-licenses/) is offered by the company. For other cases, a 30-day [trial license](https://www.mosek.com/try/) is available. According to MOSEK indications, the license file (`mosek.lic`) must be located at 
+MOSEK requires a license to be used. For research or educational purposes, a free yearly and renewable [academic license](https://www.mosek.com/products/academic-licenses/) is offered by the company. For other cases, a 30-day [trial license](https://www.mosek.com/try/) is available. According to MOSEK indications, the license file (`mosek.lic`) must be located at 
 ```
 $HOME/mosek/mosek.lic                (Linux/OSX)
 %USERPROFILE%\mosek\mosek.lic        (Windows)
@@ -41,10 +41,10 @@ $HOME/mosek/mosek.lic                (Linux/OSX)
 
 ```
 git clone https://github.com/ManuelNavarroGarcia/cpsplines.git
-cd csplines
+cd cpsplines
 ```
 
-2. To install the dependencies, there are two options according to `conda` is used or not:
+2. To install the dependencies, there are two options according to your installation preferences:
 
 * Create and activate a virtual environment with `conda` (recommended)
 
@@ -86,15 +86,15 @@ Moreover, a GitHub Action runs automatically all the tests but `tests/test_solut
 
 ## Contributing
 
-Contributions to the repository are welcomed! Regardless of whether it is a small fix on the documentation or a notable feature to be included, we encourage you to develop your ideas and make this project greater. Furthermore, users participating on these submissions will figure as contributors on this main page of the repository. 
+Contributions to the repository are welcomed! Regardless of whether it is a small fix on the documentation or a notable feature to be included, I encourage you to develop your ideas and make this project greater. Even suggestions about the code structure are highly appreciated. Furthermore, users participating on these submissions will figure as contributors on this main page of the repository. 
 
 There are many ways you can contribute on this repository:
 
 * [Discussions](https://github.com/ManuelNavarroGarcia/cpsplines/discussions). To ask questions you are wondering about or share ideas, you can enter an existing discussion or open a new one. 
 
-* [Issues](https://github.com/ManuelNavarroGarcia/cpsplines/issues). If you detect a bug or you want to propose an enhancement of the current version of the code, a detailed issue with reproducible code and/or descripcion is highly appreciated.
+* [Issues](https://github.com/ManuelNavarroGarcia/cpsplines/issues). If you detect a bug or you want to propose an enhancement of the current version of the code, a issue with reproducible code and/or a detailed description is highly appreciated.
 
-* [Pull Requests](https://github.com/ManuelNavarroGarcia/cpsplines/pulls). If you feel we are missing an important feature, either in the code or in the documentation, we encourage you to start a pull request developing this idea. Nevertheless, before starting any major new feature work, we suggest you to open an issue or start a discussion describing what you are planning to do. We note that, before starting a pull request, all unit test must pass. 
+* [Pull Requests](https://github.com/ManuelNavarroGarcia/cpsplines/pulls). If you feel I am missing an important feature, either in the code or in the documentation, I encourage you to start a pull request developing this idea. Nevertheless, before starting any major new feature work, I suggest you to open an issue or start a discussion describing what you are planning to do. I note that, before starting a pull request, all unit test must pass on your local repository. 
 
 ## Contact Information and Citation
 
