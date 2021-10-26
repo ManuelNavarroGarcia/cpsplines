@@ -70,9 +70,24 @@ and update the environment with `pip-sync`.
 
 ## Usage 
 
+[TODO] How to use the repository
+
+
 ## Testing
 
+The repository contains a folder with unit tests to guarantee the main methods meets their design and behave as intended. To run all the tests, it is enough to 
+enter `pytest`. If only one test file wants to be run, the syntax is given by 
+
+```
+pytest tests/test_<file_name>.py
+```
+
+Moreover, a GitHub Action runs automatically all the tests but `tests/test_solution.py` (which requires MOSEK license) when any commit is pushed on any Pull Request. 
+
+
 ## Contributing
+
+[TODO] How to contribute in the repository
 
 ## Contact Information and Citation
 
@@ -91,8 +106,8 @@ The formal background of the models used in this project are either published in
   Address ={\url{https://www.researchgate.net/publication/347836694_Constrained_smoothing_and_out-of-range_prediction_using_cubic_P_-splines_a_semidefinite_programming_approach4}},
   Year = {2020}
 }
-
 ```
 
-
 ## Acknowledgements
+
+[TODO] Include acknowledgements
