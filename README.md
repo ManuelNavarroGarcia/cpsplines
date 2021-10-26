@@ -1,20 +1,20 @@
 # cpsplines
 
-`cpsplines` is a Python module to perform constrained regression under shape constraints on the component functions of the dependent variable. It is assumed that the smooth hypersurface to be estimated is defined through a reduced-rank basis (B−splines) and fitted via a penalized splines approach (P−splines). To embed requirements about the sign of any order partial derivative, the constraints are included in the fitting process as hard constraints, yielding a semidefinite optimization model. In particular, the problem of estimating the component function using this approach is stated as a convex semidefinite optimization problem with a quadratic objective function, which can be easily reformulated as a conic optimization problem. 
+`cpsplines` is a Python module to perform constrained regression under shape constraints on the component functions of the dependent variable. It is assumed that the smooth hypersurface to be estimated is defined through a reduced-rank basis (B−splines) and fitted via a penalized splines approach (P−splines). To embed requirements about the sign of any order partial derivative (including the function itself), the constraints are included in the fitting process as hard constraints, yielding a semidefinite optimization model. In particular, the problem of estimating the component function using this approach is stated as a convex semidefinite optimization problem with a quadratic objective function, which can be easily reformulated as a conic optimization problem. 
 
 Sign related constraints are imposed using a well-known result carried out by Bertsimas and Popescu, 2002. This enables to enforce non-negativity of a univariate polynomial over a finite interval, which can be straightforwardly extended to the sign of any higher order derivative. When only one covariate is related to the response variable, these constraints are successfully fulfilled over the whole domain of the regressor sample. However, when facing multiple regression, this equivalence does not hold, so alternative approaches must be developed. The proposed framework in this repository uses the equivalence relation for univariate polynomials by imposing the constraints over a finite set of curves which belong to the hypersurface. 
 
-At present, `cpsplines` can handle constrained regression problems for data lying on large grids. In this setting, the smooth hypersurface is constructed from the tensor products of B-splines basis along each axis, which allows to develop efficient algorithms accelerating the computations (Currie, Durban and Eilers, 2006). On this repository, fitting procedure is performed using the method `GridCPsplines`, whose main features are the following:
+At present, `cpsplines` can handle constrained regression problems for data lying on grids. In this setting, the smooth hypersurface is constructed from the tensor products of B-splines basis along each axis, which allows to develop efficient algorithms accelerating the computations (Currie, Durban and Eilers, 2006). On this repository, the fitting procedure is performed using the method `GridCPsplines`, whose main features are the following:
 
 * Arbitrary knot sequence length to construct the B-spline basis. 
 * Arbitrary B-spline basis degrees. 
 * Arbitrary difference orders on the penalty term.
-* Out-of-range prediction (backwards and forward) along every dimension (Currie and Durban, 2004), and the constraints are enforced either on the fitting and the prediction region. 
-* The smoothing parameters are selected as the minimizer of the Generalized Cross Validation criteria, but this routine can be done either by choosing the best candidate out of a set of candidates or by finding them using numerical methods. 
+* Out-of-range prediction (backwards and forward) along every dimension (Currie and Durban, 2004), and the constraints are enforced both on the fitting and the prediction region. 
+* The smoothing parameters are selected as the minimizer of the Generalized Cross Validation criteria, but this routine can be done either by choosing the best parameters out of a set of candidates or by finding them using numerical methods. 
 * Enforcing sign related constraints over the fitting and prediction range (if prediction is required). Arbitrary number of sign constraints can be imposed along each regressor. 
 * Enforcing the hypersurface (or any partial derivative) attains a certain value at a certain point. 
 
-For solving the optimization problems, [MOSEK](https://www.mosek.com) optimization software is used. 
+Solving the optimization problems is done using [MOSEK](https://www.mosek.com) optimization software. 
 
 ## Project structure
 
