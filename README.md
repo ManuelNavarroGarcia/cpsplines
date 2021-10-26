@@ -75,8 +75,7 @@ and update the environment with `pip-sync`.
 
 ## Testing
 
-The repository contains a folder with unit tests to guarantee the main methods meets their design and behave as intended. To run all the tests, it is enough to 
-enter `pytest`. If only one test file wants to be run, the syntax is given by 
+The repository contains a folder with unit tests to guarantee the main methods meets their design and behave as intended. To launch the test suite, it is enough to enter `pytest`. If only one test file wants to be run, the syntax is given by 
 
 ```
 pytest tests/test_<file_name>.py
@@ -87,7 +86,15 @@ Moreover, a GitHub Action runs automatically all the tests but `tests/test_solut
 
 ## Contributing
 
-[TODO] How to contribute in the repository
+Contributions to the repository are welcomed! Regardless of whether it is a small fix on the documentation or a notable feature to be included, we encourage you to develop your ideas and make this project greater. Furthermore, users participating on these submissions will figure as contributors on this main page of the repository. 
+
+There are many ways you can contribute on this repository:
+
+* [Discussions](https://github.com/ManuelNavarroGarcia/cpsplines/discussions). To ask questions you are wondering about or share ideas, you can enter an existing discussion or open a new one. 
+
+* [Issues](https://github.com/ManuelNavarroGarcia/cpsplines/issues). If you detect a bug or you want to propose an enhancement of the current version of the code, a detailed issue with reproducible code and/or descripcion is highly appreciated.
+
+* [Pull Requests](https://github.com/ManuelNavarroGarcia/cpsplines/pulls). If you feel we are missing an important feature, either in the code or in the documentation, we encourage you to start a pull request developing this idea. Nevertheless, before starting any major new feature work, we suggest you to open an issue or start a discussion describing what you are planning to do. We note that, before starting a pull request, all unit test must pass. 
 
 ## Contact Information and Citation
 
