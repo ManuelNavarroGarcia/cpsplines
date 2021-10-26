@@ -1,7 +1,20 @@
 # cpsplines
 
+`cpsplines` is a Python module to perform constrained regression under shape constraints on the component functions of the dependent variable. It is assumed that the smooth hypersurface to be estimated is defined through a reduced-rank basis (B−splines) and fitted via a penalized splines approach (P−splines). To embed requirements about the sign of any order partial derivative, the constraints are included in the fitting process as hard constraints, yielding a semidefinite optimization model. In particular, the problem of estimating the component function using this approach is stated as a convex semidefinite optimization problem with a quadratic objective function, which can be easily reformulated as a conic optimization problem. 
 
-[TODO] Description of the project
+Sign related constraints are imposed using a well-known result carried out by Bertsimas and Popescu, 2002. This enables to enforce non-negativity of a univariate polynomial over a finite interval, which can be straightforwardly extended to the sign of any higher order derivative. When only one covariate is related to the response variable, these constraints are successfully fulfilled over the whole domain of the regressor sample. However, when facing multiple regression, this equivalence does not hold, so alternative approaches must be developed. The proposed framework in this repository uses the equivalence relation for univariate polynomials by imposing the constraints over a finite set of curves which belong to the hypersurface. 
+
+At present, `cpsplines` can handle constrained regression problems for data lying on large grids. In this setting, the smooth hypersurface is constructed from the tensor products of B-splines basis along each axis, which allows to develop efficient algorithms accelerating the computations (Currie, Durban and Eilers, 2006). On this repository, fitting procedure is performed using the method `GridCPsplines`, whose main features are the following:
+
+* Arbitrary knot sequence length to construct the B-spline basis. 
+* Arbitrary B-spline basis degrees. 
+* Arbitrary difference orders on the penalty term.
+* Out-of-range prediction (backwards and forward) along every dimension (Currie and Durban, 2004), and the constraints are enforced either on the fitting and the prediction region. 
+* The smoothing parameters are selected as the minimizer of the Generalized Cross Validation criteria, but this routine can be done either by choosing the best candidate out of a set of candidates or by finding them using numerical methods. 
+* Enforcing sign related constraints over the fitting and prediction range (if prediction is required). Arbitrary number of sign constraints can be imposed along each regressor. 
+* Enforcing the hypersurface (or any partial derivative) attains a certain value at a certain point. 
+
+For solving the optimization problems, [MOSEK](https://www.mosek.com) optimization software is used. 
 
 ## Project structure
 
@@ -72,6 +85,61 @@ and update the environment with `pip-sync`.
 
 [TODO] How to use the repository
 
+```
+np.random.seed(6)
+x4 = np.linspace(0, 1, 51)
+y4 =  (2 * x4 - 1) ** 3 + np.random.normal(0, 0.25, 51)
+
+example4_1 = GridCPsplines(
+    deg=(3,),
+    ord_d=(2,),
+    n_int=(10,),
+    sp_args={"options": {"ftol": 1e-12}},
+)
+example4_1.fit(x=(x4,), y=y4)
+
+example4_2 = GridCPsplines(
+    deg=(3,),
+    ord_d=(2,),
+    n_int=(10,),
+    sp_args={"options": {"ftol": 1e-12}},
+    int_constraints={0: {1: {"+": 0}}}
+)
+example4_2.fit(x=(x4,), y=y4)
+
+plot_4 = plot_curves(
+    fittings=(example4_1, example4_2),
+    col_curve=("g", "k"),
+    knot_positions=True,
+    constant_constraints=True,
+    x=(x4,), 
+    y=(y4,),
+    col_pt=("b",),
+    alpha=0.25
+)
+```
+
+```
+np.random.seed(5)
+x7_0 = np.linspace(0, 3 * np.pi, 301)
+x7_1 = np.linspace(0, 2 * np.pi, 201)
+y7 = np.outer(np.sin(x7_0), np.sin(x7_1)) + np.random.normal(0, 1, (301, 201))
+example7 = GridCPsplines(
+    deg=(3, 3),
+    ord_d=(2, 2),
+    n_int=(30, 20),
+    sp_args={"verbose": True, "options": {"ftol": 1e-12}},
+    int_constraints={0: {0: {"+": 0}}, 1: {0: {"+": 0}}}
+)
+example7.fit(x=(x7_0, x7_1), y=y7)
+
+plot7 = plot_surfaces(
+    fittings=(example7,),
+    col_surface=("gist_earth",),
+    orientation=(45, 45),
+    figsize=(10, 6),
+)
+```
 
 ## Testing
 
