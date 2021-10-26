@@ -1,5 +1,6 @@
 # cpsplines
 
+
 [TODO] Description of the project
 
 ## Project structure
@@ -34,3 +35,64 @@ $HOME/mosek/mosek.lic                (Linux/OSX)
 %USERPROFILE%\mosek\mosek.lic        (Windows)
 ```
 
+## Installation
+
+1. To clone the repository on your own device, use 
+
+```
+git clone https://github.com/ManuelNavarroGarcia/cpsplines.git
+cd csplines
+```
+
+2. To install the dependencies, there are two options according to `conda` is used or not:
+
+* Create and activate a virtual environment with `conda` (recommended)
+
+```
+conda env create -f env.yml
+conda activate cpsplines
+```
+
+* Install the setuptools dependencies via `pip`
+
+```
+pip install -r requirements.txt
+pip install -e .[dev]
+```
+
+3. If neccessary, add version requirements to existing dependencies or add new ones on `setup.py`. Then, update `requirements.txt` file using
+
+```
+pip-compile --extra dev > requirements.txt
+```
+
+and update the environment with `pip-sync`.
+
+## Usage 
+
+## Testing
+
+## Contributing
+
+## Contact Information and Citation
+
+If you have encountered any problem or doubt while using `cpsplines`, please feel free to let me know by sending me an email:
+
+* Name: Manuel Navarro García (he/his)
+* Email: manuelnavarrogithub@gmail.com
+
+The formal background of the models used in this project are either published in research paper or under current research. If these techniques are helpful to your own research, consider citing the related papers of the project:
+
+```
+@TECHREPORT{navarro2020,
+  Author = {Navarro-Garc{\'ia}, M. and Guerrero, V. and Durban, M.},
+  Title = {Constrained smoothing and out-of-range prediction using cubic {P}-splines: a semidefinite programming approach},
+ Institution = {Universidad Carlos III de Madrid},
+  Address ={\url{https://www.researchgate.net/publication/347836694_Constrained_smoothing_and_out-of-range_prediction_using_cubic_P_-splines_a_semidefinite_programming_approach4}},
+  Year = {2020}
+}
+
+```
+
+
+## Acknowledgements
