@@ -87,12 +87,20 @@ and update the environment with `pip-sync`.
 To illustrate the usage of the repository, let's see how `GridCPsplines` works with two examples, the first with only one regressor and the second two covariates. 
 
 For the univariate case, consider the function 
-$$f(x) = (2x - 1)^3,$$
-which is a non-decreasing function. We simulated noisy data following the scheme
-$$y_l= f(x_l)+\varepsilon_l, \quad \varepsilon_l\sim \text{N}(0,0.25),$$
-where $x_l=0, 0.02, 0.04,\ldots, 1.$ 
 
-We fit an unconstrained and a constrained model imposing non-decreasing constraints over the interval $[-0.15,1.12]$ (forward and backwards prediction). For the basis, cubic B-splines with 10 interior knots are taken with a second-order difference penalty. The smoothing parameter is selected using `scipy.optimize.minimize` with the `"SLSQP"` method. 
+<p align="center">
+  <img src="https://render.githubusercontent.com/render/math?math=f(x)%20=%20(2x%20-%201)^3,">
+</p>
+
+which is a non-decreasing function. We simulated noisy data following the scheme
+
+<p align="center">
+  <img src="https://render.githubusercontent.com/render/math?math=y_l=%20f(x_l)%20%2B%20\varepsilon_l,\quad\varepsilon_l\sim\text{N}(0,0.25),">
+</p>
+
+where <img src="https://render.githubusercontent.com/render/math?math=$x_l=0,%200.02,%200.04,\ldots,%201.$">
+
+We fit an unconstrained and a constrained model imposing non-decreasing constraints over the interval $[-0.15,1.12]$ (forward and backwards prediction). For the basis, cubic B-splines with $10$ interior knots are taken with a second-order difference penalty. The smoothing parameter is selected using `scipy.optimize.minimize` with the `"SLSQP"` method. 
 
 ```python
 # Generate the data 
