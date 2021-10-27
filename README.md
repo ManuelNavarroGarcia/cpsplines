@@ -146,13 +146,24 @@ curves = plot_curves(
 
 ![alt text](./img/example1D.jpg)
 
-For the univariate case, consider the function 
-$$f(x, y) = \sin(x)\sin(y)$$
-we simulated noisy data following the scheme
-$$z_{lm}= f(x_l, y_m)+\varepsilon_{lm}, \quad \varepsilon_{lm}\sim \text{N}(0,1),$$
-where $x_l=\{\frac{l\pi}{100}\}_{l=0}^{300}$ and $y_m=\{\frac{m\pi}{100}\}_{m=0}^{200}$.
+For the bivariate case, consider the function 
+<p align="center">
+  <img src="https://latex.codecogs.com/svg.image?f(x,&space;y)&space;=&space;\sin(x)\sin(y)" title="f(x, y) = \sin(x)\sin(y)" />
+</p>
 
-We fit an unconstrained and a constrained model imposing non-negativity constraints over the interval $[0,3\pi]\times [0,2\pi]$ (no prediction). For the bases, cubic B-splines with 30 and 20 interior knots are taken, respectively, with a second-order difference penalty. The smoothing parameter is selected as the best candidates out of the sets $\{10, 100\}$ (for the first smoothing parameter) and $\{10, 50, 100\}$ (for the second smoothing parameter).
+we simulated noisy data following the scheme
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.image?z_{lm}=&space;f(x_l,&space;y_m)&plus;\varepsilon_{lm},&space;\quad&space;\varepsilon_{lm}\sim&space;\text{N}(0,1)" title="z_{lm}= f(x_l, y_m)+\varepsilon_{lm}, \quad \varepsilon_{lm}\sim \text{N}(0,1)." />
+</p>
+
+We fit an unconstrained and a constrained model imposing non-negativity constraints over the interval
+
+<p align="center">
+<img src="https://latex.codecogs.com/svg.image?[0,3\pi]\times&space;[0,2\pi]" title="[0,3\pi]\times [0,2\pi]" />
+</p>
+
+(no prediction). For the bases, cubic B-splines with 30 and 20 interior knots are taken, respectively, with a second-order difference penalty. The smoothing parameter is selected as the best candidates out of the sets {10, 100} (for the first smoothing parameter) and {10, 50, 100} (for the second smoothing parameter).
 
 ```python
 # Generate the data 
