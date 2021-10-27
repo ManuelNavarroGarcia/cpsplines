@@ -100,7 +100,7 @@ which is a non-decreasing function. We simulated noisy data following the scheme
 
 <img src="https://render.githubusercontent.com/render/math?math=$\text{where%20}\:x_l=0,%200.02,%200.04,\ldots,%201.$">
 
-We fit an unconstrained and a constrained model imposing non-decreasing constraints over the interval <img src="https://latex.codecogs.com/svg.image?[-0.15,&space;1.12]" title="[-0.15, 1.12]"/> (forward and backwards prediction). For the basis, cubic B-splines with $10$ interior knots are taken with a second-order difference penalty. The smoothing parameter is selected using `scipy.optimize.minimize` with the `"SLSQP"` method. 
+We fit an unconstrained and a constrained model imposing non-decreasing constraints over the interval [-0.15, 1.12] (forward and backwards prediction). For the basis, cubic B-splines with 10 interior knots are taken with a second-order difference penalty. The smoothing parameter is selected using `scipy.optimize.minimize` with the `"SLSQP"` method. 
 
 ```python
 # Generate the data 
