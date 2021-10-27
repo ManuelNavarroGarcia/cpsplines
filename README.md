@@ -148,10 +148,10 @@ curves = plot_curves(
 
 For the bivariate case, consider the function 
 <p align="center">
-  <img src="https://latex.codecogs.com/svg.image?f(x,&space;y)&space;=&space;\sin(x)\sin(y)" title="f(x, y) = \sin(x)\sin(y)" />
+  <img src="https://latex.codecogs.com/svg.image?f(x,&space;y)&space;=&space;\sin(x)\sin(y)." title="f(x, y) = \sin(x)\sin(y)." />
 </p>
 
-we simulated noisy data following the scheme
+We simulated noisy data following the scheme
 
 <p align="center">
 <img src="https://latex.codecogs.com/svg.image?z_{lm}=&space;f(x_l,&space;y_m)&plus;\varepsilon_{lm},&space;\quad&space;\varepsilon_{lm}\sim&space;\text{N}(0,1)" title="z_{lm}= f(x_l, y_m)+\varepsilon_{lm}, \quad \varepsilon_{lm}\sim \text{N}(0,1)." />
