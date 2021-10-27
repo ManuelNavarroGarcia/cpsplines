@@ -89,7 +89,7 @@ To illustrate the usage of the repository, let's see how `GridCPsplines` works w
 For the univariate case, consider the function 
 
 <p align="center">
-  <img src="https://render.githubusercontent.com/render/math?math=f(x)%20=%20(2x%20-%201)^3,">
+  <img src="https://latex.codecogs.com/svg.image?f(x)&space;=&space;(2x-1)&space;^3," title="f(x) = (2x-1) ^3," />
 </p>
 
 which is a non-decreasing function. We simulated noisy data following the scheme
@@ -98,15 +98,15 @@ which is a non-decreasing function. We simulated noisy data following the scheme
   <img src="https://render.githubusercontent.com/render/math?math=y_l=%20f(x_l)%20%2B%20\varepsilon_l,\quad\varepsilon_l\sim\text{N}(0,0.25),">
 </p>
 
-where <img src="https://render.githubusercontent.com/render/math?math=$x_l=0,%200.02,%200.04,\ldots,%201.$">
+<img src="https://render.githubusercontent.com/render/math?math=$\text{where%20}\:x_l=0,%200.02,%200.04,\ldots,%201.$">
 
-We fit an unconstrained and a constrained model imposing non-decreasing constraints over the interval $[-0.15,1.12]$ (forward and backwards prediction). For the basis, cubic B-splines with $10$ interior knots are taken with a second-order difference penalty. The smoothing parameter is selected using `scipy.optimize.minimize` with the `"SLSQP"` method. 
+We fit an unconstrained and a constrained model imposing non-decreasing constraints over the interval <img src="https://latex.codecogs.com/svg.image?[-0.15,&space;1.12]" title="[-0.15, 1.12]"/> (forward and backwards prediction). For the basis, cubic B-splines with $10$ interior knots are taken with a second-order difference penalty. The smoothing parameter is selected using `scipy.optimize.minimize` with the `"SLSQP"` method. 
 
 ```python
 # Generate the data 
 np.random.seed(6)
 x = np.linspace(0, 1, 51)
-y =  (2 * x - 1) ** 3 + np.random.normal(0, 0.25, 51)
+y = (2 * x - 1) ** 3 + np.random.normal(0, 0.25, 51)
 # Build and fit the two models: unconstrained and non-decreasing 
 # The constraints follows the syntax 
 # {variable index : {derivative order: {constraint sign: upper or lower bound}}}
@@ -159,7 +159,7 @@ We fit an unconstrained and a constrained model imposing non-negativity constrai
 np.random.seed(5)
 x = np.linspace(0, 3 * np.pi, 301)
 y = np.linspace(0, 2 * np.pi, 201)
-z = np.outer(np.sin(x7_0), np.sin(x7_1)) + np.random.normal(0, 1, (301, 201))
+z = np.outer(np.sin(x), np.sin(y)) + np.random.normal(0, 1, (301, 201))
 # Build and fit the non-negativity constrained model
 example2D = GridCPsplines(
     deg=(3, 3),
