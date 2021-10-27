@@ -6,6 +6,7 @@ Sign related constraints are imposed using a well-known result carried out by Be
 
 At present, `cpsplines` can handle constrained regression problems for data lying on grids. In this setting, the smooth hypersurface is constructed from the tensor products of B-splines basis along each axis, which allows to develop efficient algorithms accelerating the computations (Currie, Durban and Eilers, 2006). On this repository, the fitting procedure is performed using the method `GridCPsplines`, whose main features are the following:
 
+* Arbitrary number of variables.
 * Arbitrary knot sequence length to construct the B-spline basis. 
 * Arbitrary B-spline basis degrees. 
 * Arbitrary difference orders on the penalty term.
@@ -83,63 +84,94 @@ and update the environment with `pip-sync`.
 
 ## Usage 
 
-[TODO] How to use the repository
+To illustrate the usage of the repository, let's see how `GridCPsplines` works with two examples, the first with only one regressor and the second two covariates. 
 
-```
+For the univariate case, consider the function 
+$$f(x) = (2x - 1)^3,$$
+which is a non-decreasing function. We simulated noisy data following the scheme
+$$y_l= f(x_l)+\varepsilon_l, \quad \varepsilon_l\sim \text{N}(0,0.25),$$
+where $x_l=0, 0.02, 0.04,\ldots, 1.$ 
+
+We fit an unconstrained and a constrained model imposing non-decreasing constraints over the interval $[-0.15,1.12]$ (forward and backwards prediction). For the basis, cubic B-splines with 10 interior knots are taken with a second-order difference penalty. The smoothing parameter is selected using `scipy.optimize.minimize` with the `"SLSQP"` method. 
+
+```python
+# Generate the data 
 np.random.seed(6)
-x4 = np.linspace(0, 1, 51)
-y4 =  (2 * x4 - 1) ** 3 + np.random.normal(0, 0.25, 51)
-
-example4_1 = GridCPsplines(
+x = np.linspace(0, 1, 51)
+y =  (2 * x - 1) ** 3 + np.random.normal(0, 0.25, 51)
+# Build and fit the two models: unconstrained and non-decreasing 
+# The constraints follows the syntax 
+# {variable index : {derivative order: {constraint sign: upper or lower bound}}}
+example1D_1 = GridCPsplines(
     deg=(3,),
     ord_d=(2,),
     n_int=(10,),
+    x_range={0: (-0.15, 1.12)}, # variable index : range
+    sp_method="optimizer",
     sp_args={"options": {"ftol": 1e-12}},
 )
-example4_1.fit(x=(x4,), y=y4)
+example1D_1.fit(x=(x,), y=y)
 
-example4_2 = GridCPsplines(
+example1D_2 = GridCPsplines(
     deg=(3,),
     ord_d=(2,),
     n_int=(10,),
+    x_range={0: (-0.15, 1.12)},
+    sp_method="optimizer",
     sp_args={"options": {"ftol": 1e-12}},
-    int_constraints={0: {1: {"+": 0}}}
+    int_constraints={0: {1: {"+": 0}}} 
 )
-example4_2.fit(x=(x4,), y=y4)
-
-plot_4 = plot_curves(
-    fittings=(example4_1, example4_2),
+example1D_2.fit(x=(x,), y=y)
+# Plot the results
+# Dashed vertical lines are the limits of the fitting region and grey vertical lines corresponds to the position of the knots
+curves = plot_curves(
+    fittings=(example1D_1, example1D_2),
     col_curve=("g", "k"),
     knot_positions=True,
     constant_constraints=True,
-    x=(x4,), 
-    y=(y4,),
+    x=(x,), 
+    y=(y,),
     col_pt=("b",),
     alpha=0.25
 )
 ```
 
-```
+![alt text](./img/example1D.jpg)
+
+For the univariate case, consider the function 
+$$f(x, y) = \sin(x)\sin(y)$$
+we simulated noisy data following the scheme
+$$z_{lm}= f(x_l, y_m)+\varepsilon_{lm}, \quad \varepsilon_{lm}\sim \text{N}(0,1),$$
+where $x_l=\{\frac{l\pi}{100}\}_{l=0}^{300}$ and $y_m=\{\frac{m\pi}{100}\}_{m=0}^{200}$.
+
+We fit an unconstrained and a constrained model imposing non-negativity constraints over the interval $[0,3\pi]\times [0,2\pi]$ (no prediction). For the bases, cubic B-splines with 30 and 20 interior knots are taken, respectively, with a second-order difference penalty. The smoothing parameter is selected as the best candidates out of the sets $\{10, 100\}$ (for the first smoothing parameter) and $\{10, 50, 100\}$ (for the second smoothing parameter).
+
+```python
+# Generate the data 
 np.random.seed(5)
-x7_0 = np.linspace(0, 3 * np.pi, 301)
-x7_1 = np.linspace(0, 2 * np.pi, 201)
-y7 = np.outer(np.sin(x7_0), np.sin(x7_1)) + np.random.normal(0, 1, (301, 201))
-example7 = GridCPsplines(
+x = np.linspace(0, 3 * np.pi, 301)
+y = np.linspace(0, 2 * np.pi, 201)
+z = np.outer(np.sin(x7_0), np.sin(x7_1)) + np.random.normal(0, 1, (301, 201))
+# Build and fit the non-negativity constrained model
+example2D = GridCPsplines(
     deg=(3, 3),
     ord_d=(2, 2),
     n_int=(30, 20),
-    sp_args={"verbose": True, "options": {"ftol": 1e-12}},
+    sp_method="grid_search",
+    sp_args={"grid": [(10, 100), (10, 50, 100)]},
     int_constraints={0: {0: {"+": 0}}, 1: {0: {"+": 0}}}
 )
-example7.fit(x=(x7_0, x7_1), y=y7)
-
-plot7 = plot_surfaces(
-    fittings=(example7,),
+example2D.fit(x=(x, y), y=z)
+#Plot the results
+surface = plot_surfaces(
+    fittings=(example2D,),
     col_surface=("gist_earth",),
     orientation=(45, 45),
     figsize=(10, 6),
 )
 ```
+
+![alt text](./img/example2D.jpg)
 
 ## Testing
 
@@ -185,4 +217,9 @@ The formal background of the models used in this project are either published in
 
 ## Acknowledgements
 
-[TODO] Include acknowledgements
+Throughout the developing of this project I have received strong support from various individuals.  
+
+I would first like to thank my supervisors, Professor [Vanesa Guerrero](https://github.com/vanesaguerrero) and Professor [María Durbán](https://github.com/MariaDurban), whose insightful comments and invaluable expertise has given way to many of the current functionalities of the repository. 
+
+I would also like to acknowledge the [Komorebi AI](https://komorebi.ai/) team for their assistance and guidance on the technical part of the project. Specially, I would like to thank [Alberto Torres](https://github.com/albertotb), [David Gordo](https://github.com/davidggphy) and [Victor Gallego](https://komorebi.ai/) for their constructive code structure suggestions that have helped notably to improve the computational efficiency and the usage of the algorithms. 
+
