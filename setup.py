@@ -6,7 +6,7 @@ README = (pathlib.Path(__file__).parent / "README.md").read_text()
 setup(
     name="cpsplines",
     license="MIT",
-    version="0.1.0",
+    version="0.1.1",
     packages=find_packages(),
     description="Constrained P-splines",
     long_description=README,
