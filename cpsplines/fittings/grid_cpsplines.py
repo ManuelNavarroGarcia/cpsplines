@@ -174,7 +174,7 @@ class GridCPsplines:
                     prediction_dict["backwards"] = pred_min
             bsp = BsplineBasis(
                 deg=self.deg[i],
-                xsample=x[i],
+                xsample=np.sort(x[i]),
                 n_int=self.n_int[i],
                 prediction=prediction_dict,
             )
