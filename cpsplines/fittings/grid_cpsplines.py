@@ -208,7 +208,9 @@ class GridCPsplines:
             )
         return None
 
-    def _get_obj_func_arrays(self, y: np.ndarray) -> Dict[str, np.ndarray]:
+    def _get_obj_func_arrays(
+        self, x: Iterable[np.ndarray], y: np.ndarray
+    ) -> Dict[str, np.ndarray]:
 
         """
         Gather all the arrays used to define the objective function of the
@@ -219,6 +221,8 @@ class GridCPsplines:
 
         Parameters
         ----------
+        x : Iterable[np.ndarray]
+            The covariate samples.
         y : np.ndarray
             The response variable sample.
 
@@ -235,6 +239,7 @@ class GridCPsplines:
         # The extended response variable sample dimensions can be obtained as
         # the number of rows of the design matrix B
         y_ext_dim = []
+        ordered_idx = []
         for i, bsp in enumerate(self.bspline_bases):
             B = bsp.matrixB
             y_ext_dim.append(B.shape[0])
@@ -244,9 +249,13 @@ class GridCPsplines:
                     **{"ord_d": self.ord_d[i]}
                 )
             )
+            ordered_idx.append(np.argsort(x[i]))
 
+        # Reorder the response variable array so the covariate coordinates are
+        # non-decreasing
+        y_ordered = y[np.ix_(*ordered_idx)]
         y_ext = np.zeros(tuple(y_ext_dim))
-        y_ext[get_idx_fitting_region(self.bspline_bases)] = y
+        y_ext[get_idx_fitting_region(self.bspline_bases)] = y_ordered
         obj_matrices["y"] = y_ext
         return obj_matrices
 
@@ -465,7 +474,7 @@ class GridCPsplines:
         _ = self._fill_sp_args()
 
         # Get the matrices used in the objective function
-        obj_matrices = self._get_obj_func_arrays(y=y)
+        obj_matrices = self._get_obj_func_arrays(x=x, y=y)
 
         # Auxiliary matrices derived from `obj_matrices`
         B_weighted = get_weighted_B(bspline_bases=self.bspline_bases)
