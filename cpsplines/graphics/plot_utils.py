@@ -53,7 +53,7 @@ def granulate_prediction_range(
             # np.arange of the backwards region
             x_left_pred[i] = np.arange(
                 bsp.prediction["backwards"],
-                bsp.xsample[0],
+                bsp.xsample.min(),
                 prediction_step[i][0],
             )
         else:
@@ -64,7 +64,7 @@ def granulate_prediction_range(
             # np.arange of the forecast region
             x_right_pred[i] = np.arange(
                 bsp.prediction["forward"],
-                bsp.xsample[-1],
+                bsp.xsample.max(),
                 -prediction_step[i][1],
             )[::-1]
         else:
