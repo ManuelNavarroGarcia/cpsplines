@@ -1,7 +1,8 @@
-import numpy as np
 import math
-from scipy.interpolate import BSpline
 from typing import Dict, List, Union
+
+import numpy as np
+from scipy.interpolate import BSpline
 
 
 class BsplineBasis:
@@ -64,7 +65,7 @@ class BsplineBasis:
         n_int: int = 40,
         prediction: Dict[str, Union[int, float]] = {},
     ):
-        self.xsample = np.sort(xsample)
+        self.xsample = xsample
         self.deg = deg
         self.n_int = n_int
         self.prediction = prediction
@@ -98,7 +99,8 @@ class BsplineBasis:
             If the bound given in 'forward' is inside the convex hull of
             `xsample`.
         """
-
+        min_x = self.xsample.min()
+        max_x = self.xsample.max()
         if self.deg < 0:
             raise ValueError("The degree of the B-spline basis must be at least 0.")
         if self.xsample.ndim != 1:
@@ -113,7 +115,7 @@ class BsplineBasis:
             )
 
         if "backwards" in self.prediction:
-            if self.prediction["backwards"] >= self.xsample[0]:
+            if self.prediction["backwards"] >= min_x:
                 raise ValueError(
                     (
                         "Backwards prediction limit must stand on the "
@@ -121,7 +123,7 @@ class BsplineBasis:
                     )
                 )
         if "forward" in self.prediction:
-            if self.prediction["forward"] <= self.xsample[-1]:
+            if self.prediction["forward"] <= max_x:
                 raise ValueError(
                     (
                         "Forward prediction limit must stand on the "
@@ -130,34 +132,34 @@ class BsplineBasis:
                 )
 
         # Compute the distance between adjacent knots
-        step_length = (self.xsample[-1] - self.xsample[0]) / self.n_int
+        step_length = (max_x - min_x) / self.n_int
 
         # Determine how many knots at the left (right) of min(`xsample`)
         # (max(`xsample`)) are needed to extend the basis backwards (forward).
         # The step length between these new knots must be the same
         self.int_back = (
-            math.ceil((self.xsample[0] - self.prediction["backwards"]) / step_length)
+            math.ceil((min_x - self.prediction["backwards"]) / step_length)
             if "backwards" in self.prediction
             else 0
         )
 
         self.int_forw = (
-            math.ceil((self.prediction["forward"] - self.xsample[-1]) / step_length)
+            math.ceil((self.prediction["forward"] - max_x) / step_length)
             if "forward" in self.prediction
             else 0
         )
         # Construct the knot sequence of the B-spline basis, consisting on
         # `n_int` + 2 * `deg` + 1 equally spaced knots
         knots = np.linspace(
-            self.xsample[0] - (self.int_back + self.deg) * step_length,
-            self.xsample[-1] + (self.int_forw + self.deg) * step_length,
+            min_x - (self.int_back + self.deg) * step_length,
+            max_x + (self.int_forw + self.deg) * step_length,
             self.n_int + self.int_back + self.int_forw + 2 * self.deg + 1,
         )
         # To avoid floating point error, force that the (`deg` + 1)-th knot
         # coincides with the minimum value of `xsample` and the
         # (`n_int` + `deg` + 1) matches the maximum value of `xsample`
-        knots[self.int_back + self.deg] = self.xsample[0]
-        knots[-(self.int_forw + self.deg + 1)] = self.xsample[-1]
+        knots[self.int_back + self.deg] = min_x
+        knots[-(self.int_forw + self.deg + 1)] = max_x
         self.knots = knots
 
         # Construct the B-spline basis, consisting on
