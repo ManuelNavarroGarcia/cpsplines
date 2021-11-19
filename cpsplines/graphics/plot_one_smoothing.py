@@ -1,9 +1,9 @@
-import matplotlib.pyplot as plt
-import matplotlib
-import numpy as np
 import random
 from typing import Iterable, Optional, Tuple, Union
 
+import matplotlib
+import matplotlib.pyplot as plt
+import numpy as np
 from cpsplines.fittings.grid_cpsplines import GridCPsplines
 from cpsplines.graphics.plot_utils import granulate_prediction_range
 
@@ -140,11 +140,11 @@ def plot_curves(
         # the extremes of the fitting region
         if bsp.int_back > 0:
             _ = ax.axvline(
-                bsp.xsample[0], color=col_curve[i], linewidth=1.0, linestyle="--"
+                bsp.xsample.min(), color=col_curve[i], linewidth=1.0, linestyle="--"
             )
         if bsp.int_forw > 0:
             _ = ax.axvline(
-                bsp.xsample[-1], color=col_curve[i], linewidth=1.0, linestyle="--"
+                bsp.xsample.max(), color=col_curve[i], linewidth=1.0, linestyle="--"
             )
         # If it is required, plot the position of the knots
         if knot_positions:
