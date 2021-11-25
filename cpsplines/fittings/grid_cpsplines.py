@@ -557,8 +557,7 @@ class GridCPsplines:
                 )
             # Compute the basis matrix at the coordinates to be predicted
             B_predict = [
-                bsp.bspline_basis.derivative(nu=0)(x[i])
-                for i, bsp in enumerate(self.bspline_bases)
+                bsp.bspline_basis(x=x[i]) for i, bsp in enumerate(self.bspline_bases)
             ]
             # Get the predictions
             return matrix_by_tensor_product([mat for mat in B_predict], self.sol)
