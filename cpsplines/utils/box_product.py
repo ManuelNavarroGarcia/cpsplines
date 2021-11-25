@@ -7,7 +7,8 @@ def box_product(A: np.ndarray, B: np.ndarray) -> np.ndarray:
     Given a m x n matrix A and a m x p matrix B, computes the face-splitting
     product or box product using that
                 A box B = (A kron 1_n^T) circ (1_n^T kron B),
-    where 1_n is a vector of ones with length n.
+    where 1_n is a vector of ones with length n, kron denotes the Kronecker
+    product of matrices and circ denotes de Hadamard product of matrices.
 
     Parameters
     ----------
