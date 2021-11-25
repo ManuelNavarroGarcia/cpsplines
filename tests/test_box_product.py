@@ -5,10 +5,6 @@ import pytest
 from cpsplines.utils.box_product import box_product
 from cpsplines.utils.timer import timer
 
-B1 = np.random.random((2017, 23))
-B2 = np.random.random((2017, 17))
-B3 = np.random.random((2017, 31))
-
 
 def box_product_kron(A, B):
     return np.multiply(
