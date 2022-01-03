@@ -7,6 +7,7 @@ import numpy as np
 import scipy
 from cpsplines.mosek_functions.interval_constraints import IntConstraints
 from cpsplines.mosek_functions.obj_function import ObjectiveFunction
+from cpsplines.mosek_functions.pdf_constraints import PDFConstraints
 from cpsplines.mosek_functions.point_constraints import PointConstraints
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.psplines.penalty_matrix import PenaltyMatrix
@@ -131,6 +132,7 @@ class GridCPsplines:
             Dict[int, Dict[int, Dict[str, Union[int, float]]]]
         ] = None,
         pt_constraints: Optional[Dict[Tuple[int], Any]] = None,
+        pdf_constraint: bool = False,
     ):
         self.deg = deg
         self.ord_d = ord_d
@@ -140,6 +142,7 @@ class GridCPsplines:
         self.sp_args = sp_args
         self.int_constraints = int_constraints
         self.pt_constraints = pt_constraints
+        self.pdf_constraint = pdf_constraint
 
     def _get_bspline_bases(self, x: Iterable[np.ndarray]) -> List[BsplineBasis]:
 
@@ -334,6 +337,9 @@ class GridCPsplines:
         else:
             self.pt_constraints = {}
 
+        if self.pdf_constraint:
+            pdf_cons = PDFConstraints(bspline=self.bspline_bases)
+            pdf_cons.integrate_to_one(var_dict=mos_obj_f.var_dict, model=M)
         return M
 
     def _get_sp_grid_search(
