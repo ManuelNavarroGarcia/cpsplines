@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 from cpsplines.fittings.grid_cpsplines import GridCPsplines
+from scipy.stats import norm
 
 # np.cos(x) (unconstrained)
 # Using grid search
@@ -503,9 +504,25 @@ sol17 = np.array(
     ]
 )
 
+# norm.pdf (probability density function)
+# Using optimizer
+# No prediction
+sol18 = np.array(
+    [
+        -0.24948697,
+        0.07550771,
+        -0.05254383,
+        0.14799594,
+        0.14799594,
+        -0.05254383,
+        0.07550771,
+        -0.24948697,
+    ]
+)
+
 
 @pytest.mark.parametrize(
-    "deg, ord_d, n_int, x, y, x_range, sp_method, sp_args, int_constraints, pt_constraints, sol",
+    "deg, ord_d, n_int, x, y, x_range, sp_method, sp_args, int_constraints, pt_constraints, pdf_constraint, sol",
     [
         (
             (3,),
@@ -518,6 +535,7 @@ sol17 = np.array(
             {"grid": ((0.1,),), "verbose": False, "parallel": False},
             {},
             {},
+            False,
             sol1,
         ),
         (
@@ -531,6 +549,7 @@ sol17 = np.array(
             {"grid": ((0.1,),), "verbose": False, "parallel": False},
             {0: {0: {"+": 0.0}}},
             {},
+            False,
             sol2,
         ),
         (
@@ -545,6 +564,7 @@ sol17 = np.array(
             {"grid": ((0.73,),), "verbose": False, "parallel": False},
             {},
             {},
+            False,
             sol3,
         ),
         (
@@ -559,6 +579,7 @@ sol17 = np.array(
             {"grid": ((0.73,),), "verbose": False, "parallel": False},
             {0: {0: {"+": 10.0, "-": 40.0}}},
             {},
+            False,
             sol4,
         ),
         (
@@ -578,6 +599,7 @@ sol17 = np.array(
             },
             {},
             {},
+            False,
             sol5,
         ),
         (
@@ -597,6 +619,7 @@ sol17 = np.array(
             },
             {0: {1: {"+": 0.0}, 2: {"-": 0.0}}},
             {},
+            False,
             sol6,
         ),
         (
@@ -617,6 +640,7 @@ sol17 = np.array(
             },
             {},
             {},
+            False,
             sol7,
         ),
         (
@@ -637,6 +661,7 @@ sol17 = np.array(
             },
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}}},
             {},
+            False,
             sol8,
         ),
         (
@@ -659,6 +684,7 @@ sol17 = np.array(
             },
             {},
             {},
+            False,
             sol9,
         ),
         (
@@ -681,6 +707,7 @@ sol17 = np.array(
             },
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}, 1: {"+": 0}}},
             {},
+            False,
             sol10,
         ),
         (
@@ -699,6 +726,7 @@ sol17 = np.array(
             {"verbose": False, "parallel": False, "grid": ((0.1,), (0.2,), (0.3,))},
             {},
             {},
+            False,
             sol11,
         ),
         (
@@ -717,6 +745,7 @@ sol17 = np.array(
             {"verbose": False, "parallel": False, "grid": ((0.1,), (0.2,), (0.3,))},
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}}, 2: {0: {"+": 0}}},
             {},
+            False,
             sol12,
         ),
         (
@@ -736,6 +765,7 @@ sol17 = np.array(
             },
             {},
             {},
+            False,
             sol13,
         ),
         (
@@ -755,6 +785,7 @@ sol17 = np.array(
             },
             {0: {0: {"+": 0}}},
             {},
+            False,
             sol14,
         ),
         (
@@ -771,6 +802,7 @@ sol17 = np.array(
             {"verbose": False, "parallel": False, "grid": ((2,), (2,))},
             {1: {1: {"+": 0}}},
             {},
+            False,
             sol15,
         ),
         (
@@ -790,6 +822,7 @@ sol17 = np.array(
             },
             {},
             {(2,): ((np.array([0.8]),), np.array([700]), 1e-8)},
+            False,
             sol16,
         ),
         (
@@ -810,6 +843,7 @@ sol17 = np.array(
             },
             {},
             {(0, 0): ((np.array([4]), np.array([3])), np.array([4]), 1e-8)},
+            False,
             sol17,
         ),
         (
@@ -823,6 +857,7 @@ sol17 = np.array(
             {"grid": ((0.1,),), "verbose": False, "parallel": False},
             {},
             {},
+            False,
             sol1,
         ),
         (
@@ -843,7 +878,28 @@ sol17 = np.array(
             },
             {},
             {},
+            False,
             sol7,
+        ),
+        (
+            (3,),
+            (2,),
+            (5,),
+            (np.linspace(-10, 10, 51),),
+            norm.pdf(np.linspace(-10, 10, 51), 0, 2),
+            None,
+            "optimizer",
+            {
+                "verbose": False,
+                "x0": np.ones(1),
+                "method": "SLSQP",
+                "options": {"ftol": 1e-12, "maxiter": 100},
+                "bounds": ((1e-10, 1e16),),
+            },
+            {0: {0: {"+": 0}}},
+            {},
+            True,
+            sol18,
         ),
     ],
 )
@@ -862,6 +918,7 @@ def test_sol(
     sp_args,
     int_constraints,
     pt_constraints,
+    pdf_constraint,
     sol,
 ):
     out = GridCPsplines(
@@ -873,6 +930,7 @@ def test_sol(
         x_range=x_range,
         int_constraints=int_constraints,
         pt_constraints=pt_constraints,
+        pdf_constraint=pdf_constraint,
     )
     out.fit(x=x, y=y)
     np.testing.assert_allclose(out.sol, sol, rtol=0.2, atol=1e-2)
