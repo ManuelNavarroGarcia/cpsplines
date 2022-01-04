@@ -1,7 +1,9 @@
+import itertools
+
 import numpy as np
 import pytest
 from cpsplines.fittings.grid_cpsplines import GridCPsplines
-from scipy.stats import norm
+from scipy.stats import multivariate_normal, norm
 
 # np.cos(x) (unconstrained)
 # Using grid search
@@ -520,6 +522,19 @@ sol18 = np.array(
     ]
 )
 
+sol19 = np.array(
+    [
+        [-0.01427045, 0.02801064, -0.01554955, 0.00433423, 0.00859512, 0.0079357],
+        [0.00116722, -0.00702815, 0.00701625, -0.00139193, -0.00194026, -0.00335714],
+        [0.03499568, -0.01297275, 0.05606468, 0.0042945, -0.00098802, 0.00567942],
+        [0.06971778, -0.02908149, 0.10883901, 0.06729358, -0.01955591, 0.05103627],
+        [0.05087725, -0.01948732, 0.06739461, 0.10901138, -0.02908846, 0.06958817],
+        [0.0058145, -0.00121249, 0.00422258, 0.05575263, -0.01301563, 0.03582697],
+        [-0.00170639, -0.00146472, -0.00137067, 0.00789573, -0.00704689, -0.00108668],
+        [0.00489731, 0.00383655, 0.00647637, -0.01385008, 0.00546359, -0.02966302],
+    ]
+)
+
 
 @pytest.mark.parametrize(
     "deg, ord_d, n_int, x, y, x_range, sp_method, sp_args, int_constraints, pt_constraints, pdf_constraint, sol",
@@ -900,6 +915,30 @@ sol18 = np.array(
             {},
             True,
             sol18,
+        ),
+        (
+            (3, 2),
+            (2, 1),
+            (5, 4),
+            (np.linspace(-3, 3, 50), np.linspace(-4, 4, 60)),
+            multivariate_normal.pdf(
+                x=list(
+                    itertools.product(np.linspace(-3, 3, 50), np.linspace(-4, 4, 60))
+                ),
+                mean=[0, 0],
+                cov=[[2, 0.5], [0.5, 1]],
+            ).reshape((len(np.linspace(-3, 3, 50)), len(np.linspace(-4, 4, 60)))),
+            None,
+            "grid_search",
+            {
+                "grid": ((0.1,), (0.01,)),
+                "verbose": False,
+                "parallel": False,
+            },
+            {0: {0: {"+": 0}}, 1: {0: {"+": 0}}},
+            {},
+            True,
+            sol19,
         ),
     ],
 )
