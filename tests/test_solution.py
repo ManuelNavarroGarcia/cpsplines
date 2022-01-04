@@ -475,6 +475,10 @@ sol15 = np.array(
     ]
 )
 
+# 2 * (2 * x - 1) ** 3 (unconstrained)
+# Using optimizer
+# No out-of-range prediction
+# Enforce the second derivative value at x = 0.8 is 700 with tolerance 1e-8
 sol16 = np.array(
     [
         -3.09653031,
@@ -493,6 +497,10 @@ sol16 = np.array(
     ]
 )
 
+# np.sin(3 * pi * x) * np.sin(2 * pi * y)
+# Using grid search
+# No out-of-range prediction
+# Enforce the value at (x,y) = (4,3) is 4 with tolerance 1e-8
 sol17 = np.array(
     [
         [-2.38182916, 2.39970157, -2.49938286, -0.96619358, 1.04954661, 0.19003811],
@@ -506,7 +514,7 @@ sol17 = np.array(
     ]
 )
 
-# norm.pdf (probability density function)
+# Gaussian pdf with mean 0 and standard deviation 2 (probability density function)
 # Using optimizer
 # No prediction
 sol18 = np.array(
@@ -522,6 +530,10 @@ sol18 = np.array(
     ]
 )
 
+# Multivariate gaussian pdf with mean (0,0) and covariate matrix [[2, 0.5],
+# [0.5, 1]] (probability density function)
+# Using grid search
+# No prediction
 sol19 = np.array(
     [
         [-0.01427045, 0.02801064, -0.01554955, 0.00433423, 0.00859512, 0.0079357],
@@ -865,7 +877,7 @@ sol19 = np.array(
             (3,),
             (2,),
             (11,),
-            (np.linspace(0, 2 * np.pi, 101)[::-1],),
+            (np.linspace(0, 2 * np.pi, 101)[::-1],),  # Unordered data in 1-D
             np.cos(np.linspace(0, 2 * np.pi, 101))[::-1],
             None,
             "grid_search",
@@ -879,7 +891,10 @@ sol19 = np.array(
             (3, 2),
             (2, 1),
             (5, 4),
-            (np.linspace(0, 1, 30)[::-1], np.linspace(0, 1, 20)[::-1]),
+            (
+                np.linspace(0, 1, 30)[::-1],
+                np.linspace(0, 1, 20)[::-1],
+            ),  # Unordered data in 2-D
             np.outer(
                 np.sin(3 * np.pi * np.linspace(0, 1, 30)[::-1]),
                 np.sin(2 * np.pi * np.linspace(0, 1, 20)[::-1]),
@@ -911,7 +926,7 @@ sol19 = np.array(
                 "options": {"ftol": 1e-12, "maxiter": 100},
                 "bounds": ((1e-10, 1e16),),
             },
-            {0: {0: {"+": 0}}},
+            {},  # Do not include non-negative constraint explicitly
             {},
             True,
             sol18,
