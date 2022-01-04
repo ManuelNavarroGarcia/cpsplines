@@ -303,7 +303,21 @@ class GridCPsplines:
 
         if self.pdf_constraint:
             pdf_cons = PDFConstraint(bspline=self.bspline_bases)
+            # Incorporate the condition that the integral over all the space
+            # must equal to 1
             pdf_cons.integrate_to_one(var_dict=mos_obj_f.var_dict, model=M)
+            # Enforce the non-negativity constraint if it is not imposed
+            # explicitly
+            if self.int_constraints is None:
+                self.int_constraints = {}
+            for i in range(len(self.deg)):
+                if self.int_constraints.get(i, None) is not None:
+                    if self.int_constraints[i].get(0, None) is None:
+                        self.int_constraints[i].update({0: {"+": 0}})
+                    else:
+                        self.int_constraints[i][0].update({"+": 0})
+                else:
+                    self.int_constraints.update({i: {0: {"+": 0}}})
 
         if self.int_constraints is not None:
             matrices_S = {i: bsp.matrices_S for i, bsp in enumerate(self.bspline_bases)}
