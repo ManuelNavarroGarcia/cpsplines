@@ -30,10 +30,9 @@ class PDFConstraints:
             banded = diags(
                 np.dot(diff_mat[0], bsp.get_matrices_S()[0]),
                 range(bsp.deg + 1),
-                shape=(bsp.n_int, bsp.n_int + bsp.deg),
+                shape=(bsp.matrixB.shape[1] - bsp.deg, bsp.matrixB.shape[1]),
             ).toarray()
             coef_list.append(banded)
-
         sum_coef = mosek.fusion.Expr.sum(
             matrix_by_tensor_product_mosek(
                 matrices=coef_list, mosek_var=var_dict["theta"]
