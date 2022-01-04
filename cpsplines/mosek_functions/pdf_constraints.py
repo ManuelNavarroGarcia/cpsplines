@@ -8,7 +8,7 @@ from cpsplines.psplines.bspline_basis import BsplineBasis
 from scipy.sparse import diags
 
 
-class PDFConstraints:
+class PDFConstraint:
     def __init__(
         self,
         bspline: Iterable[BsplineBasis],
@@ -28,7 +28,7 @@ class PDFConstraints:
             coef = 1 / np.linspace(1, bsp.deg + 1, bsp.deg + 1)
             diff_mat = np.einsum("ij,j->ij", np.diff(vander, axis=0), coef)
             banded = diags(
-                np.dot(diff_mat[0], bsp.get_matrices_S()[0]),
+                np.dot(diff_mat[0], bsp.matrices_S[0]),
                 range(bsp.deg + 1),
                 shape=(bsp.matrixB.shape[1] - bsp.deg, bsp.matrixB.shape[1]),
             ).toarray()
