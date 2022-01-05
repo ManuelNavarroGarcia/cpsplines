@@ -182,7 +182,7 @@ class BsplineBasis:
         self.matrixB = self.bspline_basis(x=x_eval)
         return None
 
-    def get_matrices_S(self) -> List[np.ndarray]:
+    def get_matrices_S(self):
 
         """
         Generate a list of matrices (one by interval) containing the polynomial
@@ -200,11 +200,6 @@ class BsplineBasis:
           and stock prices: a convex optimization approach. Operations Research,
           50(2), 358-374.
 
-        Returns
-        -------
-        List[np.ndarray]
-            List of matrices of shape (`deg` + 1, `deg` + 1) with the polynomial
-            coefficients.
         """
 
         # Since knots are evenly spaced, the value of the B-spline basis
@@ -235,4 +230,5 @@ class BsplineBasis:
             )
             S_k = np.linalg.solve(T_k, C)
             S.append(S_k)
-        return S
+        self.matrices_S = S
+        return None
