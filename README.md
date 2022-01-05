@@ -88,7 +88,7 @@ company. For other cases, a 30-day [trial license](https://www.mosek.com/try/)
 is available. According to MOSEK indications, the license file (`mosek.lic`)
 must be located at
 
-```
+```{bash}
 $HOME/mosek/mosek.lic                (Linux/OSX)
 %USERPROFILE%\mosek\mosek.lic        (Windows)
 ```
@@ -97,7 +97,7 @@ $HOME/mosek/mosek.lic                (Linux/OSX)
 
 1. To clone the repository on your own device, use
 
-```
+```{bash}
 git clone https://github.com/ManuelNavarroGarcia/cpsplines.git
 cd cpsplines
 ```
@@ -107,14 +107,14 @@ cd cpsplines
 
 * Create and activate a virtual environment with `conda` (recommended)
 
-```
+```{bash}
 conda env create -f env.yml
 conda activate cpsplines
 ```
 
 * Install the setuptools dependencies via `pip`
 
-```
+```{bash}
 pip install -r requirements.txt
 pip install -e .[dev]
 ```
@@ -122,7 +122,7 @@ pip install -e .[dev]
 3. If neccessary, add version requirements to existing dependencies or add new
    ones on `setup.py`. Then, update `requirements.txt` file using
 
-```
+```{bash}
 pip-compile --extra dev > requirements.txt
 ```
 
@@ -256,7 +256,7 @@ meets their design and behave as intended. To launch the test suite, it is
 enough to enter `pytest`. If only one test file wants to be run, the syntax is
 given by
 
-```
+```{bash}
 pytest tests/test_<file_name>.py
 ```
 
@@ -304,7 +304,7 @@ The formal background of the models used in this project are either published in
 research paper or under current research. If these techniques are helpful to
 your own research, consider citing the related papers of the project:
 
-```
+```{bash}
 @TECHREPORT{navarro2020,
   Author = {Navarro-Garc{\'ia}, M. and Guerrero, V. and Durban, M.},
   Title = {Constrained smoothing and out-of-range prediction using cubic {P}-splines: a semidefinite programming approach},
