@@ -329,6 +329,6 @@ I would also like to acknowledge the [Komorebi AI](https://komorebi.ai/) team
 for their assistance and guidance on the technical part of the project.
 Specially, I would like to thank [Alberto Torres](https://github.com/albertotb),
 [David Gordo](https://github.com/davidggphy) and [Victor
-Gallego](https://komorebi.ai/) for their constructive code structure suggestions
+Gallego](https://github.com/vicgalle) for their constructive code structure suggestions
 that have helped notably to improve the computational efficiency and the usage
 of the algorithms.
