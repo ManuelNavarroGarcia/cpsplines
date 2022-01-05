@@ -137,7 +137,7 @@ covariates.
 
 For the univariate case, consider the function
 
-![formula](https://latex.codecogs.com/svg.image?f(x)&space;=&space;(2x-1)&space;^3,)
+![formula](https://latex.codecogs.com/svg.image?f(x)&space;=&space;(2x-1)&space;^3,?style=centerme)
 
 which is a non-decreasing function. We simulated noisy data following the scheme
 
