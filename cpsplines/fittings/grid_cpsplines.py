@@ -101,6 +101,10 @@ class GridCPsplines:
         where the value needs to be fixed.
         - An array with the values of the derivative to be enforced.
         - A number corresponding to the tolerancea allowed in the constraint.
+    pdf_constraint : bool, optional
+        A boolean indicating whether the fitted hypersurfaced must satisfy
+        Probability Density Function (PDF) conditions, i.e., it is non-negative
+        and it integrates to one.
 
     Attributes
     ----------
@@ -308,16 +312,7 @@ class GridCPsplines:
             pdf_cons.integrate_to_one(var_dict=mos_obj_f.var_dict, model=M)
             # Enforce the non-negativity constraint if it is not imposed
             # explicitly
-            if self.int_constraints is None:
-                self.int_constraints = {}
-            for i in range(len(self.deg)):
-                if self.int_constraints.get(i, None) is not None:
-                    if self.int_constraints[i].get(0, None) is None:
-                        self.int_constraints[i].update({0: {"+": 0}})
-                    else:
-                        self.int_constraints[i][0].update({"+": 0})
-                else:
-                    self.int_constraints.update({i: {0: {"+": 0}}})
+            self.int_constraints = pdf_cons.nonneg_cons(self.int_constraints)
 
         if self.int_constraints is not None:
             matrices_S = {i: bsp.matrices_S for i, bsp in enumerate(self.bspline_bases)}
