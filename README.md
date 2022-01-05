@@ -147,9 +147,7 @@ which is a non-decreasing function. We simulated noisy data following the scheme
   <img src="https://render.githubusercontent.com/render/math?math=y_l=%20f(x_l)%20%2B%20\varepsilon_l,\quad\varepsilon_l\sim\text{N}(0,0.25),">
 </p>
 
-<p align="left">
-<img src="https://render.githubusercontent.com/render/math?math=$\text{where%20}\:x_l=0,%200.02,%200.04,\ldots,%201.$">
-<p align="left">
+![formula](https://render.githubusercontent.com/render/math?math=$\text{where%20}\:x_l=0,%200.02,%200.04,\ldots,%201.)
 
 We fit an unconstrained and a constrained model imposing non-decreasing
 constraints over the interval [-0.15, 1.12] (forward and backwards prediction).
