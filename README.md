@@ -45,6 +45,8 @@ efficient algorithms accelerating the computations (Currie, Durban and Eilers,
   along each regressor.
 * Enforcing the hypersurface (or any partial derivative) attains a certain value
   at a certain point.
+* Enforcing the hypersurface is a probability density function, i.e., it is
+  non-negative and it integrates to one.  
 
 Solving the optimization problems is done using [MOSEK](https://www.mosek.com)
 optimization software.
