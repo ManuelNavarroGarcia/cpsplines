@@ -12,9 +12,12 @@ from cpsplines.mosek_functions.point_constraints import PointConstraints
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.psplines.penalty_matrix import PenaltyMatrix
 from cpsplines.utils.cholesky_semidefinite import cholesky_semidef
-from cpsplines.utils.fast_kron import (fast_kronecker_product,
-                                       matrix_by_tensor_product,
-                                       matrix_by_transpose, penalization_term)
+from cpsplines.utils.fast_kron import (
+    fast_kronecker_product,
+    matrix_by_tensor_product,
+    matrix_by_transpose,
+    penalization_term,
+)
 from cpsplines.utils.gcv import GCV, gcv_mat
 from cpsplines.utils.simulator_grid_search import print_grid_search_results
 from cpsplines.utils.simulator_optimize import Simulator
