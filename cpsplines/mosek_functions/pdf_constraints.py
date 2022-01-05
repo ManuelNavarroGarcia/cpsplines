@@ -10,14 +10,10 @@ from scipy.sparse import diags
 class PDFConstraint:
 
     """
-    Define the constraints that ensures the non-negativity (or
-    non-positivity) for the derivative order `derivative`along the respective
-    axis of the variable `var_name`. For the unidimensional case, the
-    requirements are completely fulfilled for every point in the range where the
-    B-spline basis is defined. For the multivariate case, the constraints are
-    imposed at the curves that pass through the inner knots of the B-spline
-    basis. For all cases, the constraints are imposed following the Proposition
-    1 in Bertsimas and Popescu (2002).
+    Define the constraints that characterize a Probability Density Function,
+    i.e., it must be non-negative and must integrate to one. For the first, only
+    the dictionary of interval constraints is updated with the non-negative
+    constraints (when they were not already included).
 
     Parameters
     ----------
@@ -61,7 +57,7 @@ class PDFConstraint:
         for bsp in self.bspline:
             # For each B-spline basis, construct a Vandermonde matrix with only
             # the inner knots and with powers up to degree `deg` + 1. The first
-            # column, containing ones, is dropped too
+            # column, containing ones, is dropped
             vander = np.vander(bsp.knots, N=bsp.deg + 2, increasing=True)[
                 bsp.deg : -bsp.deg, 1:
             ]
@@ -70,12 +66,14 @@ class PDFConstraint:
             # Take the difference of a row minus the previous on the Vandermonde
             # matrix and multiply each column by the respective integration factor
             diff_mat = np.einsum("ij,j->ij", np.diff(vander, axis=0), integrand_coef)
-            # The result of multiplying each row by the corresponding matrix S
-            # is the same, so we take the product only on the first row. Then,
-            # use this vector to create a banded matrix with inner knots rows
-            # and inner rows plus degree columns
+            # Multiply each row by the corresponding matrix S and transpose, so
+            # first term corresponds to first row and so on. Then, use this
+            # vector to create a banded matrix with inner knots rows nd inner
+            # rows plus degree columns
             banded = diags(
-                np.dot(diff_mat[0], bsp.matrices_S[0]),
+                np.array(
+                    [np.dot(diff_mat[i], s) for i, s in enumerate(bsp.matrices_S)]
+                ).T,
                 range(bsp.deg + 1),
                 shape=(bsp.matrixB.shape[1] - bsp.deg, bsp.matrixB.shape[1]),
             ).toarray()
@@ -111,7 +109,7 @@ class PDFConstraint:
             constraints along all axis, if they were not included explicitly.
         """
 
-        # Create a dictionary if no interval constraints exist
+        # Create a dictionary if no interval constraints already exist
         if int_constraints is None:
             int_constraints = {}
         for i in range(len(self.bspline)):
@@ -124,6 +122,7 @@ class PDFConstraint:
                     int_constraints[i].update({0: {"+": 0}})
                 else:
                     int_constraints[i][0].update({"+": 0})
+            # If no constraints are imposed on any axis, include non-negativity
             else:
                 int_constraints.update({i: {0: {"+": 0}}})
         return int_constraints

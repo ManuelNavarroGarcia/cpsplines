@@ -12,12 +12,9 @@ from cpsplines.mosek_functions.point_constraints import PointConstraints
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.psplines.penalty_matrix import PenaltyMatrix
 from cpsplines.utils.cholesky_semidefinite import cholesky_semidef
-from cpsplines.utils.fast_kron import (
-    fast_kronecker_product,
-    matrix_by_tensor_product,
-    matrix_by_transpose,
-    penalization_term,
-)
+from cpsplines.utils.fast_kron import (fast_kronecker_product,
+                                       matrix_by_tensor_product,
+                                       matrix_by_transpose, penalization_term)
 from cpsplines.utils.gcv import GCV, gcv_mat
 from cpsplines.utils.simulator_grid_search import print_grid_search_results
 from cpsplines.utils.simulator_optimize import Simulator
@@ -102,7 +99,7 @@ class GridCPsplines:
         - An array with the values of the derivative to be enforced.
         - A number corresponding to the tolerancea allowed in the constraint.
     pdf_constraint : bool, optional
-        A boolean indicating whether the fitted hypersurfaced must satisfy
+        A boolean indicating whether the fitted hypersurface must satisfy
         Probability Density Function (PDF) conditions, i.e., it is non-negative
         and it integrates to one.
 
