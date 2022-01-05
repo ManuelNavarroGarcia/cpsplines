@@ -54,15 +54,16 @@ optimization software.
 ## Project structure
 
 The current version of the project is structured as follows:
+
 * **cpsplines**: the main directory of the project, which consist of:
-    * **fittings**: contains the smoothing algorithms.
-    * **graphics**: constituted by graphic methods to visualize the results.
-    * **mosek_functions**: contains the functions used to define the
-      optimization problems.
-    * **psplines**: composed by several methods that build the main objects of
-      P-splines.
-    * **utils**: integrated by a miscellanea of files used for a variety of
-      purposes (numerical computations, data processing, ...)
+  * **fittings**: contains the smoothing algorithms.
+  * **graphics**: constituted by graphic methods to visualize the results.
+  * **mosek_functions**: contains the functions used to define the optimization
+    problems.
+  * **psplines**: composed by several methods that build the main objects of
+    P-splines.
+  * **utils**: integrated by a miscellanea of files used for a variety of
+    purposes (numerical computations, data processing, ...).
 * **data**: a folder containing CSV files used in the real data numerical
   experiments.
 * **examples**: a directory containing multiple numerical experiments, using
@@ -88,7 +89,7 @@ company. For other cases, a 30-day [trial license](https://www.mosek.com/try/)
 is available. According to MOSEK indications, the license file (`mosek.lic`)
 must be located at
 
-```
+```{bash}
 $HOME/mosek/mosek.lic                (Linux/OSX)
 %USERPROFILE%\mosek\mosek.lic        (Windows)
 ```
@@ -97,7 +98,7 @@ $HOME/mosek/mosek.lic                (Linux/OSX)
 
 1. To clone the repository on your own device, use
 
-```
+```{bash}
 git clone https://github.com/ManuelNavarroGarcia/cpsplines.git
 cd cpsplines
 ```
@@ -107,14 +108,14 @@ cd cpsplines
 
 * Create and activate a virtual environment with `conda` (recommended)
 
-```
+```{bash}
 conda env create -f env.yml
 conda activate cpsplines
 ```
 
 * Install the setuptools dependencies via `pip`
 
-```
+```{bash}
 pip install -r requirements.txt
 pip install -e .[dev]
 ```
@@ -122,7 +123,7 @@ pip install -e .[dev]
 3. If neccessary, add version requirements to existing dependencies or add new
    ones on `setup.py`. Then, update `requirements.txt` file using
 
-```
+```{bash}
 pip-compile --extra dev > requirements.txt
 ```
 
@@ -137,7 +138,7 @@ covariates.
 For the univariate case, consider the function
 
 <p align="center">
-  <img src="https://latex.codecogs.com/svg.image?f(x)&space;=&space;(2x-1)&space;^3," title="f(x) = (2x-1) ^3," />
+  <img src="https://latex.codecogs.com/svg.image?f(x)&space;=&space;(2x-1)&space;^3,">
 </p>
 
 which is a non-decreasing function. We simulated noisy data following the scheme
@@ -146,7 +147,7 @@ which is a non-decreasing function. We simulated noisy data following the scheme
   <img src="https://render.githubusercontent.com/render/math?math=y_l=%20f(x_l)%20%2B%20\varepsilon_l,\quad\varepsilon_l\sim\text{N}(0,0.25),">
 </p>
 
-<img src="https://render.githubusercontent.com/render/math?math=$\text{where%20}\:x_l=0,%200.02,%200.04,\ldots,%201.$">
+![formula](https://render.githubusercontent.com/render/math?math=$\text{where%20}\:x_l=0,%200.02,%200.04,\ldots,%201.)
 
 We fit an unconstrained and a constrained model imposing non-decreasing
 constraints over the interval [-0.15, 1.12] (forward and backwards prediction).
@@ -256,7 +257,7 @@ meets their design and behave as intended. To launch the test suite, it is
 enough to enter `pytest`. If only one test file wants to be run, the syntax is
 given by
 
-```
+```{bash}
 pytest tests/test_<file_name>.py
 ```
 
@@ -304,7 +305,7 @@ The formal background of the models used in this project are either published in
 research paper or under current research. If these techniques are helpful to
 your own research, consider citing the related papers of the project:
 
-```
+```{bash}
 @TECHREPORT{navarro2020,
   Author = {Navarro-Garc{\'ia}, M. and Guerrero, V. and Durban, M.},
   Title = {Constrained smoothing and out-of-range prediction using cubic {P}-splines: a semidefinite programming approach},
@@ -329,6 +330,6 @@ I would also like to acknowledge the [Komorebi AI](https://komorebi.ai/) team
 for their assistance and guidance on the technical part of the project.
 Specially, I would like to thank [Alberto Torres](https://github.com/albertotb),
 [David Gordo](https://github.com/davidggphy) and [Victor
-Gallego](https://komorebi.ai/) for their constructive code structure suggestions
+Gallego](https://github.com/vicgalle) for their constructive code structure suggestions
 that have helped notably to improve the computational efficiency and the usage
 of the algorithms.
