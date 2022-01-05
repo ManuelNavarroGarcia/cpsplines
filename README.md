@@ -103,7 +103,7 @@ git clone https://github.com/ManuelNavarroGarcia/cpsplines.git
 cd cpsplines
 ```
 
-2. To install the dependencies, there are two options according to your
+1. To install the dependencies, there are two options according to your
    installation preferences:
 
 * Create and activate a virtual environment with `conda` (recommended)
@@ -120,7 +120,7 @@ pip install -r requirements.txt
 pip install -e .[dev]
 ```
 
-3. If neccessary, add version requirements to existing dependencies or add new
+1. If neccessary, add version requirements to existing dependencies or add new
    ones on `setup.py`. Then, update `requirements.txt` file using
 
 ```{bash}
