@@ -2,7 +2,6 @@ from typing import Callable, Dict, Iterable, Optional, Union
 
 import numpy as np
 import pandas as pd
-from cpsplines.utils.normalize_data import normalize_data
 
 
 def filter_covid_df(
@@ -102,7 +101,6 @@ def filter_covid_df(
 def agg_covid_by_age(
     df: pd.DataFrame,
     response_var: str,
-    normalize: bool = False,
     agg_method: Union[Callable, str] = np.sum,
 ) -> pd.DataFrame:
 
@@ -114,8 +112,6 @@ def agg_covid_by_age(
         The filtered COVID-19 DataFrame.
     response_var : str
         The response variable chosen to filter the DataFrame.
-    normalize : bool, optional
-        If True, normalizes the data in the 0-1 range. By default, False.
     agg_method : Union[Callable, str], optional
         The aggregation method used. By default, np.sum.
 
@@ -133,14 +129,10 @@ def agg_covid_by_age(
     if response_var not in ["num_casos", "num_hosp", "num_uci", "num_def"]:
         raise ValueError("Provide a suitable response variable name.")
     df = df.groupby(["fecha"]).agg({response_var: agg_method})
-    if normalize:
-        df = normalize_data(df)
     return df
 
 
-def pivot_covid_df(
-    df: pd.DataFrame, response_var: str, normalize: bool = False
-) -> pd.DataFrame:
+def pivot_covid_df(df: pd.DataFrame, response_var: str) -> pd.DataFrame:
 
     """
     Pivot the filtered COVID-19 DataFrame. The index of the final Dataframe are
@@ -150,8 +142,6 @@ def pivot_covid_df(
         The filtered COVID-19 DataFrame.
     response_var : str
         The response variable chosen to filter the DataFrame.
-    normalize : bool, optional
-        If True, normalizes the data in the 0-1 range. By default, False.
 
     Returns
     -------
@@ -170,10 +160,6 @@ def pivot_covid_df(
     df = df.query("grupo_edad != 'NC'").pivot(
         index="fecha", columns="grupo_edad", values=response_var
     )
-    if normalize:
-        df = pd.DataFrame(
-            data=normalize_data(df.values), index=df.index, columns=df.columns
-        )
     return df
 
 
