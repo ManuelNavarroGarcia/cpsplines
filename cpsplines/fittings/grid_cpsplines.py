@@ -290,6 +290,9 @@ class GridCPsplines:
         L_D : Iterable[np.ndarray]
             An array containing the Cholesky decomposition of P_i, where P_i is
             the penalty matrix along the i axis.
+        data_normalizer : Optional[DataNormalizer]
+            The DataNormalizer object if `y_range` is not None and None
+            otherwise. By default, None.
 
         Returns
         -------
@@ -326,6 +329,8 @@ class GridCPsplines:
             for var_name in self.int_constraints.keys():
                 for deriv in self.int_constraints[var_name].keys():
                     constraints = self.int_constraints[var_name][deriv]
+                    # Scale the integer constraints thresholds in the case the
+                    # data is scaled
                     if data_normalizer is not None:
                         derivative = True if deriv != 0 else False
                         constraints = {
@@ -351,6 +356,8 @@ class GridCPsplines:
             # constraints must be enforced
             for deriv, info in self.pt_constraints.items():
                 value = info[1]
+                # Scale the point constraints thresholds in the case the data is
+                # scaled
                 if data_normalizer is not None:
                     derivative = any(v != 0 for v in deriv)
                     value = data_normalizer.transform(y=value, derivative=derivative)
@@ -481,6 +488,11 @@ class GridCPsplines:
             The covariate samples.
         y : np.ndarray
             The response variable sample.
+        y_range : Optional[Iterable[Union[int, float]]]
+            If not None, `y` is scaled in the range defined by this parameter.
+            This scaling process is useful when `y` has very large norm, since
+            MOSEK may not be able to find a solution in this case due to
+            numerical issues. By default, None.
 
         Raises
         ------
