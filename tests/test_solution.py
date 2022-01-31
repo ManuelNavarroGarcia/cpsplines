@@ -1,6 +1,9 @@
+import itertools
+
 import numpy as np
 import pytest
 from cpsplines.fittings.grid_cpsplines import GridCPsplines
+from scipy.stats import multivariate_normal, norm
 
 # np.cos(x) (unconstrained)
 # Using grid search
@@ -472,6 +475,10 @@ sol15 = np.array(
     ]
 )
 
+# 2 * (2 * x - 1) ** 3 (unconstrained)
+# Using optimizer
+# No out-of-range prediction
+# Enforce the second derivative value at x = 0.8 is 700 with tolerance 1e-8
 sol16 = np.array(
     [
         -3.09653031,
@@ -490,6 +497,10 @@ sol16 = np.array(
     ]
 )
 
+# np.sin(3 * pi * x) * np.sin(2 * pi * y)
+# Using grid search
+# No out-of-range prediction
+# Enforce the value at (x,y) = (4,3) is 4 with tolerance 1e-8
 sol17 = np.array(
     [
         [-2.38182916, 2.39970157, -2.49938286, -0.96619358, 1.04954661, 0.19003811],
@@ -503,9 +514,42 @@ sol17 = np.array(
     ]
 )
 
+# Gaussian pdf with mean 0 and standard deviation 2 (probability density function)
+# Using optimizer
+# No prediction
+sol18 = np.array(
+    [
+        -0.24948697,
+        0.07550771,
+        -0.05254383,
+        0.14799594,
+        0.14799594,
+        -0.05254383,
+        0.07550771,
+        -0.24948697,
+    ]
+)
+
+# Multivariate gaussian pdf with mean (0,0) and covariate matrix [[2, 0.5],
+# [0.5, 1]] (probability density function)
+# Using grid search
+# No prediction
+sol19 = np.array(
+    [
+        [-0.01427045, 0.02801064, -0.01554955, 0.00433423, 0.00859512, 0.0079357],
+        [0.00116722, -0.00702815, 0.00701625, -0.00139193, -0.00194026, -0.00335714],
+        [0.03499568, -0.01297275, 0.05606468, 0.0042945, -0.00098802, 0.00567942],
+        [0.06971778, -0.02908149, 0.10883901, 0.06729358, -0.01955591, 0.05103627],
+        [0.05087725, -0.01948732, 0.06739461, 0.10901138, -0.02908846, 0.06958817],
+        [0.0058145, -0.00121249, 0.00422258, 0.05575263, -0.01301563, 0.03582697],
+        [-0.00170639, -0.00146472, -0.00137067, 0.00789573, -0.00704689, -0.00108668],
+        [0.00489731, 0.00383655, 0.00647637, -0.01385008, 0.00546359, -0.02966302],
+    ]
+)
+
 
 @pytest.mark.parametrize(
-    "deg, ord_d, n_int, x, y, x_range, sp_method, sp_args, int_constraints, pt_constraints, sol",
+    "deg, ord_d, n_int, x, y, x_range, sp_method, sp_args, int_constraints, pt_constraints, pdf_constraint, sol",
     [
         (
             (3,),
@@ -518,6 +562,7 @@ sol17 = np.array(
             {"grid": ((0.1,),), "verbose": False, "parallel": False},
             {},
             {},
+            False,
             sol1,
         ),
         (
@@ -531,6 +576,7 @@ sol17 = np.array(
             {"grid": ((0.1,),), "verbose": False, "parallel": False},
             {0: {0: {"+": 0.0}}},
             {},
+            False,
             sol2,
         ),
         (
@@ -545,6 +591,7 @@ sol17 = np.array(
             {"grid": ((0.73,),), "verbose": False, "parallel": False},
             {},
             {},
+            False,
             sol3,
         ),
         (
@@ -559,6 +606,7 @@ sol17 = np.array(
             {"grid": ((0.73,),), "verbose": False, "parallel": False},
             {0: {0: {"+": 10.0, "-": 40.0}}},
             {},
+            False,
             sol4,
         ),
         (
@@ -578,6 +626,7 @@ sol17 = np.array(
             },
             {},
             {},
+            False,
             sol5,
         ),
         (
@@ -597,6 +646,7 @@ sol17 = np.array(
             },
             {0: {1: {"+": 0.0}, 2: {"-": 0.0}}},
             {},
+            False,
             sol6,
         ),
         (
@@ -617,6 +667,7 @@ sol17 = np.array(
             },
             {},
             {},
+            False,
             sol7,
         ),
         (
@@ -637,6 +688,7 @@ sol17 = np.array(
             },
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}}},
             {},
+            False,
             sol8,
         ),
         (
@@ -659,6 +711,7 @@ sol17 = np.array(
             },
             {},
             {},
+            False,
             sol9,
         ),
         (
@@ -681,6 +734,7 @@ sol17 = np.array(
             },
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}, 1: {"+": 0}}},
             {},
+            False,
             sol10,
         ),
         (
@@ -699,6 +753,7 @@ sol17 = np.array(
             {"verbose": False, "parallel": False, "grid": ((0.1,), (0.2,), (0.3,))},
             {},
             {},
+            False,
             sol11,
         ),
         (
@@ -717,6 +772,7 @@ sol17 = np.array(
             {"verbose": False, "parallel": False, "grid": ((0.1,), (0.2,), (0.3,))},
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}}, 2: {0: {"+": 0}}},
             {},
+            False,
             sol12,
         ),
         (
@@ -736,6 +792,7 @@ sol17 = np.array(
             },
             {},
             {},
+            False,
             sol13,
         ),
         (
@@ -755,6 +812,7 @@ sol17 = np.array(
             },
             {0: {0: {"+": 0}}},
             {},
+            False,
             sol14,
         ),
         (
@@ -771,6 +829,7 @@ sol17 = np.array(
             {"verbose": False, "parallel": False, "grid": ((2,), (2,))},
             {1: {1: {"+": 0}}},
             {},
+            False,
             sol15,
         ),
         (
@@ -790,6 +849,7 @@ sol17 = np.array(
             },
             {},
             {(2,): ((np.array([0.8]),), np.array([700]), 1e-8)},
+            False,
             sol16,
         ),
         (
@@ -810,26 +870,31 @@ sol17 = np.array(
             },
             {},
             {(0, 0): ((np.array([4]), np.array([3])), np.array([4]), 1e-8)},
+            False,
             sol17,
         ),
         (
             (3,),
             (2,),
             (11,),
-            (np.linspace(0, 2 * np.pi, 101)[::-1],),
+            (np.linspace(0, 2 * np.pi, 101)[::-1],),  # Unordered data in 1-D
             np.cos(np.linspace(0, 2 * np.pi, 101))[::-1],
             None,
             "grid_search",
             {"grid": ((0.1,),), "verbose": False, "parallel": False},
             {},
             {},
+            False,
             sol1,
         ),
         (
             (3, 2),
             (2, 1),
             (5, 4),
-            (np.linspace(0, 1, 30)[::-1], np.linspace(0, 1, 20)[::-1]),
+            (
+                np.linspace(0, 1, 30)[::-1],
+                np.linspace(0, 1, 20)[::-1],
+            ),  # Unordered data in 2-D
             np.outer(
                 np.sin(3 * np.pi * np.linspace(0, 1, 30)[::-1]),
                 np.sin(2 * np.pi * np.linspace(0, 1, 20)[::-1]),
@@ -843,7 +908,52 @@ sol17 = np.array(
             },
             {},
             {},
+            False,
             sol7,
+        ),
+        (
+            (3,),
+            (2,),
+            (5,),
+            (np.linspace(-10, 10, 51),),
+            norm.pdf(np.linspace(-10, 10, 51), 0, 2),
+            None,
+            "optimizer",
+            {
+                "verbose": False,
+                "x0": np.ones(1),
+                "method": "SLSQP",
+                "options": {"ftol": 1e-12, "maxiter": 100},
+                "bounds": ((1e-10, 1e16),),
+            },
+            {},  # Do not include non-negative constraint explicitly
+            {},
+            True,
+            sol18,
+        ),
+        (
+            (3, 2),
+            (2, 1),
+            (5, 4),
+            (np.linspace(-3, 3, 50), np.linspace(-4, 4, 60)),
+            multivariate_normal.pdf(
+                x=list(
+                    itertools.product(np.linspace(-3, 3, 50), np.linspace(-4, 4, 60))
+                ),
+                mean=[0, 0],
+                cov=[[2, 0.5], [0.5, 1]],
+            ).reshape((len(np.linspace(-3, 3, 50)), len(np.linspace(-4, 4, 60)))),
+            None,
+            "grid_search",
+            {
+                "grid": ((0.1,), (0.01,)),
+                "verbose": False,
+                "parallel": False,
+            },
+            {0: {0: {"+": 0}}, 1: {0: {"+": 0}}},
+            {},
+            True,
+            sol19,
         ),
     ],
 )
@@ -862,6 +972,7 @@ def test_sol(
     sp_args,
     int_constraints,
     pt_constraints,
+    pdf_constraint,
     sol,
 ):
     out = GridCPsplines(
@@ -873,6 +984,7 @@ def test_sol(
         x_range=x_range,
         int_constraints=int_constraints,
         pt_constraints=pt_constraints,
+        pdf_constraint=pdf_constraint,
     )
     out.fit(x=x, y=y)
     np.testing.assert_allclose(out.sol, sol, rtol=0.2, atol=1e-2)

@@ -7,6 +7,7 @@ import numpy as np
 import scipy
 from cpsplines.mosek_functions.interval_constraints import IntConstraints
 from cpsplines.mosek_functions.obj_function import ObjectiveFunction
+from cpsplines.mosek_functions.pdf_constraints import PDFConstraint
 from cpsplines.mosek_functions.point_constraints import PointConstraints
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.psplines.penalty_matrix import PenaltyMatrix
@@ -100,6 +101,10 @@ class GridCPsplines:
         where the value needs to be fixed.
         - An array with the values of the derivative to be enforced.
         - A number corresponding to the tolerancea allowed in the constraint.
+    pdf_constraint : bool, optional
+        A boolean indicating whether the fitted hypersurface must satisfy
+        Probability Density Function (PDF) conditions, i.e., it is non-negative
+        and it integrates to one.
 
     Attributes
     ----------
@@ -131,6 +136,7 @@ class GridCPsplines:
             Dict[int, Dict[int, Dict[str, Union[int, float]]]]
         ] = None,
         pt_constraints: Optional[Dict[Tuple[int], Any]] = None,
+        pdf_constraint: bool = False,
     ):
         self.deg = deg
         self.ord_d = ord_d
@@ -140,6 +146,7 @@ class GridCPsplines:
         self.sp_args = sp_args
         self.int_constraints = int_constraints
         self.pt_constraints = pt_constraints
+        self.pdf_constraint = pdf_constraint
 
     def _get_bspline_bases(self, x: Iterable[np.ndarray]) -> List[BsplineBasis]:
 
@@ -180,6 +187,8 @@ class GridCPsplines:
             )
             # Generate the design matrix of the B-spline basis
             bsp.get_matrix_B()
+            if self.int_constraints is not None or self.pdf_constraint:
+                bsp.get_matrices_S()
             bspline_bases.append(bsp)
         return bspline_bases
 
@@ -296,11 +305,17 @@ class GridCPsplines:
             lin_term=lin_term,
         )
 
+        if self.pdf_constraint:
+            pdf_cons = PDFConstraint(bspline=self.bspline_bases)
+            # Incorporate the condition that the integral over all the space
+            # must equal to 1
+            pdf_cons.integrate_to_one(var_dict=mos_obj_f.var_dict, model=M)
+            # Enforce the non-negativity constraint if it is not imposed
+            # explicitly
+            self.int_constraints = pdf_cons.nonneg_cons(self.int_constraints)
+
         if self.int_constraints is not None:
-            matrices_S = {}
-            # If the are interval constraints, construct the matrices S
-            for i, bsp in enumerate(self.bspline_bases):
-                matrices_S[i] = bsp.get_matrices_S()
+            matrices_S = {i: bsp.matrices_S for i, bsp in enumerate(self.bspline_bases)}
             # Iterate for every variable with constraints and for every
             # derivative order
             for var_name in self.int_constraints.keys():
@@ -333,7 +348,6 @@ class GridCPsplines:
                 cons2.point_cons(var_dict=mos_obj_f.var_dict, model=M)
         else:
             self.pt_constraints = {}
-
         return M
 
     def _get_sp_grid_search(
@@ -557,8 +571,7 @@ class GridCPsplines:
                 )
             # Compute the basis matrix at the coordinates to be predicted
             B_predict = [
-                bsp.bspline_basis.derivative(nu=0)(x[i])
-                for i, bsp in enumerate(self.bspline_bases)
+                bsp.bspline_basis(x=x[i]) for i, bsp in enumerate(self.bspline_bases)
             ]
             # Get the predictions
             return matrix_by_tensor_product([mat for mat in B_predict], self.sol)

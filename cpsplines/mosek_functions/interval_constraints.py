@@ -12,7 +12,7 @@ class IntConstraints:
 
     """
     Define the set of constraints that ensures the non-negativity (or
-    non-positivity) for the derivative order `derivative`along the respective
+    non-positivity) for the derivative order `derivative` along the respective
     axis of the variable `var_name`. For the unidimensional case, the
     requirements are completely fulfilled for every point in the range where the
     B-spline basis is defined. For the multivariate case, the constraints are
