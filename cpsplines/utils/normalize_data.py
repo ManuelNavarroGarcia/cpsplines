@@ -89,7 +89,9 @@ class DataNormalizer:
         self.y_range = np.ptp(y)
         return self
 
-    def transform(self, y: np.ndarray) -> np.ndarray:
+    def transform(
+        self, y: Union[int, float, np.ndarray], derivative: bool = False
+    ) -> np.ndarray:
 
         """
         Transform the numeric array according to the desired range.
@@ -98,6 +100,9 @@ class DataNormalizer:
         ----------
         y : np.ndarray
             The numeric array.
+        derivative : bool
+            If True, the input array to be transformed is a derivative with
+            respect the array used to fit, by default False
 
         Returns
         -------
@@ -105,14 +110,20 @@ class DataNormalizer:
             The scaled numeric array.
         """
 
-        return (
-            self.feature_range[0]
-            + (y - self.y_min)
-            * (self.feature_range[1] - self.feature_range[0])
-            / self.y_range
-        )
+        if derivative:
+            out = y * (self.feature_range[1] - self.feature_range[0]) / self.y_range
+        else:
+            out = (
+                self.feature_range[0]
+                + (y - self.y_min)
+                * (self.feature_range[1] - self.feature_range[0])
+                / self.y_range
+            )
+        return out
 
-    def inverse_transform(self, y: np.ndarray) -> np.ndarray:
+    def inverse_transform(
+        self, y: Union[int, float, np.ndarray], derivative: bool = False
+    ) -> np.ndarray:
 
         """
         Transform the scaled numeric array into the original scale.
@@ -121,12 +132,20 @@ class DataNormalizer:
         ----------
         y : np.ndarray
             The scaled numeric array.
+        derivative : bool
+            If True, the input array to be transformed is a derivative with
+            respect the array used to fit, by default False
 
         Returns
         -------
         np.ndarray
             The numeric array.
         """
-        return self.y_min + self.y_range * (y - self.feature_range[0]) / (
-            self.feature_range[1] - self.feature_range[0]
-        )
+
+        if derivative:
+            out = self.y_range * y / (self.feature_range[1] - self.feature_range[0])
+        else:
+            out = self.y_min + self.y_range * (y - self.feature_range[0]) / (
+                self.feature_range[1] - self.feature_range[0]
+            )
+        return out
