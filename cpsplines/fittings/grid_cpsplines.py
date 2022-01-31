@@ -350,9 +350,13 @@ class GridCPsplines:
             # Iterate for every combination of the derivative orders where
             # constraints must be enforced
             for deriv, info in self.pt_constraints.items():
+                value = info[1]
+                if data_normalizer is not None:
+                    derivative = any(v != 0 for v in deriv)
+                    value = data_normalizer.transform(y=value, derivative=derivative)
                 cons2 = PointConstraints(
                     pts=info[0],
-                    value=info[1],
+                    value=value,
                     derivative=deriv,
                     bspline=self.bspline_bases,
                     tolerance=info[2],
