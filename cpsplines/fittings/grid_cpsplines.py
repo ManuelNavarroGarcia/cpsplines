@@ -356,17 +356,21 @@ class GridCPsplines:
             # constraints must be enforced
             for deriv, info in self.pt_constraints.items():
                 value = info[1]
+                tolerance = info[2]
                 # Scale the point constraints thresholds in the case the data is
                 # scaled
                 if data_normalizer is not None:
                     derivative = any(v != 0 for v in deriv)
                     value = data_normalizer.transform(y=value, derivative=derivative)
+                    tolerance = data_normalizer.transform(
+                        y=tolerance, derivative=False
+                    ) - data_normalizer.transform(y=0, derivative=False)
                 cons2 = PointConstraints(
                     pts=info[0],
                     value=value,
                     derivative=deriv,
                     bspline=self.bspline_bases,
-                    tolerance=info[2],
+                    tolerance=tolerance,
                 )
                 cons2.point_cons(var_dict=mos_obj_f.var_dict, model=M)
         else:
@@ -519,7 +523,6 @@ class GridCPsplines:
         # Filling the arguments of the method used to determine the optimal set
         # of smoothing parameters
         _ = self._fill_sp_args()
-
         if y_range is not None:
             if len(y_range) != 2:
                 raise ValueError("The range for `y` must be an interval.")
