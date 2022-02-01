@@ -549,7 +549,7 @@ sol19 = np.array(
 
 
 @pytest.mark.parametrize(
-    "deg, ord_d, n_int, x, y, x_range, sp_method, sp_args, int_constraints, pt_constraints, pdf_constraint, sol",
+    "deg, ord_d, n_int, x, y, x_range, sp_method, sp_args, int_constraints, pt_constraints, pdf_constraint, y_range, sol",
     [
         (
             (3,),
@@ -563,6 +563,7 @@ sol19 = np.array(
             {},
             {},
             False,
+            None,
             sol1,
         ),
         (
@@ -577,6 +578,7 @@ sol19 = np.array(
             {0: {0: {"+": 0.0}}},
             {},
             False,
+            None,
             sol2,
         ),
         (
@@ -592,6 +594,7 @@ sol19 = np.array(
             {},
             {},
             False,
+            None,
             sol3,
         ),
         (
@@ -607,6 +610,7 @@ sol19 = np.array(
             {0: {0: {"+": 10.0, "-": 40.0}}},
             {},
             False,
+            None,
             sol4,
         ),
         (
@@ -627,6 +631,7 @@ sol19 = np.array(
             {},
             {},
             False,
+            None,
             sol5,
         ),
         (
@@ -647,6 +652,7 @@ sol19 = np.array(
             {0: {1: {"+": 0.0}, 2: {"-": 0.0}}},
             {},
             False,
+            None,
             sol6,
         ),
         (
@@ -668,6 +674,7 @@ sol19 = np.array(
             {},
             {},
             False,
+            None,
             sol7,
         ),
         (
@@ -689,6 +696,7 @@ sol19 = np.array(
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}}},
             {},
             False,
+            None,
             sol8,
         ),
         (
@@ -712,6 +720,7 @@ sol19 = np.array(
             {},
             {},
             False,
+            None,
             sol9,
         ),
         (
@@ -735,6 +744,7 @@ sol19 = np.array(
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}, 1: {"+": 0}}},
             {},
             False,
+            None,
             sol10,
         ),
         (
@@ -754,6 +764,7 @@ sol19 = np.array(
             {},
             {},
             False,
+            None,
             sol11,
         ),
         (
@@ -773,6 +784,7 @@ sol19 = np.array(
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}}, 2: {0: {"+": 0}}},
             {},
             False,
+            None,
             sol12,
         ),
         (
@@ -793,6 +805,7 @@ sol19 = np.array(
             {},
             {},
             False,
+            None,
             sol13,
         ),
         (
@@ -813,6 +826,7 @@ sol19 = np.array(
             {0: {0: {"+": 0}}},
             {},
             False,
+            None,
             sol14,
         ),
         (
@@ -830,6 +844,7 @@ sol19 = np.array(
             {1: {1: {"+": 0}}},
             {},
             False,
+            None,
             sol15,
         ),
         (
@@ -850,6 +865,7 @@ sol19 = np.array(
             {},
             {(2,): ((np.array([0.8]),), np.array([700]), 1e-8)},
             False,
+            None,
             sol16,
         ),
         (
@@ -871,6 +887,7 @@ sol19 = np.array(
             {},
             {(0, 0): ((np.array([4]), np.array([3])), np.array([4]), 1e-8)},
             False,
+            None,
             sol17,
         ),
         (
@@ -885,6 +902,7 @@ sol19 = np.array(
             {},
             {},
             False,
+            None,
             sol1,
         ),
         (
@@ -909,6 +927,7 @@ sol19 = np.array(
             {},
             {},
             False,
+            None,
             sol7,
         ),
         (
@@ -929,6 +948,7 @@ sol19 = np.array(
             {},  # Do not include non-negative constraint explicitly
             {},
             True,
+            None,
             sol18,
         ),
         (
@@ -953,6 +973,7 @@ sol19 = np.array(
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}}},
             {},
             True,
+            None,
             sol19,
         ),
     ],
@@ -973,6 +994,7 @@ def test_sol(
     int_constraints,
     pt_constraints,
     pdf_constraint,
+    y_range,
     sol,
 ):
     out = GridCPsplines(
@@ -986,5 +1008,5 @@ def test_sol(
         pt_constraints=pt_constraints,
         pdf_constraint=pdf_constraint,
     )
-    out.fit(x=x, y=y)
+    out.fit(x=x, y=y, y_range=y_range)
     np.testing.assert_allclose(out.sol, sol, rtol=0.2, atol=1e-2)
