@@ -7,7 +7,7 @@ class DataNormalizer:
 
     """
     Transform a numeric array by scaling it to a given range. To scale the array
-    between an arbitrary set of values [a, b], the transformation we use is
+    between an arbitrary set of values [a, b], the transformation used is
 
     x' = a + (x-min(x)) * (b - a) / (max(x) - min(x))
 
@@ -18,7 +18,7 @@ class DataNormalizer:
     Parameters
     ----------
     feature_range : Iterable[Union[int, float]], optional
-        The desired range of transformed data. By default, [0,1].
+        The desired range of transformed data. By default, (0, 1).
 
     Attributes
     ----------
@@ -78,11 +78,11 @@ class DataNormalizer:
 
         Parameters
         ----------
-        y : np.ndarray
+        y : Union[int, float, np.ndarray]
             The numeric array.
         derivative : bool
             If True, the input array to be transformed is a derivative with
-            respect the array used to fit, by default False
+            respect the array used to fit, by default False.
 
         Returns
         -------
@@ -110,11 +110,11 @@ class DataNormalizer:
 
         Parameters
         ----------
-        y : np.ndarray
+        y : Union[int, float, np.ndarray]
             The scaled numeric array.
         derivative : bool
             If True, the input array to be transformed is a derivative with
-            respect the array used to fit, by default False
+            respect the array used to fit, by default False.
 
         Returns
         -------
