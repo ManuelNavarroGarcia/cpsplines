@@ -19,6 +19,7 @@ from cpsplines.utils.fast_kron import (
     penalization_term,
 )
 from cpsplines.utils.gcv import GCV, gcv_mat
+from cpsplines.utils.normalize_data import DataNormalizer
 from cpsplines.utils.simulator_grid_search import print_grid_search_results
 from cpsplines.utils.simulator_optimize import Simulator
 from cpsplines.utils.weighted_b import get_idx_fitting_region, get_weighted_B
@@ -269,7 +270,11 @@ class GridCPsplines:
         return obj_matrices
 
     def _initialize_model(
-        self, lin_term: np.ndarray, L_B: np.ndarray, L_D: Iterable[np.ndarray]
+        self,
+        lin_term: np.ndarray,
+        L_B: np.ndarray,
+        L_D: Iterable[np.ndarray],
+        data_normalizer: Optional[DataNormalizer] = None,
     ) -> mosek.fusion.Model:
 
         """
@@ -285,6 +290,9 @@ class GridCPsplines:
         L_D : Iterable[np.ndarray]
             An array containing the Cholesky decomposition of P_i, where P_i is
             the penalty matrix along the i axis.
+        data_normalizer : Optional[DataNormalizer]
+            The DataNormalizer object if `y_range` is not None and None
+            otherwise. By default, None.
 
         Returns
         -------
@@ -320,13 +328,22 @@ class GridCPsplines:
             # derivative order
             for var_name in self.int_constraints.keys():
                 for deriv in self.int_constraints[var_name].keys():
+                    constraints = self.int_constraints[var_name][deriv]
+                    # Scale the integer constraints thresholds in the case the
+                    # data is scaled
+                    if data_normalizer is not None:
+                        derivative = True if deriv != 0 else False
+                        constraints = {
+                            k: data_normalizer.transform(y=v, derivative=derivative)
+                            for k, v in constraints.items()
+                        }
                     matrices_S_copy = matrices_S.copy()
                     # Build the interval constraints
                     cons = IntConstraints(
                         bspline=self.bspline_bases,
                         var_name=var_name,
                         derivative=deriv,
-                        constraints=self.int_constraints[var_name][deriv],
+                        constraints=constraints,
                     )
                     cons.interval_cons(
                         var_dict=mos_obj_f.var_dict, model=M, matrices_S=matrices_S_copy
@@ -338,12 +355,22 @@ class GridCPsplines:
             # Iterate for every combination of the derivative orders where
             # constraints must be enforced
             for deriv, info in self.pt_constraints.items():
+                value = info[1]
+                tolerance = info[2]
+                # Scale the point constraints thresholds in the case the data is
+                # scaled
+                if data_normalizer is not None:
+                    derivative = any(v != 0 for v in deriv)
+                    value = data_normalizer.transform(y=value, derivative=derivative)
+                    tolerance = data_normalizer.transform(
+                        y=tolerance, derivative=False
+                    ) - data_normalizer.transform(y=0, derivative=False)
                 cons2 = PointConstraints(
                     pts=info[0],
-                    value=info[1],
+                    value=value,
                     derivative=deriv,
                     bspline=self.bspline_bases,
-                    tolerance=info[2],
+                    tolerance=tolerance,
                 )
                 cons2.point_cons(var_dict=mos_obj_f.var_dict, model=M)
         else:
@@ -448,7 +475,12 @@ class GridCPsplines:
         ).x
         return best_sp
 
-    def fit(self, x: Iterable[np.ndarray], y: np.ndarray):
+    def fit(
+        self,
+        x: Iterable[np.ndarray],
+        y: np.ndarray,
+        y_range: Optional[Iterable[Union[int, float]]] = None,
+    ):
 
         """
         Compute the fitted decision variables of the B-spline expansion and the
@@ -460,6 +492,11 @@ class GridCPsplines:
             The covariate samples.
         y : np.ndarray
             The response variable sample.
+        y_range : Optional[Iterable[Union[int, float]]]
+            If not None, `y` is scaled in the range defined by this parameter.
+            This scaling process is useful when `y` has very large norm, since
+            MOSEK may not be able to find a solution in this case due to
+            numerical issues. By default, None.
 
         Raises
         ------
@@ -486,6 +523,14 @@ class GridCPsplines:
         # Filling the arguments of the method used to determine the optimal set
         # of smoothing parameters
         _ = self._fill_sp_args()
+        if y_range is not None:
+            if len(y_range) != 2:
+                raise ValueError("The range for `y` must be an interval.")
+            data_normalizer = DataNormalizer(feature_range=y_range)
+            _ = data_normalizer.fit(y)
+            y = data_normalizer.transform(y)
+        else:
+            data_normalizer = None
 
         # Get the matrices used in the objective function
         obj_matrices = self._get_obj_func_arrays(x=x, y=y)
@@ -509,7 +554,9 @@ class GridCPsplines:
         )
 
         # Initialize the model
-        M = self._initialize_model(lin_term=lin_term, L_B=L_B, L_D=L_D)
+        M = self._initialize_model(
+            lin_term=lin_term, L_B=L_B, L_D=L_D, data_normalizer=data_normalizer
+        )
         model_params = {"theta": M.getVariable("theta")}
         for i in range(len(self.bspline_bases)):
             model_params[f"sp_{i}"] = M.getParameter(f"sp_{i}")
@@ -535,6 +582,8 @@ class GridCPsplines:
             M.solve()
             # Extract the fitted decision variables of the B-spline expansion
             self.sol = model_params["theta"].level().reshape(theta_shape)
+            if y_range is not None:
+                self.sol = data_normalizer.inverse_transform(y=self.sol)
             # Compute the fitted values of the response variable
             self.y_fitted = matrix_by_tensor_product(
                 [mat for mat in obj_matrices["B"]], self.sol

@@ -547,9 +547,78 @@ sol19 = np.array(
     ]
 )
 
+# np.exp(4 - x / 25) + 4 * np.cos(x / 8) (10 <= y <= 40)
+# Using grid search
+# No out-of-range prediction
+# y_range restricted to [0,1]
+sol20 = np.array(
+    [
+        29.56394593,
+        42.4949485,
+        42.91958671,
+        31.40416391,
+        16.36640315,
+        9.90329516,
+        10.01136321,
+        9.99852563,
+        10.00045964,
+        9.99988605,
+        10.00005597,
+        9.99998044,
+        10.00001439,
+        9.99999326,
+        10.00000618,
+        9.99999573,
+        10.00000549,
+        9.99999059,
+        10.00003871,
+        9.99956708,
+    ]
+)
+
+# (2 * x - 1) ** 3 (unconstrained)
+# Using optimizer
+# No out-of-range prediction
+# Enforce the second derivative value at x = 0.8 is 700 with tolerance 1e-8
+# y_range restricted to [-0.6,0.4]
+sol21 = np.array(
+    [
+        -1.41014341,
+        -1.03347074,
+        -0.42379205,
+        -0.26597139,
+        0.0750334,
+        -0.22179019,
+        0.40888894,
+        -0.75117711,
+        1.36447788,
+        -1.60316891,
+        2.42918429,
+        -1.78047033,
+        12.01611505,
+    ]
+)
+
+# np.sin(3 * pi * x) * np.sin(2 * pi * y) (non-negativity)
+# Using grid search
+# No out-of-range prediction
+# y_range restricted to [0,0.01]
+sol22 = np.array(
+    [
+        [-0.81030983, 0.31700334, -0.03569446, -0.03011383, 0.15743891, -0.13541432],
+        [-0.60096462, 0.64394311, 0.32607544, -0.04506931, 0.14136839, -0.12708332],
+        [-0.37219654, 0.69361345, 0.41863823, -0.14852706, 0.02397196, -0.10312412],
+        [-0.13796828, 0.12380278, -0.1714081, 0.29486552, 0.42641162, -0.1240893],
+        [-0.13757178, 0.12377434, -0.17297603, 0.29939452, 0.42123875, -0.10076281],
+        [-0.36992631, 0.69167177, 0.42263985, -0.14379063, 0.02601862, -0.087105],
+        [-0.59669977, 0.63967536, 0.33502469, -0.08043854, 0.17006664, -0.24619856],
+        [-0.8042755, 0.3106384, -0.02535701, -0.14876178, 0.18019654, -0.4203853],
+    ]
+)
+
 
 @pytest.mark.parametrize(
-    "deg, ord_d, n_int, x, y, x_range, sp_method, sp_args, int_constraints, pt_constraints, pdf_constraint, sol",
+    "deg, ord_d, n_int, x, y, x_range, sp_method, sp_args, int_constraints, pt_constraints, pdf_constraint, y_range, sol",
     [
         (
             (3,),
@@ -563,6 +632,7 @@ sol19 = np.array(
             {},
             {},
             False,
+            None,
             sol1,
         ),
         (
@@ -577,6 +647,7 @@ sol19 = np.array(
             {0: {0: {"+": 0.0}}},
             {},
             False,
+            None,
             sol2,
         ),
         (
@@ -592,6 +663,7 @@ sol19 = np.array(
             {},
             {},
             False,
+            None,
             sol3,
         ),
         (
@@ -607,6 +679,7 @@ sol19 = np.array(
             {0: {0: {"+": 10.0, "-": 40.0}}},
             {},
             False,
+            None,
             sol4,
         ),
         (
@@ -627,6 +700,7 @@ sol19 = np.array(
             {},
             {},
             False,
+            None,
             sol5,
         ),
         (
@@ -647,6 +721,7 @@ sol19 = np.array(
             {0: {1: {"+": 0.0}, 2: {"-": 0.0}}},
             {},
             False,
+            None,
             sol6,
         ),
         (
@@ -668,6 +743,7 @@ sol19 = np.array(
             {},
             {},
             False,
+            None,
             sol7,
         ),
         (
@@ -689,6 +765,7 @@ sol19 = np.array(
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}}},
             {},
             False,
+            None,
             sol8,
         ),
         (
@@ -712,6 +789,7 @@ sol19 = np.array(
             {},
             {},
             False,
+            None,
             sol9,
         ),
         (
@@ -735,6 +813,7 @@ sol19 = np.array(
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}, 1: {"+": 0}}},
             {},
             False,
+            None,
             sol10,
         ),
         (
@@ -754,6 +833,7 @@ sol19 = np.array(
             {},
             {},
             False,
+            None,
             sol11,
         ),
         (
@@ -773,6 +853,7 @@ sol19 = np.array(
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}}, 2: {0: {"+": 0}}},
             {},
             False,
+            None,
             sol12,
         ),
         (
@@ -793,6 +874,7 @@ sol19 = np.array(
             {},
             {},
             False,
+            None,
             sol13,
         ),
         (
@@ -813,6 +895,7 @@ sol19 = np.array(
             {0: {0: {"+": 0}}},
             {},
             False,
+            None,
             sol14,
         ),
         (
@@ -830,6 +913,7 @@ sol19 = np.array(
             {1: {1: {"+": 0}}},
             {},
             False,
+            None,
             sol15,
         ),
         (
@@ -850,6 +934,7 @@ sol19 = np.array(
             {},
             {(2,): ((np.array([0.8]),), np.array([700]), 1e-8)},
             False,
+            None,
             sol16,
         ),
         (
@@ -871,6 +956,7 @@ sol19 = np.array(
             {},
             {(0, 0): ((np.array([4]), np.array([3])), np.array([4]), 1e-8)},
             False,
+            None,
             sol17,
         ),
         (
@@ -885,6 +971,7 @@ sol19 = np.array(
             {},
             {},
             False,
+            None,
             sol1,
         ),
         (
@@ -909,6 +996,7 @@ sol19 = np.array(
             {},
             {},
             False,
+            None,
             sol7,
         ),
         (
@@ -929,6 +1017,7 @@ sol19 = np.array(
             {},  # Do not include non-negative constraint explicitly
             {},
             True,
+            None,
             sol18,
         ),
         (
@@ -953,7 +1042,67 @@ sol19 = np.array(
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}}},
             {},
             True,
+            None,
             sol19,
+        ),
+        (
+            (5,),
+            (3,),
+            (15,),
+            (np.linspace(0, 200, 201),),
+            np.exp(4 - np.linspace(0, 200, 201) / 25)
+            + 4 * np.cos(np.linspace(0, 200, 201) / 8),
+            None,
+            "grid_search",
+            {"grid": ((0.73,),), "verbose": False, "parallel": False},
+            {0: {0: {"+": 10.0, "-": 40.0}}},
+            {},
+            False,
+            (0, 1),
+            sol20,
+        ),
+        (
+            (3,),
+            (2,),
+            (10,),
+            (np.linspace(0, 1, 50),),
+            (2 * np.linspace(0, 1, 50) - 1) ** 3,
+            None,
+            "optimizer",
+            {
+                "verbose": False,
+                "x0": np.ones(1),
+                "method": "SLSQP",
+                "options": {"ftol": 1e-12, "maxiter": 100},
+                "bounds": ((1e-10, 1e16),),
+            },
+            {},
+            {(2,): ((np.array([0.8]),), np.array([700]), 1e-8)},
+            False,
+            (-0.6, 0.4),
+            sol21,
+        ),
+        (
+            (3, 2),
+            (2, 1),
+            (5, 4),
+            (np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
+            np.outer(
+                np.sin(3 * np.pi * np.linspace(0, 1, 30)),
+                np.sin(2 * np.pi * np.linspace(0, 1, 20)),
+            ),
+            None,
+            "grid_search",
+            {
+                "grid": ((0.89, 5.96), (3.45, 0.012)),
+                "verbose": False,
+                "parallel": False,
+            },
+            {0: {0: {"+": 0}}, 1: {0: {"+": 0}}},
+            {},
+            False,
+            (0, 0.01),
+            sol22,
         ),
     ],
 )
@@ -973,6 +1122,7 @@ def test_sol(
     int_constraints,
     pt_constraints,
     pdf_constraint,
+    y_range,
     sol,
 ):
     out = GridCPsplines(
@@ -986,5 +1136,5 @@ def test_sol(
         pt_constraints=pt_constraints,
         pdf_constraint=pdf_constraint,
     )
-    out.fit(x=x, y=y)
+    out.fit(x=x, y=y, y_range=y_range)
     np.testing.assert_allclose(out.sol, sol, rtol=0.2, atol=1e-2)
