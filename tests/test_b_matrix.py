@@ -124,7 +124,7 @@ def test_B_matrix(x_sam, deg, n_int, prediction, B):
     B_out = get_weighted_B(bspline_bases=bspline)
 
     for P, Q in zip(B_out, B):
-        np.testing.assert_allclose(P, Q)
+        np.testing.assert_allclose(P.toarray(), Q)
 
 
 # Test correct ranges of the fitting region given a regressor sample
