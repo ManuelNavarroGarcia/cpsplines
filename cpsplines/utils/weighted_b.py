@@ -2,6 +2,7 @@ from typing import Iterable, List, Tuple
 
 import numpy as np
 from cpsplines.psplines.bspline_basis import BsplineBasis
+from scipy.sparse import csr_matrix
 
 
 def get_idx_fitting_region(bspline_bases: Iterable[BsplineBasis]) -> Tuple[slice]:
@@ -50,7 +51,7 @@ def get_weighted_B(bspline_bases: Iterable[BsplineBasis]) -> List[np.ndarray]:
     mat = []
     idx_fit = get_idx_fitting_region(bspline_bases=bspline_bases)
     for i, bsp in enumerate(bspline_bases):
-        B_weighted = np.zeros((bsp.matrixB.shape))
+        B_weighted = csr_matrix(bsp.matrixB.shape)
         B_weighted[idx_fit[i], :] = bsp.matrixB[idx_fit[i], :]
         mat.append(B_weighted)
     return mat
