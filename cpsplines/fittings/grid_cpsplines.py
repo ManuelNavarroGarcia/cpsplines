@@ -24,6 +24,7 @@ from cpsplines.utils.simulator_grid_search import print_grid_search_results
 from cpsplines.utils.simulator_optimize import Simulator
 from cpsplines.utils.weighted_b import get_idx_fitting_region, get_weighted_B
 from joblib import Parallel, delayed
+from scipy.interpolate import BSpline
 
 
 class NumericalError(Exception):
@@ -620,7 +621,8 @@ class GridCPsplines:
                 )
             # Compute the basis matrix at the coordinates to be predicted
             B_predict = [
-                bsp.bspline_basis(x=x[i]) for i, bsp in enumerate(self.bspline_bases)
+                BSpline.design_matrix(x=x[i], t=bsp.knots, k=bsp.deg).toarray()
+                for i, bsp in enumerate(self.bspline_bases)
             ]
             # Get the predictions
             return matrix_by_tensor_product([mat for mat in B_predict], self.sol)
