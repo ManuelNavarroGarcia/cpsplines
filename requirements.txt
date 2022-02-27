@@ -4,43 +4,49 @@
 #
 #    pip-compile --extra=dev
 #
-attrs==21.2.0
+asttokens==2.0.5
+    # via stack-data
+attrs==21.4.0
     # via pytest
 backcall==0.2.0
     # via ipython
-black==21.9b0
-    # via cpsplines (setup.py)
-click==8.0.1
+black==22.1.0
+    # via
+    #   cpsplines (setup.py)
+    #   ipython
+click==8.0.4
     # via
     #   black
     #   pip-tools
-cycler==0.10.0
+cycler==0.11.0
     # via matplotlib
-debugpy==1.4.3
+debugpy==1.5.1
     # via ipykernel
-decorator==5.1.0
+decorator==5.1.1
     # via ipython
-entrypoints==0.3
+entrypoints==0.4
     # via jupyter-client
+executing==0.8.2
+    # via stack-data
+fonttools==4.29.1
+    # via matplotlib
 iniconfig==1.1.1
     # via pytest
-ipykernel==6.4.1
+ipykernel==6.9.1
     # via cpsplines (setup.py)
-ipython==7.31.1
+ipython==8.0.1
     # via ipykernel
-ipython-genutils==0.2.0
-    # via ipykernel
-jedi==0.18.0
+jedi==0.18.1
     # via ipython
-joblib==1.0.1
+joblib==1.1.0
     # via cpsplines (setup.py)
-jupyter-client==7.0.5
+jupyter-client==7.1.2
     # via ipykernel
-jupyter-core==4.8.1
+jupyter-core==4.9.2
     # via jupyter-client
 kiwisolver==1.3.2
     # via matplotlib
-matplotlib==3.4.3
+matplotlib==3.5.1
     # via cpsplines (setup.py)
 matplotlib-inline==0.1.3
     # via
@@ -48,107 +54,109 @@ matplotlib-inline==0.1.3
     #   ipython
 mosek==9.3.14
     # via cpsplines (setup.py)
-mypy==0.910
+mypy==0.931
     # via cpsplines (setup.py)
 mypy-extensions==0.4.3
     # via
     #   black
     #   mypy
-nest-asyncio==1.5.1
-    # via jupyter-client
+nest-asyncio==1.5.4
+    # via
+    #   ipykernel
+    #   jupyter-client
 nose==1.3.7
     # via tensorly
-numpy==1.21.2
+numpy==1.22.2
     # via
+    #   cpsplines (setup.py)
     #   matplotlib
     #   mosek
     #   pandas
     #   scipy
-    #   cpsplines (setup.py)
     #   tensorly
-packaging==21.0
-    # via pytest
-pandas==1.3.3
+packaging==21.3
+    # via
+    #   matplotlib
+    #   pytest
+pandas==1.4.1
     # via cpsplines (setup.py)
-parso==0.8.2
+parso==0.8.3
     # via jedi
 pathspec==0.9.0
     # via black
-pep517==0.11.0
+pep517==0.12.0
     # via pip-tools
 pexpect==4.8.0
     # via ipython
 pickleshare==0.7.5
     # via ipython
-pillow==9.0.0
+pillow==9.0.1
     # via matplotlib
-pip-tools==6.3.0
+pip-tools==6.5.1
     # via cpsplines (setup.py)
-platformdirs==2.4.0
+platformdirs==2.5.1
     # via black
 pluggy==1.0.0
     # via pytest
-prompt-toolkit==3.0.20
+prompt-toolkit==3.0.28
     # via ipython
 ptyprocess==0.7.0
     # via pexpect
-py==1.10.0
+pure-eval==0.2.2
+    # via stack-data
+py==1.11.0
     # via pytest
-pygments==2.10.0
+pygments==2.11.2
     # via ipython
-pyparsing==2.4.7
+pyparsing==3.0.7
     # via
     #   matplotlib
     #   packaging
-pytest==6.2.5
+pytest==7.0.1
     # via cpsplines (setup.py)
 python-dateutil==2.8.2
     # via
     #   jupyter-client
     #   matplotlib
     #   pandas
-pytz==2021.1
+pytz==2021.3
     # via pandas
 pyzmq==22.3.0
     # via jupyter-client
-regex==2021.9.24
-    # via black
-scipy==1.7.1
+scipy==1.8.0
     # via
     #   cpsplines (setup.py)
     #   tensorly
 six==1.16.0
-    # via
-    #   cycler
-    #   python-dateutil
-tensorly==0.6.0
+    # via python-dateutil
+stack-data==0.2.0
+    # via ipython
+tensorly==0.7.0
     # via cpsplines (setup.py)
-toml==0.10.2
-    # via
-    #   mypy
-    #   pytest
-tomli==1.2.1
+tomli==2.0.1
     # via
     #   black
+    #   mypy
     #   pep517
+    #   pytest
 tornado==6.1
     # via
     #   ipykernel
     #   jupyter-client
-traitlets==5.1.0
+traitlets==5.1.1
     # via
     #   ipykernel
     #   ipython
     #   jupyter-client
     #   jupyter-core
     #   matplotlib-inline
-typing-extensions==3.10.0.2
+typing-extensions==4.1.1
     # via
     #   black
     #   mypy
 wcwidth==0.2.5
     # via prompt-toolkit
-wheel==0.37.0
+wheel==0.37.1
     # via pip-tools
 
 # The following packages are considered to be unsafe in a requirements file:

@@ -1,4 +1,5 @@
 import pathlib
+
 from setuptools import find_packages, setup
 
 README = (pathlib.Path(__file__).parent / "README.md").read_text()
@@ -31,7 +32,7 @@ setup(
         "mosek",
         "numpy",
         "pandas",
-        "scipy",
+        "scipy>=1.8.0",
         "tensorly",
     ],
     extras_require={"dev": ["black", "ipykernel", "mypy", "pip-tools", "pytest"]},
