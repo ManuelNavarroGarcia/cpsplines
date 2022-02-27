@@ -75,7 +75,7 @@ class PenaltyMatrix:
         # `bspline.int_forw` +  `bspline.int_back` + `bspline.deg` and generate
         # its difference matrix. Then, remove the first and last `ord_d` rows
         D = np.diff(np.eye(dim, dtype=np.int32), n=ord_d)[ord_d:-ord_d, :]
-        return D.T @ D
+        return D
 
     def get_penalty_matrix(self, **kwargs) -> np.ndarray:
 
@@ -99,4 +99,5 @@ class PenaltyMatrix:
         if self.variation not in ("diff",):
             raise ValueError("Penalty matrix type not valid.")
         if self.variation == "diff":
-            return self._get_diff_matrix(**kwargs)
+            D = self._get_diff_matrix(**kwargs)
+            return D
