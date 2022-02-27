@@ -67,4 +67,4 @@ def test_D_matrix(x_sam, deg, n_int, prediction, ord_d, D):
     bsp = BsplineBasis(deg=deg, xsample=x_sam, n_int=n_int, prediction=prediction)
     bsp.get_matrix_B()
     D_out = PenaltyMatrix(bspline=bsp).get_penalty_matrix(**{"ord_d": ord_d})
-    np.testing.assert_allclose(D_out, D)
+    np.testing.assert_allclose(D_out.toarray(), D)
