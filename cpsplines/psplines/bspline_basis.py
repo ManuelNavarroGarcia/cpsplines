@@ -179,7 +179,7 @@ class BsplineBasis:
                 self.knots[self.int_back + self.n_int + self.deg + 1 : -self.deg],
             ]
         )
-        self.matrixB = BSpline.design_matrix(x=x_eval, t=knots, k=self.deg).toarray()
+        self.matrixB = BSpline.design_matrix(x=x_eval, t=knots, k=self.deg)
         return None
 
     def get_matrices_S(self):
