@@ -1,5 +1,6 @@
 import numpy as np
 from cpsplines.psplines.bspline_basis import BsplineBasis
+from scipy import sparse
 
 
 class PenaltyMatrix:
@@ -72,9 +73,11 @@ class PenaltyMatrix:
             + ord_d
         )
         # Generate an identity matrix of order `bspline.n_int` +
-        # `bspline.int_forw` +  `bspline.int_back` + `bspline.deg` and generate
+        # `bspline.int_forw` + `bspline.int_back` + `bspline.deg` and generate
         # its difference matrix. Then, remove the first and last `ord_d` rows
-        D = np.diff(np.eye(dim, dtype=np.int32), n=ord_d)[ord_d:-ord_d, :]
+        D = sparse.csr_matrix(
+            np.diff(np.eye(dim, dtype=np.int32), n=ord_d)[ord_d:-ord_d, :]
+        )
         return D.T @ D
 
     def get_penalty_matrix(self, **kwargs) -> np.ndarray:
