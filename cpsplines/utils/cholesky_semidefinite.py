@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import sparse
 from scipy.linalg import ldl
 
 
@@ -25,9 +26,10 @@ def cholesky_semidef(A: np.ndarray) -> np.ndarray:
     """
 
     # Compute the LDL decomposition of the matrix
-    LDL_decomp = ldl(A, lower=False)
+    # TODO: Study how to perform this decomposition with sparse matrices
+    LDL_decomp = ldl(A.toarray(), lower=False)
     # Compute the square root of the diagonal of D. In many cases, these values
     # may be negative due to numerical errors, and they are clipped to zero
     sqrt_decomp = np.sqrt(np.clip(np.diag(LDL_decomp[1]), a_min=0, a_max=1e16))
     # Get L in the Cholesky decomposition as sqrt(D) @ L
-    return sqrt_decomp * LDL_decomp[0]
+    return sparse.csr_matrix(sqrt_decomp * LDL_decomp[0])
