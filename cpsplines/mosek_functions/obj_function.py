@@ -167,7 +167,7 @@ class ObjectiveFunction:
                         self.var_dict[f"t_D_{i}"],
                         1 / 2,
                         mosek.fusion.Expr.mul(
-                            mosek.fusion.Matrix.sparse(L.T), flatten_theta
+                            mosek.fusion.Matrix.sparse(L), flatten_theta
                         ),
                     ),
                     mosek.fusion.Domain.inRotatedQCone(),

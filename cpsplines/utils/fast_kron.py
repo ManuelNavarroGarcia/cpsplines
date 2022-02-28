@@ -1,7 +1,8 @@
-import numpy as np
-from scipy.linalg import block_diag
-import tensorly as tl
 from typing import Iterable, List
+
+import numpy as np
+import tensorly as tl
+from scipy.linalg import block_diag
 
 
 def matrix_by_transpose(A: np.ndarray) -> np.ndarray:
@@ -163,7 +164,7 @@ def penalization_term(matrices: Iterable[np.ndarray]) -> List[np.ndarray]:
         raise ValueError("Only two-dimensional arrays are allowed.")
 
     # Compute the order of the penalty matrices
-    shapes = [P.shape[0] for P in matrices]
+    shapes = [P.shape[1] for P in matrices]
     # Initialize the output as a zero matrix
     output = []
     for i, P in enumerate(matrices):

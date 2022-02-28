@@ -246,6 +246,7 @@ class GridCPsplines:
 
         obj_matrices = {}
         obj_matrices["B"] = []
+        obj_matrices["D"] = []
         obj_matrices["D_mul"] = []
         # The extended response variable sample dimensions can be obtained as
         # the number of rows of the design matrix B
@@ -255,11 +256,10 @@ class GridCPsplines:
             B = bsp.matrixB
             y_ext_dim.append(B.shape[0])
             obj_matrices["B"].append(B)
-            obj_matrices["D_mul"].append(
-                PenaltyMatrix(bspline=bsp).get_penalty_matrix(
-                    **{"ord_d": self.ord_d[i]}
-                )
-            )
+            penaltymat = PenaltyMatrix(bspline=bsp)
+            P = penaltymat.get_penalty_matrix(**{"ord_d": self.ord_d[i]})
+            obj_matrices["D"].append(penaltymat.matrixD)
+            obj_matrices["D_mul"].append(P)
             ordered_idx.append(np.argsort(x[i]))
 
         # Reorder the response variable array so the covariate coordinates are
@@ -550,9 +550,7 @@ class GridCPsplines:
             fast_kronecker_product, list(map(cholesky_semidef, obj_matrices["B_mul"]))
         )
 
-        L_D = penalization_term(
-            matrices=list(map(cholesky_semidef, obj_matrices["D_mul"]))
-        )
+        L_D = penalization_term(matrices=obj_matrices["D"])
 
         # Initialize the model
         M = self._initialize_model(
