@@ -30,7 +30,7 @@ class PenaltyMatrix:
         self.bspline = bspline
         self.variation = variation
 
-    def _get_diff_matrix(self, ord_d: int = 2) -> np.ndarray:
+    def get_diff_matrix(self, ord_d: int = 2) -> np.ndarray:
 
         """
         Generate the penalty matrix based on finite differences of the
@@ -74,8 +74,7 @@ class PenaltyMatrix:
         # Generate an identity matrix of order `bspline.n_int` +
         # `bspline.int_forw` +  `bspline.int_back` + `bspline.deg` and generate
         # its difference matrix. Then, remove the first and last `ord_d` rows
-        D = np.diff(np.eye(dim, dtype=np.int32), n=ord_d)[ord_d:-ord_d, :]
-        return D
+        return np.diff(np.eye(dim, dtype=np.int32), n=ord_d)[ord_d:-ord_d, :]
 
     def get_penalty_matrix(self, **kwargs) -> np.ndarray:
 
@@ -99,5 +98,5 @@ class PenaltyMatrix:
         if self.variation not in ("diff",):
             raise ValueError("Penalty matrix type not valid.")
         if self.variation == "diff":
-            D = self._get_diff_matrix(**kwargs)
-            return D
+            self.matrixD = self.get_diff_matrix(**kwargs)
+            return self.matrixD.T @ self.matrixD
