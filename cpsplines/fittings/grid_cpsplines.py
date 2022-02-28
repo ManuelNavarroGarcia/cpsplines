@@ -256,11 +256,10 @@ class GridCPsplines:
             B = bsp.matrixB
             y_ext_dim.append(B.shape[0])
             obj_matrices["B"].append(B)
-            D = PenaltyMatrix(bspline=bsp).get_penalty_matrix(
-                **{"ord_d": self.ord_d[i]}
-            )
-            obj_matrices["D"].append(D)
-            obj_matrices["D_mul"].append(D.T @ D)
+            penaltymat = PenaltyMatrix(bspline=bsp)
+            P = penaltymat.get_penalty_matrix(**{"ord_d": self.ord_d[i]})
+            obj_matrices["D"].append(penaltymat.matrixD)
+            obj_matrices["D_mul"].append(P)
             ordered_idx.append(np.argsort(x[i]))
 
         # Reorder the response variable array so the covariate coordinates are
