@@ -22,6 +22,7 @@ from cpsplines.utils.gcv import GCV, gcv_mat
 from cpsplines.utils.normalize_data import DataNormalizer
 from cpsplines.utils.simulator_grid_search import print_grid_search_results
 from cpsplines.utils.simulator_optimize import Simulator
+from cpsplines.utils.timer import timer
 from cpsplines.utils.weighted_b import get_idx_fitting_region, get_weighted_B
 from joblib import Parallel, delayed
 
@@ -578,7 +579,10 @@ class GridCPsplines:
             model_params[f"sp_{i}"].setValue(sp)
         try:
             # Solve the problem
-            M.solve()
+            with timer(
+                tag=f"Solve the problem with smoothing parameters {tuple(self.best_sp)}: "
+            ):
+                M.solve()
             # Extract the fitted decision variables of the B-spline expansion
             self.sol = model_params["theta"].level().reshape(theta_shape)
             if y_range is not None:
