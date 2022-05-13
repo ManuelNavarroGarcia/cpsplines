@@ -76,10 +76,9 @@ class ObjectiveFunction:
 
     def create_obj_function(
         self,
-        L_B: np.ndarray,
-        L_D: Iterable[np.ndarray],
+        obj_matrices: Dict[str, Iterable[np.ndarray]],
         sp: Iterable[Union[int, float]],
-        lin_term: np.ndarray,
+        family: str = "gaussian",
     ) -> Tuple[Union[None, mosek.fusion.ConicConstraint]]:
 
         """
