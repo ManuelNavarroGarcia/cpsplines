@@ -130,6 +130,8 @@ class ObjectiveFunction:
             iterable differ.
         """
 
+        L_D = penalization_term(matrices=obj_matrices["D"])
+
         if len(sp) != len(L_D):
             raise ValueError(
                 "The number of smoothing parameters and penalty matrices must agree."
@@ -142,16 +144,18 @@ class ObjectiveFunction:
         # vectorization of the basis expansion multidimensional array
         # coefficients
         flatten_theta = mosek.fusion.Var.flatten(self.var_dict["theta"])
+
         cons = []
-        # Create the rotated quadratic cone constraint of B^TB
+        # Create the rotated quadratic cone constraint of each D^TD
+        for i, L in enumerate(L_D):
         cons.append(
             self.model.constraint(
-                "rot_cone_B",
+                    f"rot_cone_{i}",
                 mosek.fusion.Expr.vstack(
-                    self.var_dict["t_B"],
+                        self.var_dict[f"t_D_{i}"],
                     1 / 2,
                     mosek.fusion.Expr.mul(
-                        mosek.fusion.Matrix.sparse(L_B.T), flatten_theta
+                            mosek.fusion.Matrix.sparse(L), flatten_theta
                     ),
                 ),
                 mosek.fusion.Domain.inRotatedQCone(),
