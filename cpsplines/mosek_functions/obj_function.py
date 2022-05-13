@@ -69,9 +69,6 @@ class ObjectiveFunction:
             var_dict[f"t_D_{i}"] = self.model.variable(
                 f"t_D_{i}", 1, mosek.fusion.Domain.greaterThan(0.0)
             )
-        var_dict["t_B"] = self.model.variable(
-            "t_B", 1, mosek.fusion.Domain.greaterThan(0.0)
-        )
         return var_dict
 
     def create_obj_function(
@@ -161,32 +158,59 @@ class ObjectiveFunction:
                 mosek.fusion.Domain.inRotatedQCone(),
             )
         )
-        # Create the rotated quadratic cone constraint of each D^TD
-        for i, L in enumerate(L_D):
+
+        # The rotated cone reformulation on the penalty term yield summands on
+        # the objective function of the form sp*t_D, where t_D is the new
+        # artificial variable introduced in the characterization
+        obj = mosek.fusion.Expr.add(
+            [
+                mosek.fusion.Expr.dot(s, self.var_dict[f"t_D_{i}"])
+                for i, s in enumerate(sp)
+            ]
+        )
+
+        if family == "gaussian":
+            self.var_dict |= {
+                "t_B": self.model.variable(
+                    "t_B", 1, mosek.fusion.Domain.greaterThan(0.0)
+                )
+            }
+            # Compute the linear term coefficients of the objective function
+            lin_term = np.multiply(
+                -2,
+                matrix_by_tensor_product(
+                    [mat.T for mat in obj_matrices["B_w"]], obj_matrices["y"]
+                ),
+            ).flatten()
+
+            # Compute the Cholesky decompositions (A = L @ L.T)
+            L_B = reduce(
+                fast_kronecker_product,
+                list(map(cholesky_semidef, obj_matrices["B_mul"])),
+            )
+            # Create the rotated quadratic cone constraint of B^TB
             cons.append(
                 self.model.constraint(
-                    f"rot_cone_{i}",
+                    "rot_cone_B",
                     mosek.fusion.Expr.vstack(
-                        self.var_dict[f"t_D_{i}"],
+                        self.var_dict["t_B"],
                         1 / 2,
                         mosek.fusion.Expr.mul(
-                            mosek.fusion.Matrix.sparse(L), flatten_theta
+                            mosek.fusion.Matrix.sparse(L_B.T), flatten_theta
                         ),
                     ),
                     mosek.fusion.Domain.inRotatedQCone(),
                 )
             )
-
-        # The linear term from the original objective function
-        obj = [mosek.fusion.Expr.dot(lin_term, flatten_theta)]
-        # The rotated cone reformulation on the penalty term yield summands on
-        # the objective function of the form sp*t_D, where t_D is the new
-        # artificial variable introduced in the characterization
-        for i, sp in enumerate(sp):
-            obj.append(mosek.fusion.Expr.dot(sp, self.var_dict[f"t_D_{i}"]))
         # The rotated cone reformulation on the basis term yield a summand of
-        # the artificial variable t_B included during the reformulation
-        obj = mosek.fusion.Expr.add(self.var_dict["t_B"], mosek.fusion.Expr.add(obj))
+            # the artificial variable t_B included during the reformulation and
+            # a linear term depending on the response variable sample
+            obj = mosek.fusion.Expr.add(
+                mosek.fusion.Expr.add(
+                    self.var_dict["t_B"], mosek.fusion.Expr.dot(lin_term, flatten_theta)
+                ),
+                obj,
+            )
         # Generate the minimization objective function object
         obj = self.model.objective(
             "obj",
