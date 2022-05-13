@@ -134,6 +134,7 @@ class GridCPsplines:
         x_range: Optional[Dict[int, Tuple[Union[int, float]]]] = None,
         sp_method: str = "optimizer",
         sp_args: Optional[Dict[str, Any]] = None,
+        family: str = "gaussian",
         int_constraints: Optional[
             Dict[int, Dict[int, Dict[str, Union[int, float]]]]
         ] = None,
@@ -146,6 +147,7 @@ class GridCPsplines:
         self.x_range = x_range
         self.sp_method = sp_method
         self.sp_args = sp_args
+        self.family = family
         self.int_constraints = int_constraints
         self.pt_constraints = pt_constraints
         self.pdf_constraint = pdf_constraint
