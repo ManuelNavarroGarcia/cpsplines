@@ -559,7 +559,7 @@ class GridCPsplines:
             lin_term=lin_term, L_B=L_B, L_D=L_D, data_normalizer=data_normalizer
         )
         model_params = {"theta": M.getVariable("theta")}
-        for i in range(len(self.bspline_bases)):
+        for i, _ in enumerate(self.deg):
             model_params[f"sp_{i}"] = M.getParameter(f"sp_{i}")
 
         # Get the matrices used in the GCV computation
