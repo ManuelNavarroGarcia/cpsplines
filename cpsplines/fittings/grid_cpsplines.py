@@ -1,5 +1,4 @@
 import itertools
-from functools import reduce
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import mosek.fusion
@@ -11,13 +10,7 @@ from cpsplines.mosek_functions.pdf_constraints import PDFConstraint
 from cpsplines.mosek_functions.point_constraints import PointConstraints
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.psplines.penalty_matrix import PenaltyMatrix
-from cpsplines.utils.cholesky_semidefinite import cholesky_semidef
-from cpsplines.utils.fast_kron import (
-    fast_kronecker_product,
-    matrix_by_tensor_product,
-    matrix_by_transpose,
-    penalization_term,
-)
+from cpsplines.utils.fast_kron import matrix_by_tensor_product, matrix_by_transpose
 from cpsplines.utils.gcv import GCV, gcv_mat
 from cpsplines.utils.normalize_data import DataNormalizer
 from cpsplines.utils.simulator_grid_search import print_grid_search_results
@@ -535,6 +528,7 @@ class GridCPsplines:
 
         # Auxiliary matrices derived from `obj_matrices`
         obj_matrices["B_w"] = get_weighted_B(bspline_bases=self.bspline_bases)
+        obj_matrices["B_mul"] = list(map(matrix_by_transpose, obj_matrices["B_w"]))
 
         # Initialize the model
         M = self._initialize_model(

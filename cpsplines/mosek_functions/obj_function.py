@@ -1,8 +1,15 @@
+from functools import reduce
 from typing import Dict, Iterable, Tuple, Union
 
 import mosek.fusion
 import numpy as np
 from cpsplines.psplines.bspline_basis import BsplineBasis
+from cpsplines.utils.cholesky_semidefinite import cholesky_semidef
+from cpsplines.utils.fast_kron import (
+    fast_kronecker_product,
+    matrix_by_tensor_product,
+    penalization_term,
+)
 
 
 class ObjectiveFunction:
@@ -145,19 +152,19 @@ class ObjectiveFunction:
         cons = []
         # Create the rotated quadratic cone constraint of each D^TD
         for i, L in enumerate(L_D):
-        cons.append(
-            self.model.constraint(
+            cons.append(
+                self.model.constraint(
                     f"rot_cone_{i}",
-                mosek.fusion.Expr.vstack(
+                    mosek.fusion.Expr.vstack(
                         self.var_dict[f"t_D_{i}"],
-                    1 / 2,
-                    mosek.fusion.Expr.mul(
+                        1 / 2,
+                        mosek.fusion.Expr.mul(
                             mosek.fusion.Matrix.sparse(L), flatten_theta
+                        ),
                     ),
-                ),
-                mosek.fusion.Domain.inRotatedQCone(),
+                    mosek.fusion.Domain.inRotatedQCone(),
+                )
             )
-        )
 
         # The rotated cone reformulation on the penalty term yield summands on
         # the objective function of the form sp*t_D, where t_D is the new
@@ -202,7 +209,7 @@ class ObjectiveFunction:
                     mosek.fusion.Domain.inRotatedQCone(),
                 )
             )
-        # The rotated cone reformulation on the basis term yield a summand of
+            # The rotated cone reformulation on the basis term yield a summand of
             # the artificial variable t_B included during the reformulation and
             # a linear term depending on the response variable sample
             obj = mosek.fusion.Expr.add(
