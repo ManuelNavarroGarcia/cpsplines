@@ -539,20 +539,7 @@ class GridCPsplines:
         obj_matrices = self._get_obj_func_arrays(x=x, y=y)
 
         # Auxiliary matrices derived from `obj_matrices`
-        B_weighted = get_weighted_B(bspline_bases=self.bspline_bases)
-        obj_matrices["B_mul"] = list(map(matrix_by_transpose, B_weighted))
-        # Compute the linear term coefficients of the objective function
-        lin_term = np.multiply(
-            -2,
-            matrix_by_tensor_product([mat.T for mat in B_weighted], obj_matrices["y"]),
-        ).flatten()
-
-        # Compute the Cholesky decompositions (A = L @ L.T)
-        L_B = reduce(
-            fast_kronecker_product, list(map(cholesky_semidef, obj_matrices["B_mul"]))
-        )
-
-        L_D = penalization_term(matrices=obj_matrices["D"])
+        obj_matrices["B_w"] = get_weighted_B(bspline_bases=self.bspline_bases)
 
         # Initialize the model
         M = self._initialize_model(
@@ -567,11 +554,15 @@ class GridCPsplines:
 
         if self.sp_method == "grid_search":
             self.best_sp = self._get_sp_grid_search(
-                B_weighted=B_weighted, Q_matrices=Q_matrices, y=obj_matrices["y"]
+                B_weighted=obj_matrices["B_w"],
+                Q_matrices=Q_matrices,
+                y=obj_matrices["y"],
             )
         else:
             self.best_sp = self._get_sp_optimizer(
-                B_weighted=B_weighted, Q_matrices=Q_matrices, y=obj_matrices["y"]
+                B_weighted=obj_matrices["B_w"],
+                Q_matrices=Q_matrices,
+                y=obj_matrices["y"],
             )
         theta_shape = model_params["theta"].getShape()
         # Set the smoothing parameters vector as the optimal obtained in the
