@@ -307,7 +307,7 @@ class GridCPsplines:
         # Create the variables of the optimization problem
         mos_obj_f = ObjectiveFunction(bspline=self.bspline_bases, model=M)
         # For each axis, a smoothing parameter is needed
-        sp = [M.parameter(f"sp_{i}", 1) for i in range(len(L_D))]
+        sp = [M.parameter(f"sp_{i}", 1) for i, _ in enumerate(self.deg)]
         # Build the objective function of the problem
         mos_obj_f.create_obj_function(
             L_B=L_B,
