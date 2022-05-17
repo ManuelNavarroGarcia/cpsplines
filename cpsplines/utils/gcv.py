@@ -81,7 +81,10 @@ def quadratic_term(
 
 
 def explicit_y_hat(
-    Q: np.ndarray, B_weighted: Iterable[np.ndarray], y: np.ndarray
+    Q: np.ndarray,
+    B_weighted: Iterable[np.ndarray],
+    y: np.ndarray,
+    family: str = "gaussian",
 ) -> np.ndarray:
 
     """
@@ -108,7 +111,8 @@ def explicit_y_hat(
         tuple([mat.shape[1] for mat in B_weighted]),
         order="F",
     )
-    return matrix_by_tensor_product([mat for mat in B_weighted], theta)
+    y_hat = matrix_by_tensor_product([mat for mat in B_weighted], theta)
+    return y_hat
 
 
 def GCV(
@@ -116,6 +120,7 @@ def GCV(
     B_weighted: Iterable[np.ndarray],
     Q_matrices: Iterable[np.ndarray],
     y: np.ndarray,
+    family: str = "gaussian",
 ) -> float:
 
     """Computes the Generalized Cross Validation (Golub et al., 1979).
@@ -146,7 +151,7 @@ def GCV(
     """
     Q = quadratic_term(sp=sp, Q_matrices=Q_matrices)
     # The fitted y
-    y_hat = explicit_y_hat(Q=Q, B_weighted=B_weighted, y=y)
+    y_hat = explicit_y_hat(Q=Q, B_weighted=B_weighted, y=y, family=family)
     # Return the GCV value, which is RSS * n / (n - tr(H))**2, where RSS is the
     # residual sum of squares, n is the product of the dimensions of y and H is
     # the hat matrix of the unconstrained problem

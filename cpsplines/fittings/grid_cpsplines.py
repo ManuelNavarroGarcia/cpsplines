@@ -399,7 +399,8 @@ class GridCPsplines:
         # Run in parallel if the argument `parallel` is present
         if self.sp_args["parallel"] == True:
             gcv = Parallel(n_jobs=self.sp_args["n_jobs"])(
-                delayed(GCV)(sp, B_weighted, Q_matrices, y) for sp in iter_sp
+                delayed(GCV)(sp, B_weighted, Q_matrices, y, self.family)
+                for sp in iter_sp
             )
         else:
             gcv = [
@@ -408,6 +409,7 @@ class GridCPsplines:
                     B_weighted=B_weighted,
                     Q_matrices=Q_matrices,
                     y=y,
+                    family=self.family,
                 )
                 for sp in iter_sp
             ]
@@ -456,11 +458,7 @@ class GridCPsplines:
         # Get the best set of smoothing parameters
         best_sp = scipy.optimize.minimize(
             gcv_sim.simulate if self.sp_args["verbose"] else GCV,
-            args=(
-                B_weighted,
-                Q_matrices,
-                y,
-            ),
+            args=(B_weighted, Q_matrices, y, self.family),
             callback=gcv_sim.callback if self.sp_args["verbose"] else None,
             **scipy_optimize_params,
         ).x
