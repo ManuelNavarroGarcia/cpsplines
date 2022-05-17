@@ -112,6 +112,8 @@ def explicit_y_hat(
         order="F",
     )
     y_hat = matrix_by_tensor_product([mat for mat in B_weighted], theta)
+    if family == "poisson":
+        y_hat = np.exp(y_hat)
     return y_hat
 
 
