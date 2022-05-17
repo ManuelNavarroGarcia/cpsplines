@@ -10,8 +10,7 @@ from cpsplines.mosek_functions.pdf_constraints import PDFConstraint
 from cpsplines.mosek_functions.point_constraints import PointConstraints
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.psplines.penalty_matrix import PenaltyMatrix
-from cpsplines.utils.fast_kron import (matrix_by_tensor_product,
-                                       matrix_by_transpose)
+from cpsplines.utils.fast_kron import matrix_by_tensor_product, matrix_by_transpose
 from cpsplines.utils.gcv import GCV, gcv_mat
 from cpsplines.utils.normalize_data import DataNormalizer
 from cpsplines.utils.simulator_grid_search import print_grid_search_results
