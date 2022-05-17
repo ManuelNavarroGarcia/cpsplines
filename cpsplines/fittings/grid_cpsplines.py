@@ -10,7 +10,8 @@ from cpsplines.mosek_functions.pdf_constraints import PDFConstraint
 from cpsplines.mosek_functions.point_constraints import PointConstraints
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.psplines.penalty_matrix import PenaltyMatrix
-from cpsplines.utils.fast_kron import matrix_by_tensor_product, matrix_by_transpose
+from cpsplines.utils.fast_kron import (matrix_by_tensor_product,
+                                       matrix_by_transpose)
 from cpsplines.utils.gcv import GCV, gcv_mat
 from cpsplines.utils.normalize_data import DataNormalizer
 from cpsplines.utils.simulator_grid_search import print_grid_search_results
@@ -178,7 +179,7 @@ class GridCPsplines:
                     prediction_dict["backwards"] = pred_min
             bsp = BsplineBasis(
                 deg=self.deg[i],
-                xsample=np.sort(x[i]),
+                xsample=x[i],
                 n_int=self.n_int[i],
                 prediction=prediction_dict,
             )
@@ -246,7 +247,6 @@ class GridCPsplines:
         # The extended response variable sample dimensions can be obtained as
         # the number of rows of the design matrix B
         y_ext_dim = []
-        ordered_idx = []
         for i, bsp in enumerate(self.bspline_bases):
             B = bsp.matrixB
             y_ext_dim.append(B.shape[0])
@@ -255,13 +255,11 @@ class GridCPsplines:
             P = penaltymat.get_penalty_matrix(**{"ord_d": self.ord_d[i]})
             obj_matrices["D"].append(penaltymat.matrixD)
             obj_matrices["D_mul"].append(P)
-            ordered_idx.append(np.argsort(x[i]))
 
         # Reorder the response variable array so the covariate coordinates are
         # non-decreasing
-        y_ordered = y[np.ix_(*ordered_idx)]
         y_ext = np.zeros(tuple(y_ext_dim))
-        y_ext[get_idx_fitting_region(self.bspline_bases)] = y_ordered
+        y_ext[get_idx_fitting_region(self.bspline_bases)] = y
         obj_matrices["y"] = y_ext
         return obj_matrices
 
