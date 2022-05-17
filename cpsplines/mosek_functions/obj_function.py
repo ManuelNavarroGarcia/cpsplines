@@ -3,6 +3,7 @@ from typing import Dict, Iterable, Tuple, Union
 
 import mosek.fusion
 import numpy as np
+from cpsplines.mosek_functions.utils_mosek import matrix_by_tensor_product_mosek
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.utils.cholesky_semidefinite import cholesky_semidef
 from cpsplines.utils.fast_kron import (
@@ -217,6 +218,41 @@ class ObjectiveFunction:
                     self.var_dict["t_B"], mosek.fusion.Expr.dot(lin_term, flatten_theta)
                 ),
                 obj,
+            )
+        elif family == "poisson":
+            self.var_dict |= {
+                "t": self.model.variable(
+                    "t",
+                    np.prod(obj_matrices["y"].shape),
+                    mosek.fusion.Domain.greaterThan(0.0),
+                )
+            }
+
+            lin_term = matrix_by_tensor_product(
+                [mat.T for mat in obj_matrices["B_w"]], obj_matrices["y"]
+            ).flatten()
+
+            coef = mosek.fusion.Expr.flatten(
+                matrix_by_tensor_product_mosek(
+                    matrices=obj_matrices["B_w"], mosek_var=self.var_dict["theta"]
+                )
+            )
+            cons.append(
+                self.model.constraint(
+                    mosek.fusion.Expr.hstack(
+                        self.var_dict["t"],
+                        mosek.fusion.Expr.constTerm(
+                            np.prod(obj_matrices["y"].shape), 1.0
+                        ),
+                        coef,
+                    ),
+                    mosek.fusion.Domain.inPExpCone(),
+                )
+            )
+
+            obj = mosek.fusion.Expr.sub(
+                mosek.fusion.Expr.sum(self.var_dict["t"]),
+                mosek.fusion.Expr.dot(lin_term, flatten_theta),
             )
         # Generate the minimization objective function object
         obj = self.model.objective(
