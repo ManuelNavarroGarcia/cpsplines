@@ -353,26 +353,33 @@ class IntConstraints:
                         .reshape([self.deg_w + 1, self.deg_w + 1])
                     )
                     # Creates the homogeneous equations
-                    for i in range(self.deg_w):
+                    if self.matricesH[0]:
                         list_cons.append(
                             model.constraint(
-                                mosek.fusion.Expr.dot(self.matricesH[0][i], slice_X),
+                                mosek.fusion.Expr.vstack(
+                                    [
+                                        mosek.fusion.Expr.dot(H, slice_X)
+                                        for H in self.matricesH[0]
+                                    ]
+                                ),
                                 mosek.fusion.Domain.equalsTo(0.0),
                             )
                         )
-                    # Creates the non-homogeneous equations
-                    for i in range(self.deg_w + 1):
+                    if self.matricesH[1]:
                         if key == "+":
                             list_cons.append(
                                 model.constraint(
                                     mosek.fusion.Expr.sub(
-                                        poly_coef.slice(i, i + 1),
-                                        mosek.fusion.Expr.dot(
-                                            self.matricesH[1][i], slice_X
+                                        poly_coef,
+                                        mosek.fusion.Expr.vstack(
+                                            [
+                                                mosek.fusion.Expr.dot(H, slice_X)
+                                                for H in self.matricesH[1]
+                                            ]
                                         ),
                                     ),
                                     mosek.fusion.Domain.equalsTo(
-                                        ind_term[i] * self.constraints[key]
+                                        ind_term * self.constraints[key]
                                     ),
                                 )
                             )
@@ -380,13 +387,16 @@ class IntConstraints:
                             list_cons.append(
                                 model.constraint(
                                     mosek.fusion.Expr.add(
-                                        poly_coef.slice(i, i + 1),
-                                        mosek.fusion.Expr.dot(
-                                            self.matricesH[1][i], slice_X
+                                        poly_coef,
+                                        mosek.fusion.Expr.vstack(
+                                            [
+                                                mosek.fusion.Expr.dot(H, slice_X)
+                                                for H in self.matricesH[1]
+                                            ]
                                         ),
                                     ),
                                     mosek.fusion.Domain.equalsTo(
-                                        ind_term[i] * self.constraints[key]
+                                        ind_term * self.constraints[key]
                                     ),
                                 )
                             )
