@@ -1,5 +1,4 @@
 import itertools
-from signal import signal
 from typing import Dict, Iterable, List, Tuple, Union
 
 import mosek.fusion
@@ -303,6 +302,9 @@ class IntConstraints:
         num_by_sign = len(self.constraints.keys())
         list_cons = []
         # Loop over every interval on the `var_name` axis
+        trace_list = []
+        coef_list = []
+        ind_term_list = []
         for w in range(
             self.bspline[self.var_name].matrixB.shape[1]
             - self.bspline[self.var_name].deg
@@ -336,6 +338,7 @@ class IntConstraints:
                 )
                 # Loop over the different sign constraints
                 for k, key in enumerate(self.constraints.keys()):
+                    sign_cons = 1 if key == "+" else -1
                     # Get current index
                     actual_index = k + num_by_sign * (j + w * num_by_interval)
                     # Get current positive semidefinite variable
@@ -351,27 +354,29 @@ class IntConstraints:
                         )
                         .reshape([self.deg_w + 1, self.deg_w + 1])
                     )
-                    sign_cons = 1 if key == "+" else -1
-                    list_cons.append(
-                        model.constraint(
-                            mosek.fusion.Expr.sub(
-                                mosek.fusion.Expr.vstack(
-                                    mosek.fusion.Expr.constTerm(self.deg_w, 0),
-                                    mosek.fusion.Expr.mul(
-                                        sign_cons,
-                                        poly_coef,
-                                    ),
-                                ),
-                                mosek.fusion.Expr.vstack(
-                                    [
-                                        mosek.fusion.Expr.dot(H, slice_X)
-                                        for H in self.matricesH
-                                    ]
-                                ),
-                            ),
-                            mosek.fusion.Domain.equalsTo(
-                                sign_cons * ind_term * self.constraints[key]
+                    trace_list.append(
+                        [mosek.fusion.Expr.dot(H, slice_X) for H in self.matricesH]
+                    )
+                    coef_list.append(
+                        mosek.fusion.Expr.vstack(
+                            mosek.fusion.Expr.constTerm(self.deg_w, 0),
+                            mosek.fusion.Expr.mul(
+                                sign_cons,
+                                poly_coef,
                             ),
                         )
                     )
+                    ind_term_list.append(sign_cons * ind_term * self.constraints[key])
+
+        list_cons.append(
+            model.constraint(
+                mosek.fusion.Expr.sub(
+                    mosek.fusion.Expr.vstack(coef_list),
+                    mosek.fusion.Expr.vstack(
+                        list(itertools.chain.from_iterable(trace_list))
+                    ),
+                ),
+                mosek.fusion.Domain.equalsTo(np.concatenate(ind_term_list)),
+            )
+        )
         return tuple(list_cons)
