@@ -1,4 +1,5 @@
 import itertools
+from signal import signal
 from typing import Dict, Iterable, List, Tuple, Union
 
 import mosek.fusion
@@ -170,17 +171,15 @@ class IntConstraints:
         )
         H = []
         for diag in [diag_zero, diag_nonzero]:
-            H_by_diag = []
             for k in diag:
                 # Create an identity matrix along the corresponding diagonal and
                 # the rotate it 90 degrees to get the antidiagonal. Then convert
                 # it to a MOSEK sparse matrix
-                H_by_diag.append(
+                H.append(
                     mosek.fusion.Matrix.sparse(
                         np.rot90(np.eye(self.deg_w + 1, k=k, dtype=np.int32))
                     )
                 )
-            H.append(H_by_diag)
         return H
 
     def _create_PSD_var(self, model: mosek.fusion.Model) -> mosek.fusion.PSDVariable:
@@ -259,7 +258,7 @@ class IntConstraints:
         # Extract the weights related to the independent term, which is used
         # when some derivative of the curve is constrained to be greater or
         # lower than a certain threshold
-        ind_term = self.matricesW[0][:, 0]
+        ind_term = np.concatenate((np.zeros(self.deg_w), self.matricesW[0][:, 0]))
         # For every axis, get the contribution to the estimated function at the
         # knots
         for j, bsp in enumerate(self.bspline):
@@ -352,52 +351,27 @@ class IntConstraints:
                         )
                         .reshape([self.deg_w + 1, self.deg_w + 1])
                     )
-                    # Creates the homogeneous equations
-                    if self.matricesH[0]:
-                        list_cons.append(
-                            model.constraint(
+                    sign_cons = 1 if key == "+" else -1
+                    list_cons.append(
+                        model.constraint(
+                            mosek.fusion.Expr.sub(
+                                mosek.fusion.Expr.vstack(
+                                    mosek.fusion.Expr.constTerm(self.deg_w, 0),
+                                    mosek.fusion.Expr.mul(
+                                        sign_cons,
+                                        poly_coef,
+                                    ),
+                                ),
                                 mosek.fusion.Expr.vstack(
                                     [
                                         mosek.fusion.Expr.dot(H, slice_X)
-                                        for H in self.matricesH[0]
+                                        for H in self.matricesH
                                     ]
                                 ),
-                                mosek.fusion.Domain.equalsTo(0.0),
-                            )
+                            ),
+                            mosek.fusion.Domain.equalsTo(
+                                sign_cons * ind_term * self.constraints[key]
+                            ),
                         )
-                    if self.matricesH[1]:
-                        if key == "+":
-                            list_cons.append(
-                                model.constraint(
-                                    mosek.fusion.Expr.sub(
-                                        poly_coef,
-                                        mosek.fusion.Expr.vstack(
-                                            [
-                                                mosek.fusion.Expr.dot(H, slice_X)
-                                                for H in self.matricesH[1]
-                                            ]
-                                        ),
-                                    ),
-                                    mosek.fusion.Domain.equalsTo(
-                                        ind_term * self.constraints[key]
-                                    ),
-                                )
-                            )
-                        else:
-                            list_cons.append(
-                                model.constraint(
-                                    mosek.fusion.Expr.add(
-                                        poly_coef,
-                                        mosek.fusion.Expr.vstack(
-                                            [
-                                                mosek.fusion.Expr.dot(H, slice_X)
-                                                for H in self.matricesH[1]
-                                            ]
-                                        ),
-                                    ),
-                                    mosek.fusion.Domain.equalsTo(
-                                        ind_term * self.constraints[key]
-                                    ),
-                                )
-                            )
+                    )
         return tuple(list_cons)
