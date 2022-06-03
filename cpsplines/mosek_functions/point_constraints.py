@@ -96,22 +96,22 @@ class PointConstraints:
         # For every point constraint, extract the evaluation of the
         # corresponding coordinates and multiply them by the multidimensional
         # array of the expansion coefficients
-        for i, v in enumerate(self.value):
+        coef = []
+        for i, _ in enumerate(self.value):
             bsp_x = [np.expand_dims(val[i, :], axis=1).T for val in bsp_eval.values()]
-            coef = matrix_by_tensor_product_mosek(
-                matrices=bsp_x, mosek_var=var_dict["theta"]
-            )
-            # The output should be constrained on the interval (v - tol, v + tol)
-            list_cons.append(
-                model.constraint(
-                    coef,
-                    mosek.fusion.Domain.greaterThan(v - self.tolerance),
+            coef.append(
+                matrix_by_tensor_product_mosek(
+                    matrices=bsp_x, mosek_var=var_dict["theta"]
                 )
             )
-            list_cons.append(
-                model.constraint(
-                    coef,
-                    mosek.fusion.Domain.lessThan(v + self.tolerance),
-                )
+        # The output should be constrained on the interval (v - tol, v + tol)
+        # vstack is necessary since `coef` may be a column matrix
+        list_cons.append(
+            model.constraint(
+                mosek.fusion.Expr.flatten(mosek.fusion.Expr.vstack(coef)),
+                mosek.fusion.Domain.inRange(
+                    self.value - self.tolerance, self.value + self.tolerance
+                ),
             )
+        )
         return tuple(list_cons)
