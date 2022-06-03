@@ -46,7 +46,7 @@ matplotlib-inline==0.1.3
     # via
     #   ipykernel
     #   ipython
-mosek==9.3.14
+mosek==9.3.20
     # via cpsplines (setup.py)
 mypy==0.910
     # via cpsplines (setup.py)
