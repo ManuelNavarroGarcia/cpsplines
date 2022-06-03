@@ -139,7 +139,7 @@ class IntConstraints:
             W.append(pascal_coef * W_i)
         return W
 
-    def _get_matrices_H(self) -> List[List[mosek.fusion.Matrix]]:
+    def _get_matrices_H(self) -> List[mosek.fusion.SparseMatrix]:
 
         """
         Generates matrices H used to extract the right coefficients from the
@@ -151,12 +151,12 @@ class IntConstraints:
 
         Returns
         -------
-        List[List[mosek.fusion.Matrix]]
-            A list containing two list of matrices: the first one corresponds to
-            the matrices used on the homogeneous equations, while the second is
-            used on the non-homogeneous equations. For the last, the first
-            matrix corresponds to the independent term equation, the second to
-            the linear term equation, and so on.
+        List[mosek.fusion.SparseMatrix]
+            A list containing 2 * `deg_w` + 1 mosek.fusion.SparseMatrix: the
+            first `deg_w` corresponds to the matrices used on the homogeneous
+            equations, while the rest is used on the non-homogeneous equations.
+            For this last set, the first matrix corresponds to the independent
+            term equation, the second to the linear term equation, and so on.
         """
 
         # The elements from X in the homogeneous equations are located on its
@@ -256,7 +256,8 @@ class IntConstraints:
         var_dict |= {"X": self._create_PSD_var(model=model)}
         # Extract the weights related to the independent term, which is used
         # when some derivative of the curve is constrained to be greater or
-        # lower than a certain threshold
+        # lower than a certain threshold. `deg_w` are included since the first
+        # `deg_w` of the proposition are homogenenous
         ind_term = np.concatenate((np.zeros(self.deg_w), self.matricesW[0][:, 0]))
         # For every axis, get the contribution to the estimated function at the
         # knots
@@ -300,11 +301,16 @@ class IntConstraints:
         # For every interval on the `var_name` axis, count how many interval
         # constraints types by sign there are
         num_by_sign = len(self.constraints.keys())
+        # The list of interval constraints
         list_cons = []
-        # Loop over every interval on the `var_name` axis
+        # Retain the left-hand side terms of the equations (<H, X>)
         trace_list = []
+        # Retain the right-hand side terms of the equations (S @ theta)
         coef_list = []
+        # Retain the independent coefficients from the right-hand side terms of
+        # the equations
         ind_term_list = []
+        # Loop over every interval on the `var_name` axis
         for w in range(
             self.bspline[self.var_name].matrixB.shape[1]
             - self.bspline[self.var_name].deg
@@ -354,6 +360,7 @@ class IntConstraints:
                         )
                         .reshape([self.deg_w + 1, self.deg_w + 1])
                     )
+                    # Append the corresponding terms for this interval
                     trace_list.append(
                         [mosek.fusion.Expr.dot(H, slice_X) for H in self.matricesH]
                     )
