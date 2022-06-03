@@ -250,13 +250,14 @@ class ObjectiveFunction:
                 )
             )
 
-            obj = mosek.fusion.Expr.add(
-                obj,
-                mosek.fusion.Expr.sub(
+            obj = mosek.fusion.Expr.sub(
+                mosek.fusion.Expr.add(
                     mosek.fusion.Expr.sum(self.var_dict["t"]),
-                    mosek.fusion.Expr.dot(lin_term, flatten_theta),
+                    mosek.fusion.Expr.mul(0.5, obj),
                 ),
+                mosek.fusion.Expr.dot(lin_term, flatten_theta),
             )
+
         # Generate the minimization objective function object
         obj = self.model.objective(
             "obj",
