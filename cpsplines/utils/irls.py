@@ -1,34 +1,15 @@
 from typing import Union
 
 import numpy as np
+import statsmodels.regression._tools as reg_tools
+from statsmodels.genmod.families.family import Gaussian, Poisson
 
 
-def get_utils_irls(y, eta, family):
-    if family == "gaussian":
-        g = eta
-        gprime = eta
-        variance = 1
-    elif family == "poisson":
-        aux = np.exp(eta)
-        g = aux
-        gprime = aux
-        variance = aux
-    elif family == "binomial":
-        aux = np.exp(eta)
-        g = aux / (1 + aux)
-        gprime = g / (1 + aux)
-        variance = gprime
-    else:
-        raise ValueError("Family {family} is not implemented.")
-
-    return {"z": eta + (y - g) / gprime, "W": np.square(gprime) / variance}
-
-
-def irls(
+def fit_irls(
     X: np.ndarray,
     y: np.ndarray,
     threshold: Union[int, float] = 1e-8,
-    max_iter: int = 100,
+    maxiter: int = 100,
     family: str = "gaussian",
     verbose: bool = False,
 ) -> np.ndarray:
@@ -38,20 +19,30 @@ def irls(
             "The design matrix `X` and the response vector `y` have different number of rows."
         )
 
-    beta = np.zeros((X.shape[1],), dtype=int)
-    for iter in range(max_iter):
-        beta_old = beta.copy()
-        eta = np.dot(X, beta)
-        utils_irls = get_utils_irls(eta=eta, y=y, family=family)
-        beta = np.linalg.solve(
-            X.T @ utils_irls["W"] @ X, X.T @ utils_irls["W"] @ utils_irls["Z"]
-        )
-        if np.linalg.norm(beta - beta_old) < threshold:
-            break
-    if verbose:
-        if max_iter > iter:
-            print(f"Algorithm has converged after iteration {iter}.")
-        else:
-            print("Algorithm has not converged.")
+    if family == "gaussian":
+        family = Gaussian()
+    elif family == "poisson":
+        family = Poisson()
+    else:
+        raise ValueError(f"Family {family} is not implemented.")
 
+    beta_old = np.zeros(X.shape[1])
+    mu = family.starting_mu(y)
+    lin_pred = family.predict(mu)
+
+    for iter in range(maxiter):
+        weights = family.weights(mu)
+        z = lin_pred + family.link.deriv(mu) * (y - mu)
+
+        weighted_ls = reg_tools._MinimalWLS(
+            z, X, weights, check_endog=True, check_weights=True
+        )
+        beta = weighted_ls.fit(method="lstsq")["params"]
+        lin_pred = np.dot(X, beta)
+        mu = family.fitted(lin_pred)
+        if np.linalg.norm(beta - beta_old) < threshold:
+            if verbose:
+                print(f"Algorithm has converged after {iter} iterations.")
+            break
+        beta_old = beta.copy()
     return beta
