@@ -1,7 +1,6 @@
 from typing import Union
 
 import numpy as np
-import statsmodels.regression._tools as reg_tools
 from statsmodels.genmod.families.family import Gaussian, Poisson
 
 
@@ -34,10 +33,8 @@ def fit_irls(
         weights = family.weights(mu)
         z = lin_pred + family.link.deriv(mu) * (y - mu)
 
-        weighted_ls = reg_tools._MinimalWLS(
-            z, X, weights, check_endog=True, check_weights=True
-        )
-        beta = weighted_ls.fit(method="lstsq")["params"]
+        beta = np.linalg.solve(X.T @ np.diag(weights) @ X, X.T @ np.diag(weights) @ z)
+
         lin_pred = np.dot(X, beta)
         mu = family.fitted(lin_pred)
         if np.linalg.norm(beta - beta_old) < threshold:
