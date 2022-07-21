@@ -87,7 +87,7 @@ def test_identity_kron_mat(n, A):
         (((11, 3), (13, 5), (17, 7)), (11, 13, 17)),
     ],
 )
-def test_fast_kronecker(dim_mat, dim_W):
+def test_weighted_double_kronecker(dim_mat, dim_W):
     matrices = [np.random.rand(*d) for d in dim_mat]
     W = np.random.rand(*dim_W)
 
