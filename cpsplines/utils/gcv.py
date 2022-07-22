@@ -112,10 +112,13 @@ def GCV(
     float
         The GCV value.
     """
-    Q = quadratic_term(sp=sp, Q_matrices=Q_matrices)
-    # The fitted y
-    y_hat = explicit_y_hat(Q=Q, B_weighted=B_weighted, y=y, family=family)
-    # Return the GCV value, which is RSS * n / (n - tr(H))**2, where RSS is the
+    if family == "gaussian":
+        family = statsmodels.genmod.families.family.Gaussian()
+    elif family == "poisson":
+        family = statsmodels.genmod.families.family.Poisson()
+    else:
+        raise ValueError(f"Family {family} is not implemented.")
+
     # residual sum of squares, n is the product of the dimensions of y and H is
     # the hat matrix of the unconstrained problem
     return (np.linalg.norm((y - y_hat)) ** 2 * np.prod(y.shape)) / (
