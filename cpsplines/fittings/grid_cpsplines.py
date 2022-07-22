@@ -11,7 +11,7 @@ from cpsplines.mosek_functions.point_constraints import PointConstraints
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.psplines.penalty_matrix import PenaltyMatrix
 from cpsplines.utils.fast_kron import matrix_by_tensor_product, matrix_by_transpose
-from cpsplines.utils.gcv import GCV, gcv_mat
+from cpsplines.utils.gcv import GCV
 from cpsplines.utils.normalize_data import DataNormalizer
 from cpsplines.utils.simulator_grid_search import print_grid_search_results
 from cpsplines.utils.simulator_optimize import Simulator
@@ -367,9 +367,7 @@ class GridCPsplines:
 
     def _get_sp_grid_search(
         self,
-        B_weighted: Iterable[np.ndarray],
-        Q_matrices: Iterable[np.ndarray],
-        y: np.ndarray,
+        obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
     ) -> Tuple[Union[int, float]]:
 
         """
@@ -396,16 +394,13 @@ class GridCPsplines:
         # Run in parallel if the argument `parallel` is present
         if self.sp_args["parallel"] == True:
             gcv = Parallel(n_jobs=self.sp_args["n_jobs"])(
-                delayed(GCV)(sp, B_weighted, Q_matrices, y, self.family)
-                for sp in iter_sp
+                delayed(GCV)(sp, obj_matrices, self.family) for sp in iter_sp
             )
         else:
             gcv = [
                 GCV(
                     sp=sp,
-                    B_weighted=B_weighted,
-                    Q_matrices=Q_matrices,
-                    y=y,
+                    obj_matrices=obj_matrices,
                     family=self.family,
                 )
                 for sp in iter_sp
@@ -420,9 +415,7 @@ class GridCPsplines:
 
     def _get_sp_optimizer(
         self,
-        B_weighted: Iterable[np.ndarray],
-        Q_matrices: Iterable[np.ndarray],
-        y: np.ndarray,
+        obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
     ) -> Tuple[Union[int, float]]:
 
         """
@@ -455,7 +448,7 @@ class GridCPsplines:
         # Get the best set of smoothing parameters
         best_sp = scipy.optimize.minimize(
             gcv_sim.simulate if self.sp_args["verbose"] else GCV,
-            args=(B_weighted, Q_matrices, y, self.family),
+            args=(obj_matrices, self.family),
             callback=gcv_sim.callback if self.sp_args["verbose"] else None,
             **scipy_optimize_params,
         ).x
@@ -533,20 +526,13 @@ class GridCPsplines:
         for i, _ in enumerate(self.deg):
             model_params[f"sp_{i}"] = M.getParameter(f"sp_{i}")
 
-        # Get the matrices used in the GCV computation
-        Q_matrices = gcv_mat(B_mul=obj_matrices["B_mul"], D_mul=obj_matrices["D_mul"])
-
         if self.sp_method == "grid_search":
             self.best_sp = self._get_sp_grid_search(
-                B_weighted=obj_matrices["B_w"],
-                Q_matrices=Q_matrices,
-                y=obj_matrices["y"],
+                obj_matrices=obj_matrices,
             )
         else:
             self.best_sp = self._get_sp_optimizer(
-                B_weighted=obj_matrices["B_w"],
-                Q_matrices=Q_matrices,
-                y=obj_matrices["y"],
+                obj_matrices=obj_matrices,
             )
         theta_shape = model_params["theta"].getShape()
         # Set the smoothing parameters vector as the optimal obtained in the
