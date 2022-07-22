@@ -121,6 +121,10 @@ def GCV(
 
     # residual sum of squares, n is the product of the dimensions of y and H is
     # the hat matrix of the unconstrained problem
-    return (np.linalg.norm((y - y_hat)) ** 2 * np.prod(y.shape)) / (
-        np.prod(y.shape) - np.trace(np.linalg.solve(Q, Q_matrices[0]))
-    ) ** 2
+    return (
+        np.prod(obj_matrices["y"].shape)
+        * np.square(np.linalg.norm((obj_matrices["y"] - y_hat)))
+    ) / np.square(
+        np.prod(obj_matrices["y"].shape)
+        - np.trace(np.linalg.solve(bases_term + penalty_term, bases_term))
+    )
