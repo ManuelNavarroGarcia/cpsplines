@@ -42,79 +42,40 @@ def gcv_mat(
 
 
 def quadratic_term(
-    sp: Iterable[Union[int, float]], Q_matrices: Iterable[np.ndarray]
-) -> np.ndarray:
+    sp: Iterable[Union[int, float]],
+    obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
+    family: statsmodels.genmod.families.family,
+) -> Tuple[np.ndarray, np.ndarray]:
 
     """
-    Given a smoothing parameter vector and the set of matrices used in the
-    computation of the hat matrix, computes the matrix to be inverted in this
-    computation.
+    Computes the quadratic terms involved in the objective function, i.e., the
+    bases related term and the penalty term.
 
     Parameters
     ----------
     sp : Iterable[Union[int, float]]
         The smoothing paramater vector.
-    Q_matrices : Iterable[np.ndarray]
-        The array of matrices of the matrices to be inverted. The first is
-        related to the B-spline bases and the rest to the penalty terms along
-        each dimension.
+    obj_matrices : Dict[str, Union[np.ndarray, Iterable[np.ndarray]]]
+        A dictionary containing the necessary arrays (the basis matrices, the
+        penalty matrices and the response variable sample) used to compute the
+        quadratic terms in the objective function.
+    family : statsmodels.genmod.families.family, optional
+        The specific exponential family distribution where the response variable
+        belongs to, by default "gaussian".
 
     Returns
     -------
-    np.ndarray
-        The matrix to be inverted on the computation of the Generalized Cross
-        Validation.
-
-    Raises
-    ------
-    ValueError
-        If matrices dimensions are different.
+    Tuple[np.ndarray, np.ndarray]
+        A tuple containing the bases related term and the penalty term (in this
+        order).
     """
 
-    if len(set([A.shape for A in Q_matrices])) > 1:
-        raise ValueError("Matrices dimensions must agree.")
-    penalty_term = np.zeros(Q_matrices[0].shape)
-    reversed_sp = sp[::-1]
-    for i, s in enumerate(reversed_sp):
-        penalty_term += np.multiply(s, Q_matrices[i + 1])
-    return Q_matrices[0] + penalty_term
-
-
-def explicit_y_hat(
-    Q: np.ndarray,
-    B_weighted: Iterable[np.ndarray],
-    y: np.ndarray,
-    family: str = "gaussian",
-) -> np.ndarray:
-
-    """
-    Computes the fitted values for the response variable using the explicit
-    formula on the unconstrained framework.
-
-    Parameters
-    ----------
-    Q : np.ndarray
-        The resulting matrix from `quadratic_term`.
-    B_weighted : Iterable[np.ndarray]
-        The weighted design matrices from B-spline basis.
-    y : np.ndarray
-        The response variable sample.
-
-    Returns
-    -------
-    np.ndarray
-        The fitted values for the response variable.
-    """
-    y_contribution = matrix_by_tensor_product([B.T for B in B_weighted], y).flatten("F")
-    theta = np.reshape(
-        np.linalg.solve(Q, y_contribution),
-        tuple([mat.shape[1] for mat in B_weighted]),
-        order="F",
-    )
-    y_hat = matrix_by_tensor_product([mat for mat in B_weighted], theta)
-    if family == "poisson":
-        y_hat = np.exp(y_hat)
-    return y_hat
+    mu = family.starting_mu(obj_matrices["y"])
+    W = family.weights(mu)
+    bases_term = weighted_double_kronecker(matrices=obj_matrices["B_w"], W=W)
+    penalty_list = penalization_term(matrices=obj_matrices["D_mul"])
+    penalty_term = np.add.reduce([np.multiply(s, P) for P, s in zip(penalty_list, sp)])
+    return (bases_term, penalty_term)
 
 
 def GCV(
