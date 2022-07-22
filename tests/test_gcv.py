@@ -1,35 +1,32 @@
-from typing import Iterable, Union
+from typing import Dict, Iterable, Union
 
 import numpy as np
 import pytest
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.psplines.penalty_matrix import PenaltyMatrix
 from cpsplines.utils.fast_kron import matrix_by_transpose
-from cpsplines.utils.gcv import GCV, gcv_mat
+from cpsplines.utils.gcv import GCV
 
 
 def gcv_brute_force(
-    B_mul: Iterable[np.ndarray],
-    D_mul: Iterable[np.ndarray],
     sp: Iterable[Union[int, float]],
-    y: np.ndarray,
+    obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
     y_fit: np.ndarray,
 ) -> float:
-    """Computes the Generalized Cross Validation using the exact definition
+
+    """
+    Computes the Generalized Cross Validation using the exact definition
     including all the matrices involved. It only supports three or less
     dimensions.
 
     Parameters
     ----------
-    B_mul : Iterable[np.ndarray]
-        The product of the design matrices from the B-splines bases. Must have
-        length less or equal than 3.
-    D_mul : Iterable[np.ndarray]
-        The univariate penalty matrices. Must have length less or equal than 3.
     sp : Iterable[Union[int, float]]
-        The smoothing parameter vector.
-    y : np.ndarray
-        The response variable sample
+        The smoothing paramater vector.
+    obj_matrices : Dict[str, Union[np.ndarray, Iterable[np.ndarray]]]
+        A dictionary containing the necessary arrays (the basis matrices, the
+        penalty matrices and the response variable sample) used to compute the
+        quadratic terms in the objective function.
     y_fit : np.ndarray
         The fitted response variable array.
 
@@ -48,43 +45,75 @@ def gcv_brute_force(
         If the number of input B matrices is greater than 3.
     """
 
-    if y.shape != y_fit.shape:
+    obj_matrices["B_mul"] = list(map(matrix_by_transpose, obj_matrices["B_w"]))
+
+    if obj_matrices["y"].shape != y_fit.shape:
         raise ValueError("The shape of the response variable array must agree.")
-    if len(B_mul) != len(D_mul):
+    if len(obj_matrices["B_mul"]) != len(obj_matrices["D_mul"]):
         raise ValueError("Number of B elements must be equal to number of D elements.")
-    if len(B_mul) > 3:
+    if len(obj_matrices["B_mul"]) > 3:
         raise ValueError("Not implemented for more than three dimensions.")
     # Compute the hat matrix depending on the number of dimensions
-    if len(B_mul) == 1:
-        H = np.linalg.solve(B_mul[0] + np.multiply(sp[0], D_mul[0]), B_mul[0])
-    elif len(B_mul) == 2:
-        Q = (
-            np.kron(B_mul[1], B_mul[0])
-            + np.kron(np.eye(D_mul[1].shape[1]), np.multiply(sp[0], D_mul[0]))
-            + np.kron(np.multiply(sp[1], D_mul[1]), np.eye(D_mul[0].shape[1]))
+    if len(obj_matrices["B_mul"]) == 1:
+        H = np.linalg.solve(
+            obj_matrices["B_mul"][0] + np.multiply(sp[0], obj_matrices["D_mul"][0]),
+            obj_matrices["B_mul"][0],
         )
-        H = np.linalg.solve(Q, np.kron(B_mul[1], B_mul[0]))
+    elif len(obj_matrices["B_mul"]) == 2:
+        Q = (
+            np.kron(obj_matrices["B_mul"][1], obj_matrices["B_mul"][0])
+            + np.kron(
+                np.eye(obj_matrices["D_mul"][1].shape[1]),
+                np.multiply(sp[0], obj_matrices["D_mul"][0]),
+            )
+            + np.kron(
+                np.multiply(sp[1], obj_matrices["D_mul"][1]),
+                np.eye(obj_matrices["D_mul"][0].shape[1]),
+            )
+        )
+        H = np.linalg.solve(
+            Q, np.kron(obj_matrices["B_mul"][1], obj_matrices["B_mul"][0])
+        )
     else:
         Q = (
-            np.kron(B_mul[2], np.kron(B_mul[1], B_mul[0]))
-            + np.kron(
-                np.eye(D_mul[2].shape[1] * D_mul[1].shape[1]),
-                np.multiply(sp[0], D_mul[0]),
+            np.kron(
+                obj_matrices["B_mul"][2],
+                np.kron(obj_matrices["B_mul"][1], obj_matrices["B_mul"][0]),
             )
             + np.kron(
-                np.kron(np.eye(D_mul[2].shape[1]), np.multiply(sp[1], D_mul[1])),
-                np.eye(D_mul[0].shape[1]),
+                np.eye(
+                    obj_matrices["D_mul"][2].shape[1]
+                    * obj_matrices["D_mul"][1].shape[1]
+                ),
+                np.multiply(sp[0], obj_matrices["D_mul"][0]),
             )
             + np.kron(
-                np.multiply(sp[2], D_mul[2]),
-                np.eye(D_mul[1].shape[1] * D_mul[0].shape[1]),
+                np.kron(
+                    np.eye(obj_matrices["D_mul"][2].shape[1]),
+                    np.multiply(sp[1], obj_matrices["D_mul"][1]),
+                ),
+                np.eye(obj_matrices["D_mul"][0].shape[1]),
+            )
+            + np.kron(
+                np.multiply(sp[2], obj_matrices["D_mul"][2]),
+                np.eye(
+                    obj_matrices["D_mul"][1].shape[1]
+                    * obj_matrices["D_mul"][0].shape[1]
+                ),
             )
         )
-        H = np.linalg.solve(Q, np.kron(B_mul[2], np.kron(B_mul[1], B_mul[0])))
+        H = np.linalg.solve(
+            Q,
+            np.kron(
+                obj_matrices["B_mul"][2],
+                np.kron(obj_matrices["B_mul"][1], obj_matrices["B_mul"][0]),
+            ),
+        )
     # Get the Generalized Cross Validation value
-    return (np.linalg.norm((y - y_fit)) ** 2 * np.prod(y.shape)) / (
-        np.prod(y.shape) - np.trace(H)
-    ) ** 2
+    return (
+        np.linalg.norm((obj_matrices["y"] - y_fit)) ** 2
+        * np.prod(obj_matrices["y"].shape)
+    ) / (np.prod(obj_matrices["y"].shape) - np.trace(H)) ** 2
 
 
 y_1 = np.array(
@@ -203,7 +232,7 @@ y_fit_3 = np.array(
 
 
 @pytest.mark.parametrize(
-    "deg, regr_sample, n_int, prediction, ord_d, sp, y, y_fit",
+    "deg, regr_sample, n_int, prediction, ord_d, sp, y, y_fit, family",
     [
         (
             [3],
@@ -214,6 +243,7 @@ y_fit_3 = np.array(
             [0.123],
             y_1,
             y_fit_1,
+            "gaussian",
         ),
         (
             [3, 2],
@@ -224,6 +254,7 @@ y_fit_3 = np.array(
             [0.456, 7.89],
             y_2,
             y_fit_2,
+            "gaussian",
         ),
         (
             [2, 4, 3],
@@ -238,10 +269,11 @@ y_fit_3 = np.array(
             [0.12, 1.345, 0.011],
             y_3,
             y_fit_3,
+            "gaussian",
         ),
     ],
 )
-def test_gcv(deg, regr_sample, n_int, prediction, ord_d, sp, y, y_fit):
+def test_gcv(deg, regr_sample, n_int, prediction, ord_d, sp, y, y_fit, family):
     bspline = [
         BsplineBasis(deg=d, xsample=xsam, n_int=n, prediction=pred)
         for d, xsam, n, pred in zip(deg, regr_sample, n_int, prediction)
@@ -254,8 +286,8 @@ def test_gcv(deg, regr_sample, n_int, prediction, ord_d, sp, y, y_fit):
         PenaltyMatrix(bspline=bsp).get_penalty_matrix(**{"ord_d": o})
         for bsp, o in zip(bspline, ord_d)
     ]
-    B_mul = list(map(matrix_by_transpose, B))
-    Q_matrices = gcv_mat(B_mul=B_mul, D_mul=D_mul)
-    gcv_out = GCV(sp=sp, B_weighted=B, Q_matrices=Q_matrices, y=y)
-    gcv_brute = gcv_brute_force(B_mul=B_mul, D_mul=D_mul, sp=sp, y=y, y_fit=y_fit)
+    obj_matrices = {"B_w": B, "D_mul": D_mul, "y": y}
+
+    gcv_out = GCV(sp=sp, obj_matrices=obj_matrices, family=family)
+    gcv_brute = gcv_brute_force(sp=sp, obj_matrices=obj_matrices, y_fit=y_fit)
     np.testing.assert_allclose(gcv_out, gcv_brute)
