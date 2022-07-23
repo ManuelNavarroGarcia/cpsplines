@@ -1,5 +1,5 @@
 import itertools
-from functools import reduce
+from abc import abstractmethod
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import mosek.fusion
@@ -11,20 +11,15 @@ from cpsplines.mosek_functions.pdf_constraints import PDFConstraint
 from cpsplines.mosek_functions.point_constraints import PointConstraints
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.psplines.penalty_matrix import PenaltyMatrix
-from cpsplines.utils.cholesky_semidefinite import cholesky_semidef
-from cpsplines.utils.fast_kron import (
-    fast_kronecker_product,
-    matrix_by_tensor_product,
-    matrix_by_transpose,
-    penalization_term,
-)
-from cpsplines.utils.gcv import GCV, gcv_mat
+from cpsplines.utils.fast_kron import matrix_by_tensor_product, matrix_by_transpose
+from cpsplines.utils.gcv import GCV
 from cpsplines.utils.normalize_data import DataNormalizer
 from cpsplines.utils.simulator_grid_search import print_grid_search_results
 from cpsplines.utils.simulator_optimize import Simulator
 from cpsplines.utils.timer import timer
 from cpsplines.utils.weighted_b import get_idx_fitting_region, get_weighted_B
 from joblib import Parallel, delayed
+from statsmodels.genmod.families.family import Family, Gaussian, Poisson
 
 
 class NumericalError(Exception):
@@ -86,6 +81,9 @@ class GridCPsplines:
         the SLSQP solver with a vector of ones as first guess is used. Also, the
         smoothing parameters are constrained to be in (1e-10, 1e16) since they
         must be non-negative.
+    family : str, optional
+        The specific exponential family distribution where the response variable
+        belongs to. By default, "gaussian" (normal distribution).
     int_constraints : Dict[int, Dict[int, Dict[str, Union[int, float]]]]],
     optional
         A nested dictionary containing the interval constraints to be enforced.
@@ -134,6 +132,7 @@ class GridCPsplines:
         x_range: Optional[Dict[int, Tuple[Union[int, float]]]] = None,
         sp_method: str = "optimizer",
         sp_args: Optional[Dict[str, Any]] = None,
+        family: str = "gaussian",
         int_constraints: Optional[
             Dict[int, Dict[int, Dict[str, Union[int, float]]]]
         ] = None,
@@ -146,9 +145,21 @@ class GridCPsplines:
         self.x_range = x_range
         self.sp_method = sp_method
         self.sp_args = sp_args
+        self.family = self._get_family(family)
         self.int_constraints = int_constraints
         self.pt_constraints = pt_constraints
         self.pdf_constraint = pdf_constraint
+
+    @staticmethod
+    def _get_family(family) -> Family:
+        if family == "gaussian":
+            family_statsmodels = Gaussian()
+        elif family == "poisson":
+            family_statsmodels = Poisson()
+        else:
+            raise ValueError(f"Family {family} is not implemented.")
+        family_statsmodels.name = family
+        return family_statsmodels
 
     def _get_bspline_bases(self, x: Iterable[np.ndarray]) -> List[BsplineBasis]:
 
@@ -183,7 +194,7 @@ class GridCPsplines:
                     prediction_dict["backwards"] = pred_min
             bsp = BsplineBasis(
                 deg=self.deg[i],
-                xsample=np.sort(x[i]),
+                xsample=x[i],
                 n_int=self.n_int[i],
                 prediction=prediction_dict,
             )
@@ -251,7 +262,6 @@ class GridCPsplines:
         # The extended response variable sample dimensions can be obtained as
         # the number of rows of the design matrix B
         y_ext_dim = []
-        ordered_idx = []
         for i, bsp in enumerate(self.bspline_bases):
             B = bsp.matrixB
             y_ext_dim.append(B.shape[0])
@@ -260,21 +270,17 @@ class GridCPsplines:
             P = penaltymat.get_penalty_matrix(**{"ord_d": self.ord_d[i]})
             obj_matrices["D"].append(penaltymat.matrixD)
             obj_matrices["D_mul"].append(P)
-            ordered_idx.append(np.argsort(x[i]))
 
         # Reorder the response variable array so the covariate coordinates are
         # non-decreasing
-        y_ordered = y[np.ix_(*ordered_idx)]
         y_ext = np.zeros(tuple(y_ext_dim))
-        y_ext[get_idx_fitting_region(self.bspline_bases)] = y_ordered
+        y_ext[get_idx_fitting_region(self.bspline_bases)] = y
         obj_matrices["y"] = y_ext
         return obj_matrices
 
     def _initialize_model(
         self,
-        lin_term: np.ndarray,
-        L_B: np.ndarray,
-        L_D: Iterable[np.ndarray],
+        obj_matrices: Dict[str, Iterable[np.ndarray]],
         data_normalizer: Optional[DataNormalizer] = None,
     ) -> mosek.fusion.Model:
 
@@ -305,13 +311,10 @@ class GridCPsplines:
         # Create the variables of the optimization problem
         mos_obj_f = ObjectiveFunction(bspline=self.bspline_bases, model=M)
         # For each axis, a smoothing parameter is needed
-        sp = [M.parameter(f"sp_{i}", 1) for i in range(len(L_D))]
+        sp = [M.parameter(f"sp_{i}", 1) for i, _ in enumerate(self.deg)]
         # Build the objective function of the problem
         mos_obj_f.create_obj_function(
-            L_B=L_B,
-            L_D=L_D,
-            sp=sp,
-            lin_term=lin_term,
+            obj_matrices=obj_matrices, sp=sp, family=self.family
         )
 
         if self.pdf_constraint:
@@ -380,9 +383,7 @@ class GridCPsplines:
 
     def _get_sp_grid_search(
         self,
-        B_weighted: Iterable[np.ndarray],
-        Q_matrices: Iterable[np.ndarray],
-        y: np.ndarray,
+        obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
     ) -> Tuple[Union[int, float]]:
 
         """
@@ -409,15 +410,14 @@ class GridCPsplines:
         # Run in parallel if the argument `parallel` is present
         if self.sp_args["parallel"] == True:
             gcv = Parallel(n_jobs=self.sp_args["n_jobs"])(
-                delayed(GCV)(sp, B_weighted, Q_matrices, y) for sp in iter_sp
+                delayed(GCV)(sp, obj_matrices, self.family) for sp in iter_sp
             )
         else:
             gcv = [
                 GCV(
                     sp=sp,
-                    B_weighted=B_weighted,
-                    Q_matrices=Q_matrices,
-                    y=y,
+                    obj_matrices=obj_matrices,
+                    family=self.family,
                 )
                 for sp in iter_sp
             ]
@@ -431,9 +431,7 @@ class GridCPsplines:
 
     def _get_sp_optimizer(
         self,
-        B_weighted: Iterable[np.ndarray],
-        Q_matrices: Iterable[np.ndarray],
-        y: np.ndarray,
+        obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
     ) -> Tuple[Union[int, float]]:
 
         """
@@ -466,11 +464,7 @@ class GridCPsplines:
         # Get the best set of smoothing parameters
         best_sp = scipy.optimize.minimize(
             gcv_sim.simulate if self.sp_args["verbose"] else GCV,
-            args=(
-                B_weighted,
-                Q_matrices,
-                y,
-            ),
+            args=(obj_matrices, self.family),
             callback=gcv_sim.callback if self.sp_args["verbose"] else None,
             **scipy_optimize_params,
         ).x
@@ -537,39 +531,24 @@ class GridCPsplines:
         obj_matrices = self._get_obj_func_arrays(x=x, y=y)
 
         # Auxiliary matrices derived from `obj_matrices`
-        B_weighted = get_weighted_B(bspline_bases=self.bspline_bases)
-        obj_matrices["B_mul"] = list(map(matrix_by_transpose, B_weighted))
-        # Compute the linear term coefficients of the objective function
-        lin_term = np.multiply(
-            -2,
-            matrix_by_tensor_product([mat.T for mat in B_weighted], obj_matrices["y"]),
-        ).flatten()
-
-        # Compute the Cholesky decompositions (A = L @ L.T)
-        L_B = reduce(
-            fast_kronecker_product, list(map(cholesky_semidef, obj_matrices["B_mul"]))
-        )
-
-        L_D = penalization_term(matrices=obj_matrices["D"])
+        obj_matrices["B_w"] = get_weighted_B(bspline_bases=self.bspline_bases)
+        obj_matrices["B_mul"] = list(map(matrix_by_transpose, obj_matrices["B_w"]))
 
         # Initialize the model
         M = self._initialize_model(
-            lin_term=lin_term, L_B=L_B, L_D=L_D, data_normalizer=data_normalizer
+            obj_matrices=obj_matrices, data_normalizer=data_normalizer
         )
         model_params = {"theta": M.getVariable("theta")}
-        for i in range(len(self.bspline_bases)):
+        for i, _ in enumerate(self.deg):
             model_params[f"sp_{i}"] = M.getParameter(f"sp_{i}")
-
-        # Get the matrices used in the GCV computation
-        Q_matrices = gcv_mat(B_mul=obj_matrices["B_mul"], D_mul=obj_matrices["D_mul"])
 
         if self.sp_method == "grid_search":
             self.best_sp = self._get_sp_grid_search(
-                B_weighted=B_weighted, Q_matrices=Q_matrices, y=obj_matrices["y"]
+                obj_matrices=obj_matrices,
             )
         else:
             self.best_sp = self._get_sp_optimizer(
-                B_weighted=B_weighted, Q_matrices=Q_matrices, y=obj_matrices["y"]
+                obj_matrices=obj_matrices,
             )
         theta_shape = model_params["theta"].getShape()
         # Set the smoothing parameters vector as the optimal obtained in the
@@ -587,9 +566,13 @@ class GridCPsplines:
             if y_range is not None:
                 self.sol = data_normalizer.inverse_transform(y=self.sol)
             # Compute the fitted values of the response variable
-            self.y_fitted = matrix_by_tensor_product(
+            y_fitted = matrix_by_tensor_product(
                 [mat for mat in obj_matrices["B"]], self.sol
             )
+            if self.family.name == "gaussian":
+                self.y_fitted = y_fitted
+            elif self.family.name == "poisson":
+                self.y_fitted = np.exp(y_fitted)
         except mosek.fusion.SolutionError as e:
             raise NumericalError(
                 f"The solution for the smoothing parameter {self.best_sp} "

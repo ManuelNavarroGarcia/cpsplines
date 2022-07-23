@@ -2,6 +2,7 @@ from typing import Iterable, List
 
 import numpy as np
 import tensorly as tl
+from cpsplines.utils.box_product import box_product
 from scipy.linalg import block_diag
 
 
@@ -108,7 +109,7 @@ def matrix_by_tensor_product(
     Parameters
     ----------
     matrices : Iterable[np.ndarray]
-        A list containing matrices with dimensions m_i x n_i
+        An iterable containing matrices with dimensions m_i x n_i
     T : np.ndarray
         The n_1 x n_2 x ... x n_N multidimensional array.
 
@@ -177,3 +178,51 @@ def penalization_term(matrices: Iterable[np.ndarray]) -> List[np.ndarray]:
         # Compute the product np.kron(np.eye(left_identity_shape), right_kron_prod)
         output.append(block_diag(*([right_kron_prod] * left_id_shape)))
     return output
+
+
+def weighted_double_kronecker(
+    matrices: Iterable[np.ndarray], W: np.ndarray
+) -> np.ndarray:
+    """Computes np.kron(A_1, ..., A_N).T @ np.diag(W) @ np.kron(A_1, ..., A_N)
+    efficiently, where A_i are matrices with dimensions m_i x n_i and W is a
+    multidimensional array with shape n_1 x n_2 x ... x n_N. To do so, the
+    product W x_N (A_N box A_N) x_{N-1} ... x_1 (A_1 box A_1) is carried out,
+    where "box" denotes the box product, and the output, with new dimensions
+    m_1^2 x ... x m_N^2, is reshaped into a m_1 x m_1 x ... x m_N x m_N
+    multidimensional array. Then, the axes are permuted using the permutation
+    (0, 2, 4, ..., 1, 3, 5, ...) and finally the output is reshaped into an
+    square matrix with order m_1 · m_2 · ... · m_N. The algorithm for the
+    two-dimensional case (two matrices involved) can be found in Eilers, Currie
+    and Durban, (2006).
+
+    Parameters
+    ----------
+    matrices : Iterable[np.ndarray]
+        An iterable containing matrices with dimensions m_i x n_i.
+    W : np.ndarray
+        The n_1 x n_2 x ... x n_N multidimensional array.
+
+    References
+    ----------
+    - Eilers, P. H., Currie, I. D., & Durbán, M. (2006). Fast and compact
+      smoothing on large multidimensional grids. Computational Statistics & Data
+      Analysis, 50(1), 61-76.
+
+    Returns
+    -------
+    np.ndarray
+        The resulting m_1 · m_2 · ... · m_N ordered matrix.
+    """
+    # Get the dimensions m_1, m_2, ..., m_N
+    dim = [d.shape[1] for d in matrices]
+    # Compute the box products for every matrices
+    box_prod = [box_product(M, M).T for M in matrices]
+    # Compute the matrix by tensor product and reshape into m_1 x m_1 x ... x
+    # m_N x m_N
+    out = matrix_by_tensor_product(box_prod, W).reshape(np.repeat(dim, 2))
+    # np.transpose is used here to permute. To get (0, 2, 4, ..., 1, 3, 5, ...),
+    # we use np.arange, reshape the values in a matrix with two columns and then
+    # flatten the array
+    return np.transpose(
+        out, np.arange(2 * len(matrices)).reshape(len(matrices), 2).flatten("F")
+    ).reshape((np.prod(dim), np.prod(dim)))

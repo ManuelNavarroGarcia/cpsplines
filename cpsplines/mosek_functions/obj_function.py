@@ -1,8 +1,17 @@
+from functools import reduce
 from typing import Dict, Iterable, Tuple, Union
 
 import mosek.fusion
 import numpy as np
+import statsmodels.genmod.families.family
+from cpsplines.mosek_functions.utils_mosek import matrix_by_tensor_product_mosek
 from cpsplines.psplines.bspline_basis import BsplineBasis
+from cpsplines.utils.cholesky_semidefinite import cholesky_semidef
+from cpsplines.utils.fast_kron import (
+    fast_kronecker_product,
+    matrix_by_tensor_product,
+    penalization_term,
+)
 
 
 class ObjectiveFunction:
@@ -69,17 +78,13 @@ class ObjectiveFunction:
             var_dict[f"t_D_{i}"] = self.model.variable(
                 f"t_D_{i}", 1, mosek.fusion.Domain.greaterThan(0.0)
             )
-        var_dict["t_B"] = self.model.variable(
-            "t_B", 1, mosek.fusion.Domain.greaterThan(0.0)
-        )
         return var_dict
 
     def create_obj_function(
         self,
-        L_B: np.ndarray,
-        L_D: Iterable[np.ndarray],
+        obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
         sp: Iterable[Union[int, float]],
-        lin_term: np.ndarray,
+        family: statsmodels.genmod.families.family,
     ) -> Tuple[Union[None, mosek.fusion.ConicConstraint]]:
 
         """
@@ -97,20 +102,15 @@ class ObjectiveFunction:
 
         Parameters
         ----------
-        L_B : np.ndarray
-            The lower triangular matrix from the Cholesky decomposition of B^TB,
-            where B denotes the design matrix of the B-splines basis.
-        L_D : Iterable[np.ndarray]
-            An iterable containing the lower triangular matrices from the
-            Cholesky decomposition of D^TD, where D denotes the difference
-            matrix of the penalty term.
+        obj_matrices : Dict[str, Union[np.ndarray, Iterable[np.ndarray]]]
+            A dictionary containing the necessary arrays (the basis matrices,
+            the penalty matrices and the response variable sample) used to
+            construct the objective function.
         sp : Iterable[Union[int, float]]
             An iterable containing the smoothing parameters.
-        lin_term : np.ndarray
-            An array containing the coefficients of the linear term in the
-            objective function. This array is dot multiplied with the row major
-            vectorization of the array constituted by the coefficients in the
-            basis expansion of B-splines.
+        family : statsmodels.genmod.families.family
+            The specific exponential family distribution where the response
+            variable belongs to.
 
         References
         ----------
@@ -131,6 +131,8 @@ class ObjectiveFunction:
             iterable differ.
         """
 
+        L_D = penalization_term(matrices=obj_matrices["D"])
+
         if len(sp) != len(L_D):
             raise ValueError(
                 "The number of smoothing parameters and penalty matrices must agree."
@@ -143,21 +145,8 @@ class ObjectiveFunction:
         # vectorization of the basis expansion multidimensional array
         # coefficients
         flatten_theta = mosek.fusion.Var.flatten(self.var_dict["theta"])
+
         cons = []
-        # Create the rotated quadratic cone constraint of B^TB
-        cons.append(
-            self.model.constraint(
-                "rot_cone_B",
-                mosek.fusion.Expr.vstack(
-                    self.var_dict["t_B"],
-                    1 / 2,
-                    mosek.fusion.Expr.mul(
-                        mosek.fusion.Matrix.sparse(L_B.T), flatten_theta
-                    ),
-                ),
-                mosek.fusion.Domain.inRotatedQCone(),
-            )
-        )
         # Create the rotated quadratic cone constraint of each D^TD
         for i, L in enumerate(L_D):
             cons.append(
@@ -174,16 +163,97 @@ class ObjectiveFunction:
                 )
             )
 
-        # The linear term from the original objective function
-        obj = [mosek.fusion.Expr.dot(lin_term, flatten_theta)]
         # The rotated cone reformulation on the penalty term yield summands on
         # the objective function of the form sp*t_D, where t_D is the new
         # artificial variable introduced in the characterization
-        for i, sp in enumerate(sp):
-            obj.append(mosek.fusion.Expr.dot(sp, self.var_dict[f"t_D_{i}"]))
-        # The rotated cone reformulation on the basis term yield a summand of
-        # the artificial variable t_B included during the reformulation
-        obj = mosek.fusion.Expr.add(self.var_dict["t_B"], mosek.fusion.Expr.add(obj))
+        obj = mosek.fusion.Expr.add(
+            [
+                mosek.fusion.Expr.dot(s, self.var_dict[f"t_D_{i}"])
+                for i, s in enumerate(sp)
+            ]
+        )
+
+        if family.name == "gaussian":
+            self.var_dict |= {
+                "t_B": self.model.variable(
+                    "t_B", 1, mosek.fusion.Domain.greaterThan(0.0)
+                )
+            }
+            # Compute the linear term coefficients of the objective function
+            lin_term = np.multiply(
+                -2,
+                matrix_by_tensor_product(
+                    [mat.T for mat in obj_matrices["B_w"]], obj_matrices["y"]
+                ),
+            ).flatten()
+
+            # Compute the Cholesky decompositions (A = L @ L.T)
+            L_B = reduce(
+                fast_kronecker_product,
+                list(map(cholesky_semidef, obj_matrices["B_mul"])),
+            )
+            # Create the rotated quadratic cone constraint of B^TB
+            cons.append(
+                self.model.constraint(
+                    "rot_cone_B",
+                    mosek.fusion.Expr.vstack(
+                        self.var_dict["t_B"],
+                        1 / 2,
+                        mosek.fusion.Expr.mul(
+                            mosek.fusion.Matrix.sparse(L_B.T), flatten_theta
+                        ),
+                    ),
+                    mosek.fusion.Domain.inRotatedQCone(),
+                )
+            )
+            # The rotated cone reformulation on the basis term yield a summand of
+            # the artificial variable t_B included during the reformulation and
+            # a linear term depending on the response variable sample
+            obj = mosek.fusion.Expr.add(
+                mosek.fusion.Expr.add(
+                    self.var_dict["t_B"], mosek.fusion.Expr.dot(lin_term, flatten_theta)
+                ),
+                obj,
+            )
+        elif family.name == "poisson":
+            self.var_dict |= {
+                "t": self.model.variable(
+                    "t",
+                    np.prod(obj_matrices["y"].shape),
+                    mosek.fusion.Domain.greaterThan(0.0),
+                )
+            }
+
+            lin_term = matrix_by_tensor_product(
+                [mat.T for mat in obj_matrices["B_w"]], obj_matrices["y"]
+            ).flatten()
+
+            coef = mosek.fusion.Expr.flatten(
+                matrix_by_tensor_product_mosek(
+                    matrices=obj_matrices["B_w"], mosek_var=self.var_dict["theta"]
+                )
+            )
+            cons.append(
+                self.model.constraint(
+                    mosek.fusion.Expr.hstack(
+                        self.var_dict["t"],
+                        mosek.fusion.Expr.constTerm(
+                            np.prod(obj_matrices["y"].shape), 1.0
+                        ),
+                        coef,
+                    ),
+                    mosek.fusion.Domain.inPExpCone(),
+                )
+            )
+
+            obj = mosek.fusion.Expr.sub(
+                mosek.fusion.Expr.add(
+                    mosek.fusion.Expr.sum(self.var_dict["t"]),
+                    mosek.fusion.Expr.mul(0.5, obj),
+                ),
+                mosek.fusion.Expr.dot(lin_term, flatten_theta),
+            )
+
         # Generate the minimization objective function object
         obj = self.model.objective(
             "obj",

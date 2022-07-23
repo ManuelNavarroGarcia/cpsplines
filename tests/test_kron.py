@@ -5,6 +5,7 @@ import pytest
 from cpsplines.utils.fast_kron import (
     fast_kronecker_product,
     kronecker_matrix_by_identity,
+    weighted_double_kronecker,
 )
 from cpsplines.utils.timer import timer
 from scipy.linalg import block_diag
@@ -76,3 +77,28 @@ def test_identity_kron_mat(n, A):
 
     np.testing.assert_allclose(exp_out, out)
     np.testing.assert_allclose(exp_out2, out)
+
+
+# Take the Kronecker product of a list of random matrices with different shapes
+# with a fast method and the NumPy method
+@pytest.mark.parametrize(
+    "dim_mat, dim_W",
+    [
+        (((11, 3), (13, 5), (17, 7)), (11, 13, 17)),
+    ],
+)
+def test_weighted_double_kronecker(dim_mat, dim_W):
+    matrices = [np.random.rand(*d) for d in dim_mat]
+    W = np.random.rand(*dim_W)
+
+    with timer(tag="Using np.kron"):
+        exp_out = (
+            reduce(fast_kronecker_product, matrices).T
+            @ np.diag(W.flatten())
+            @ reduce(fast_kronecker_product, matrices)
+        )
+
+    with timer(tag="Using reshaping and permuting"):
+        out = weighted_double_kronecker(matrices=matrices, W=W)
+
+    np.testing.assert_allclose(exp_out, out)

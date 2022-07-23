@@ -1,91 +1,9 @@
-from typing import Iterable, Union
-
 import numpy as np
 import pytest
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.psplines.penalty_matrix import PenaltyMatrix
-from cpsplines.utils.fast_kron import matrix_by_transpose
-from cpsplines.utils.gcv import GCV, gcv_mat
-
-
-def gcv_brute_force(
-    B_mul: Iterable[np.ndarray],
-    D_mul: Iterable[np.ndarray],
-    sp: Iterable[Union[int, float]],
-    y: np.ndarray,
-    y_fit: np.ndarray,
-) -> float:
-    """Computes the Generalized Cross Validation using the exact definition
-    including all the matrices involved. It only supports three or less
-    dimensions.
-
-    Parameters
-    ----------
-    B_mul : Iterable[np.ndarray]
-        The product of the design matrices from the B-splines bases. Must have
-        length less or equal than 3.
-    D_mul : Iterable[np.ndarray]
-        The univariate penalty matrices. Must have length less or equal than 3.
-    sp : Iterable[Union[int, float]]
-        The smoothing parameter vector.
-    y : np.ndarray
-        The response variable sample
-    y_fit : np.ndarray
-        The fitted response variable array.
-
-    Returns
-    -------
-    float
-        The Generalized Cross Validation value.
-
-    Raises
-    ------
-    ValueError
-        If the shapes of response variable arrays differ.
-    ValueError
-        If the number of input B and D matrices differ.
-    ValueError
-        If the number of input B matrices is greater than 3.
-    """
-
-    if y.shape != y_fit.shape:
-        raise ValueError("The shape of the response variable array must agree.")
-    if len(B_mul) != len(D_mul):
-        raise ValueError("Number of B elements must be equal to number of D elements.")
-    if len(B_mul) > 3:
-        raise ValueError("Not implemented for more than three dimensions.")
-    # Compute the hat matrix depending on the number of dimensions
-    if len(B_mul) == 1:
-        H = np.linalg.solve(B_mul[0] + np.multiply(sp[0], D_mul[0]), B_mul[0])
-    elif len(B_mul) == 2:
-        Q = (
-            np.kron(B_mul[1], B_mul[0])
-            + np.kron(np.eye(D_mul[1].shape[1]), np.multiply(sp[0], D_mul[0]))
-            + np.kron(np.multiply(sp[1], D_mul[1]), np.eye(D_mul[0].shape[1]))
-        )
-        H = np.linalg.solve(Q, np.kron(B_mul[1], B_mul[0]))
-    else:
-        Q = (
-            np.kron(B_mul[2], np.kron(B_mul[1], B_mul[0]))
-            + np.kron(
-                np.eye(D_mul[2].shape[1] * D_mul[1].shape[1]),
-                np.multiply(sp[0], D_mul[0]),
-            )
-            + np.kron(
-                np.kron(np.eye(D_mul[2].shape[1]), np.multiply(sp[1], D_mul[1])),
-                np.eye(D_mul[0].shape[1]),
-            )
-            + np.kron(
-                np.multiply(sp[2], D_mul[2]),
-                np.eye(D_mul[1].shape[1] * D_mul[0].shape[1]),
-            )
-        )
-        H = np.linalg.solve(Q, np.kron(B_mul[2], np.kron(B_mul[1], B_mul[0])))
-    # Get the Generalized Cross Validation value
-    return (np.linalg.norm((y - y_fit)) ** 2 * np.prod(y.shape)) / (
-        np.prod(y.shape) - np.trace(H)
-    ) ** 2
-
+from cpsplines.utils.gcv import GCV
+from statsmodels.genmod.families.family import Gaussian
 
 y_1 = np.array(
     [
@@ -103,22 +21,6 @@ y_1 = np.array(
     ]
 )
 
-y_fit_1 = np.array(
-    [
-        1.14934175,
-        0.71452073,
-        0.23994151,
-        -0.25476975,
-        -0.64462143,
-        -0.80211703,
-        -0.69510624,
-        -0.34214611,
-        0.13072284,
-        0.59543651,
-        1.02331994,
-    ]
-)
-
 y_2 = np.array(
     [
         [0.44122749, -0.33087015, 2.43077119, -0.25209213, 0.10960984],
@@ -131,17 +33,6 @@ y_2 = np.array(
     ]
 )
 
-y_fit_2 = np.array(
-    [
-        [0.39583918, 0.37761835, 0.347656, 0.29440816, 0.25379401],
-        [0.10072316, 0.0758906, 0.03645742, -0.01922271, -0.06118704],
-        [-0.14077813, -0.12723966, -0.12434936, -0.15179711, -0.18186141],
-        [-0.24670913, -0.20462625, -0.16470918, -0.15275488, -0.14929084],
-        [-0.18820456, -0.1676606, -0.1495958, -0.12901441, -0.09894657],
-        [-0.04233988, -0.0633497, -0.09345534, -0.09881817, -0.07713563],
-        [0.07827233, 0.04195354, 0.00104969, -0.0186971, -0.01738777],
-    ]
-)
 
 y_3 = np.array(
     [
@@ -172,79 +63,53 @@ y_3 = np.array(
     ]
 )
 
-y_fit_3 = np.array(
-    [
-        [
-            [0.14620947, -0.02079486, 0.03249839, -0.01959649, 0.04563657],
-            [-0.00385404, -0.06855719, -0.01572303, -0.08444499, -0.01953818],
-            [-0.07897774, -0.03803142, 0.00907818, -0.08265218, -0.03439175],
-            [-0.0779496, 0.02579857, 0.06662659, -0.03843807, -0.01485294],
-            [-0.00316984, 0.06794833, 0.09807687, 0.01076603, 0.01284133],
-            [0.14396795, 0.05743982, 0.06449239, 0.03444781, 0.02533011],
-        ],
-        [
-            [0.0767984, -0.08772433, -0.14766937, -0.18173234, 0.06940114],
-            [-0.04312678, -0.08850095, -0.1452439, -0.22113327, 0.01157201],
-            [-0.05037519, 0.023461, -0.00802457, -0.13514036, -0.00366228],
-            [0.02866757, 0.17066411, 0.17644919, 0.01137911, 0.0087248],
-            [0.15145333, 0.25266291, 0.28827765, 0.12868107, 0.02306828],
-            [0.28503526, 0.20551734, 0.24240499, 0.14925631, 0.01693122],
-        ],
-        [
-            [0.04397969, 0.063017, -0.08388446, -0.22594632, 0.06931447],
-            [-0.08028535, 0.09021596, -0.03810249, -0.25304778, 0.00197333],
-            [-0.09032671, 0.14538972, 0.06174555, -0.17604932, -0.02575864],
-            [-0.00734497, 0.19282519, 0.15912736, -0.05390058, -0.0260306],
-            [0.12939478, 0.1886465, 0.18850045, 0.03988198, -0.02174704],
-            [0.28249543, 0.10646542, 0.10742523, 0.05319826, -0.03304391],
-        ],
-    ]
-)
+out1 = 0.06655360566286558
+out2 = 0.8886437800778839
+out3 = 0.11298981533051085
 
 
 @pytest.mark.parametrize(
-    "deg, regr_sample, n_int, prediction, ord_d, sp, y, y_fit",
+    "deg, ord_d, n_int, sp, family, x, y, gcv",
     [
         (
             [3],
-            [np.linspace(0, 2 * np.pi, 11)],
-            [5],
-            [{}],
             [2],
+            [5],
             [0.123],
+            Gaussian(),
+            [np.linspace(0, 2 * np.pi, 11)],
             y_1,
-            y_fit_1,
+            out1,
         ),
         (
             [3, 2],
-            [np.linspace(0, 3 * np.pi, 7), np.linspace(0, 2 * np.pi, 5)],
-            [5, 4],
-            [{}, {}],
             [2, 1],
+            [5, 4],
             [0.456, 7.89],
+            Gaussian(),
+            [np.linspace(0, 3 * np.pi, 7), np.linspace(0, 2 * np.pi, 5)],
             y_2,
-            y_fit_2,
+            out2,
         ),
         (
             [2, 4, 3],
+            [1, 3, 2],
+            [2, 5, 4],
+            [0.12, 1.345, 0.011],
+            Gaussian(),
             [
                 np.linspace(0, 3 * np.pi, 3),
                 np.linspace(0, 2 * np.pi, 6),
                 np.linspace(0, 1 * np.pi, 5),
             ],
-            [2, 5, 4],
-            [{}, {}, {}],
-            [1, 3, 2],
-            [0.12, 1.345, 0.011],
             y_3,
-            y_fit_3,
+            out3,
         ),
     ],
 )
-def test_gcv(deg, regr_sample, n_int, prediction, ord_d, sp, y, y_fit):
+def test_gcv(deg, ord_d, n_int, sp, family, x, y, gcv):
     bspline = [
-        BsplineBasis(deg=d, xsample=xsam, n_int=n, prediction=pred)
-        for d, xsam, n, pred in zip(deg, regr_sample, n_int, prediction)
+        BsplineBasis(deg=d, xsample=xsam, n_int=n) for d, xsam, n in zip(deg, x, n_int)
     ]
     B = []
     for bsp in bspline:
@@ -254,8 +119,7 @@ def test_gcv(deg, regr_sample, n_int, prediction, ord_d, sp, y, y_fit):
         PenaltyMatrix(bspline=bsp).get_penalty_matrix(**{"ord_d": o})
         for bsp, o in zip(bspline, ord_d)
     ]
-    B_mul = list(map(matrix_by_transpose, B))
-    Q_matrices = gcv_mat(B_mul=B_mul, D_mul=D_mul)
-    gcv_out = GCV(sp=sp, B_weighted=B, Q_matrices=Q_matrices, y=y)
-    gcv_brute = gcv_brute_force(B_mul=B_mul, D_mul=D_mul, sp=sp, y=y, y_fit=y_fit)
-    np.testing.assert_allclose(gcv_out, gcv_brute)
+    obj_matrices = {"B_w": B, "D_mul": D_mul, "y": y}
+
+    gcv_out = GCV(sp=sp, obj_matrices=obj_matrices, family=family)
+    np.testing.assert_allclose(gcv_out, gcv)

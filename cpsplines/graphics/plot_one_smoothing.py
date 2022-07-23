@@ -123,11 +123,11 @@ def plot_curves(
 
         # Plot the curves using the extended fitted coordinates
         _ = ax.plot(
-            np.concatenate([x_left[0], bsp.xsample, x_right[0]]),
+            np.concatenate([x_left[0], np.sort(bsp.xsample), x_right[0]]),
             np.concatenate(
                 [
                     curve.predict([x_left[0]]),
-                    curve.y_fitted[bsp.int_back : y_end],
+                    curve.y_fitted[bsp.int_back : y_end][np.argsort(bsp.xsample)],
                     curve.predict([x_right[0]]),
                 ]
             ),

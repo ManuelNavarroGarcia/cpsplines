@@ -616,9 +616,53 @@ sol22 = np.array(
     ]
 )
 
+# int(100 * np.abs(np.sin(x))) (Poisson)
+# Using grid search
+# No out-of-range prediction
+sol23 = np.array(
+    [
+        -3.65410294,
+        3.28035389,
+        4.49911763,
+        5.01727699,
+        2.54899044,
+        4.32149478,
+        5.17261328,
+        2.7648977,
+        4.01565893,
+        5.14575313,
+        3.48545299,
+        2.34756748,
+        10.05801066,
+    ]
+)
+
+# int(100 * np.abs(np.sin(x) * np.sin(y))) (Poisson)
+# Using optimizer
+# No out-of-range prediction
+sol24 = np.array(
+    [
+        [
+            -31.1749285,
+            -30.99815787,
+            -31.1508761,
+            -31.09232884,
+            -31.12068473,
+            -30.88482654,
+        ],
+        [4.46160766, 8.7501684, 7.17667404, 8.35453106, 7.11695284, 9.6471395],
+        [-2.93333726, 3.59980079, 1.18194743, 2.97222105, 1.05886118, 4.72338327],
+        [0.09851227, 5.94549142, 3.80203743, 5.38663859, 3.72380307, 6.92421957],
+        [-1.85713533, 3.84513551, 1.74844565, 3.29368096, 1.65100374, 4.86766742],
+        [-0.03468344, 6.48434943, 4.09266226, 5.86110852, 3.99203727, 7.54064975],
+        [-1.88333468, 2.07971865, 0.57085708, 1.71686205, 0.47673371, 3.06312649],
+        [9.02573183, 9.48614229, 9.35889252, 9.50656974, 9.37758714, 9.67557825],
+    ]
+)
+
 
 @pytest.mark.parametrize(
-    "deg, ord_d, n_int, x, y, x_range, sp_method, sp_args, int_constraints, pt_constraints, pdf_constraint, y_range, sol",
+    "deg, ord_d, n_int, x, y, x_range, sp_method, sp_args, family, int_constraints, pt_constraints, pdf_constraint, y_range, sol",
     [
         (
             (3,),
@@ -629,6 +673,7 @@ sol22 = np.array(
             None,
             "grid_search",
             {"grid": ((0.1,),), "verbose": False, "parallel": False},
+            "gaussian",
             {},
             {},
             False,
@@ -644,6 +689,7 @@ sol22 = np.array(
             None,
             "grid_search",
             {"grid": ((0.1,),), "verbose": False, "parallel": False},
+            "gaussian",
             {0: {0: {"+": 0.0}}},
             {},
             False,
@@ -660,6 +706,7 @@ sol22 = np.array(
             None,
             "grid_search",
             {"grid": ((0.73,),), "verbose": False, "parallel": False},
+            "gaussian",
             {},
             {},
             False,
@@ -676,6 +723,7 @@ sol22 = np.array(
             None,
             "grid_search",
             {"grid": ((0.73,),), "verbose": False, "parallel": False},
+            "gaussian",
             {0: {0: {"+": 10.0, "-": 40.0}}},
             {},
             False,
@@ -697,6 +745,7 @@ sol22 = np.array(
                 "options": {"ftol": 1e-12, "maxiter": 100},
                 "bounds": ((1e-10, 1e16),),
             },
+            "gaussian",
             {},
             {},
             False,
@@ -718,6 +767,7 @@ sol22 = np.array(
                 "options": {"ftol": 1e-12, "maxiter": 100},
                 "bounds": ((1e-10, 1e16),),
             },
+            "gaussian",
             {0: {1: {"+": 0.0}, 2: {"-": 0.0}}},
             {},
             False,
@@ -740,6 +790,7 @@ sol22 = np.array(
                 "verbose": False,
                 "parallel": False,
             },
+            "gaussian",
             {},
             {},
             False,
@@ -762,6 +813,7 @@ sol22 = np.array(
                 "verbose": False,
                 "parallel": False,
             },
+            "gaussian",
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}}},
             {},
             False,
@@ -786,6 +838,7 @@ sol22 = np.array(
                 "options": {"ftol": 1e-12, "maxiter": 100},
                 "bounds": ((1e-10, 1e16), (1e-10, 1e16)),
             },
+            "gaussian",
             {},
             {},
             False,
@@ -810,6 +863,7 @@ sol22 = np.array(
                 "options": {"ftol": 1e-12, "maxiter": 100},
                 "bounds": ((1e-10, 1e16), (1e-10, 1e16)),
             },
+            "gaussian",
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}, 1: {"+": 0}}},
             {},
             False,
@@ -830,6 +884,7 @@ sol22 = np.array(
             None,
             "grid_search",
             {"verbose": False, "parallel": False, "grid": ((0.1,), (0.2,), (0.3,))},
+            "gaussian",
             {},
             {},
             False,
@@ -850,6 +905,7 @@ sol22 = np.array(
             None,
             "grid_search",
             {"verbose": False, "parallel": False, "grid": ((0.1,), (0.2,), (0.3,))},
+            "gaussian",
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}}, 2: {0: {"+": 0}}},
             {},
             False,
@@ -871,6 +927,7 @@ sol22 = np.array(
                 "options": {"ftol": 1e-12, "maxiter": 100},
                 "bounds": ((1e-10, 1e16),),
             },
+            "gaussian",
             {},
             {},
             False,
@@ -892,6 +949,7 @@ sol22 = np.array(
                 "options": {"ftol": 1e-12, "maxiter": 100},
                 "bounds": ((1e-10, 1e16),),
             },
+            "gaussian",
             {0: {0: {"+": 0}}},
             {},
             False,
@@ -910,6 +968,7 @@ sol22 = np.array(
             {0: (1.1,), 1: (-0.1,)},
             "grid_search",
             {"verbose": False, "parallel": False, "grid": ((2,), (2,))},
+            "gaussian",
             {1: {1: {"+": 0}}},
             {},
             False,
@@ -931,6 +990,7 @@ sol22 = np.array(
                 "options": {"ftol": 1e-12, "maxiter": 100},
                 "bounds": ((1e-10, 1e16),),
             },
+            "gaussian",
             {},
             {(2,): ((np.array([0.8]),), np.array([700]), 1e-8)},
             False,
@@ -953,6 +1013,7 @@ sol22 = np.array(
                 "verbose": False,
                 "parallel": False,
             },
+            "gaussian",
             {},
             {(0, 0): ((np.array([4]), np.array([3])), np.array([4]), 1e-8)},
             False,
@@ -968,6 +1029,7 @@ sol22 = np.array(
             None,
             "grid_search",
             {"grid": ((0.1,),), "verbose": False, "parallel": False},
+            "gaussian",
             {},
             {},
             False,
@@ -993,6 +1055,7 @@ sol22 = np.array(
                 "verbose": False,
                 "parallel": False,
             },
+            "gaussian",
             {},
             {},
             False,
@@ -1014,6 +1077,7 @@ sol22 = np.array(
                 "options": {"ftol": 1e-12, "maxiter": 100},
                 "bounds": ((1e-10, 1e16),),
             },
+            "gaussian",
             {},  # Do not include non-negative constraint explicitly
             {},
             True,
@@ -1039,6 +1103,7 @@ sol22 = np.array(
                 "verbose": False,
                 "parallel": False,
             },
+            "gaussian",
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}}},
             {},
             True,
@@ -1055,6 +1120,7 @@ sol22 = np.array(
             None,
             "grid_search",
             {"grid": ((0.73,),), "verbose": False, "parallel": False},
+            "gaussian",
             {0: {0: {"+": 10.0, "-": 40.0}}},
             {},
             False,
@@ -1076,6 +1142,7 @@ sol22 = np.array(
                 "options": {"ftol": 1e-12, "maxiter": 100},
                 "bounds": ((1e-10, 1e16),),
             },
+            "gaussian",
             {},
             {(2,): ((np.array([0.8]),), np.array([700]), 1e-8)},
             False,
@@ -1098,11 +1165,61 @@ sol22 = np.array(
                 "verbose": False,
                 "parallel": False,
             },
+            "gaussian",
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}}},
             {},
             False,
             (0, 0.01),
             sol22,
+        ),
+        (
+            (3,),
+            (2,),
+            (10,),
+            (np.linspace(0, 10, 401),),
+            (np.abs(np.sin(np.linspace(0, 10, 401))) * 100).astype(int),
+            None,
+            "grid_search",
+            {
+                "grid": ((1,),),
+                "verbose": False,
+                "parallel": False,
+            },
+            "poisson",
+            {},
+            {},
+            False,
+            None,
+            sol23,
+        ),
+        (
+            (3, 2),
+            (2, 1),
+            (5, 4),
+            (np.linspace(0, 10, 41), np.linspace(0, 8, 21)),
+            (
+                np.abs(
+                    np.outer(
+                        np.sin(np.linspace(0, 10, 41)), np.sin(np.linspace(0, 8, 21))
+                    )
+                )
+                * 100
+            ).astype(int),
+            None,
+            "optimizer",
+            {
+                "verbose": False,
+                "x0": np.ones(2),
+                "method": "SLSQP",
+                "options": {"ftol": 1e-12, "maxiter": 100},
+                "bounds": ((1e-10, 1e16), (1e-10, 1e16)),
+            },
+            "poisson",
+            {},
+            {},
+            False,
+            None,
+            sol24,
         ),
     ],
 )
@@ -1119,6 +1236,7 @@ def test_sol(
     x_range,
     sp_method,
     sp_args,
+    family,
     int_constraints,
     pt_constraints,
     pdf_constraint,
@@ -1132,6 +1250,7 @@ def test_sol(
         sp_method=sp_method,
         sp_args=sp_args,
         x_range=x_range,
+        family=family,
         int_constraints=int_constraints,
         pt_constraints=pt_constraints,
         pdf_constraint=pdf_constraint,
