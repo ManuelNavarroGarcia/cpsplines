@@ -46,7 +46,7 @@ def quadratic_term(
 def GCV(
     sp: Iterable[Union[int, float]],
     obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
-    family: str = "gaussian",
+    family: statsmodels.genmod.families.family,
 ) -> float:
 
     """
@@ -60,9 +60,9 @@ def GCV(
         A dictionary containing the necessary arrays (the basis matrices, the
         penalty matrices and the response variable sample) used to compute the
         quadratic terms in the objective function.
-    family : statsmodels.genmod.families.family, optional
+    family : statsmodels.genmod.families.family
         The specific exponential family distribution where the response variable
-        belongs to, by default "gaussian".
+        belongs to.
 
     References
     ----------
@@ -75,13 +75,6 @@ def GCV(
     float
         The GCV value.
     """
-
-    if family == "gaussian":
-        family = statsmodels.genmod.families.family.Gaussian()
-    elif family == "poisson":
-        family = statsmodels.genmod.families.family.Poisson()
-    else:
-        raise ValueError(f"Family {family} is not implemented.")
 
     bases_term, penalty_term = quadratic_term(
         sp=sp, obj_matrices=obj_matrices, family=family

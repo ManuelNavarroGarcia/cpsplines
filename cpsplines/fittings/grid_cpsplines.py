@@ -1,4 +1,5 @@
 import itertools
+from abc import abstractmethod
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import mosek.fusion
@@ -18,6 +19,7 @@ from cpsplines.utils.simulator_optimize import Simulator
 from cpsplines.utils.timer import timer
 from cpsplines.utils.weighted_b import get_idx_fitting_region, get_weighted_B
 from joblib import Parallel, delayed
+from statsmodels.genmod.families.family import Family, Gaussian, Poisson
 
 
 class NumericalError(Exception):
@@ -79,6 +81,9 @@ class GridCPsplines:
         the SLSQP solver with a vector of ones as first guess is used. Also, the
         smoothing parameters are constrained to be in (1e-10, 1e16) since they
         must be non-negative.
+    family : str, optional
+        The specific exponential family distribution where the response variable
+        belongs to. By default, "gaussian" (normal distribution).
     int_constraints : Dict[int, Dict[int, Dict[str, Union[int, float]]]]],
     optional
         A nested dictionary containing the interval constraints to be enforced.
@@ -140,10 +145,21 @@ class GridCPsplines:
         self.x_range = x_range
         self.sp_method = sp_method
         self.sp_args = sp_args
-        self.family = family
+        self.family = self._get_family(family)
         self.int_constraints = int_constraints
         self.pt_constraints = pt_constraints
         self.pdf_constraint = pdf_constraint
+
+    @staticmethod
+    def _get_family(family) -> Family:
+        if family == "gaussian":
+            family_statsmodels = Gaussian()
+        elif family == "poisson":
+            family_statsmodels = Poisson()
+        else:
+            raise ValueError(f"Family {family} is not implemented.")
+        family_statsmodels.name = family
+        return family_statsmodels
 
     def _get_bspline_bases(self, x: Iterable[np.ndarray]) -> List[BsplineBasis]:
 
@@ -553,9 +569,9 @@ class GridCPsplines:
             y_fitted = matrix_by_tensor_product(
                 [mat for mat in obj_matrices["B"]], self.sol
             )
-            if self.family == "gaussian":
+            if self.family.name == "gaussian":
                 self.y_fitted = y_fitted
-            elif self.family == "poisson":
+            elif self.family.name == "poisson":
                 self.y_fitted = np.exp(y_fitted)
         except mosek.fusion.SolutionError as e:
             raise NumericalError(

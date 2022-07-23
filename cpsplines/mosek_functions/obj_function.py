@@ -3,6 +3,7 @@ from typing import Dict, Iterable, Tuple, Union
 
 import mosek.fusion
 import numpy as np
+import statsmodels.genmod.families.family
 from cpsplines.mosek_functions.utils_mosek import matrix_by_tensor_product_mosek
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.utils.cholesky_semidefinite import cholesky_semidef
@@ -81,9 +82,9 @@ class ObjectiveFunction:
 
     def create_obj_function(
         self,
-        obj_matrices: Dict[str, Iterable[np.ndarray]],
+        obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
         sp: Iterable[Union[int, float]],
-        family: str = "gaussian",
+        family: statsmodels.genmod.families.family,
     ) -> Tuple[Union[None, mosek.fusion.ConicConstraint]]:
 
         """
@@ -101,20 +102,15 @@ class ObjectiveFunction:
 
         Parameters
         ----------
-        L_B : np.ndarray
-            The lower triangular matrix from the Cholesky decomposition of B^TB,
-            where B denotes the design matrix of the B-splines basis.
-        L_D : Iterable[np.ndarray]
-            An iterable containing the lower triangular matrices from the
-            Cholesky decomposition of D^TD, where D denotes the difference
-            matrix of the penalty term.
+        obj_matrices : Dict[str, Union[np.ndarray, Iterable[np.ndarray]]]
+            A dictionary containing the necessary arrays (the basis matrices,
+            the penalty matrices and the response variable sample) used to
+            construct the objective function.
         sp : Iterable[Union[int, float]]
             An iterable containing the smoothing parameters.
-        lin_term : np.ndarray
-            An array containing the coefficients of the linear term in the
-            objective function. This array is dot multiplied with the row major
-            vectorization of the array constituted by the coefficients in the
-            basis expansion of B-splines.
+        family : statsmodels.genmod.families.family
+            The specific exponential family distribution where the response
+            variable belongs to.
 
         References
         ----------
@@ -177,7 +173,7 @@ class ObjectiveFunction:
             ]
         )
 
-        if family == "gaussian":
+        if family.name == "gaussian":
             self.var_dict |= {
                 "t_B": self.model.variable(
                     "t_B", 1, mosek.fusion.Domain.greaterThan(0.0)
@@ -219,7 +215,7 @@ class ObjectiveFunction:
                 ),
                 obj,
             )
-        elif family == "poisson":
+        elif family.name == "poisson":
             self.var_dict |= {
                 "t": self.model.variable(
                     "t",

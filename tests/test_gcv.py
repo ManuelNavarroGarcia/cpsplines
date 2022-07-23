@@ -3,6 +3,7 @@ import pytest
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.psplines.penalty_matrix import PenaltyMatrix
 from cpsplines.utils.gcv import GCV
+from statsmodels.genmod.families.family import Gaussian
 
 y_1 = np.array(
     [
@@ -75,7 +76,7 @@ out3 = 0.11298981533051085
             [2],
             [5],
             [0.123],
-            "gaussian",
+            Gaussian(),
             [np.linspace(0, 2 * np.pi, 11)],
             y_1,
             out1,
@@ -85,7 +86,7 @@ out3 = 0.11298981533051085
             [2, 1],
             [5, 4],
             [0.456, 7.89],
-            "gaussian",
+            Gaussian(),
             [np.linspace(0, 3 * np.pi, 7), np.linspace(0, 2 * np.pi, 5)],
             y_2,
             out2,
@@ -95,7 +96,7 @@ out3 = 0.11298981533051085
             [1, 3, 2],
             [2, 5, 4],
             [0.12, 1.345, 0.011],
-            "gaussian",
+            Gaussian(),
             [
                 np.linspace(0, 3 * np.pi, 3),
                 np.linspace(0, 2 * np.pi, 6),
