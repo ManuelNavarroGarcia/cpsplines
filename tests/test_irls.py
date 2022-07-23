@@ -6,6 +6,10 @@ from cpsplines.utils.fast_kron import penalization_term
 from cpsplines.utils.irls import fit_irls
 from statsmodels.genmod.families.family import Gaussian, Poisson
 
+# Test IRLS algorithm for multidimensional data. The results coincides with the
+# ones from R package JOPS, version 0.1.15. The code used to fit the models with
+# this R packages are located above the fitted values to be checked
+
 x_1 = np.array(
     [
         3.6,
@@ -28,6 +32,21 @@ x_1 = np.array(
 
 y_1 = np.array([79, 54, 74, 62, 85, 55, 88, 85, 51, 85, 54, 84, 78, 47, 83])
 
+# library("JOPS")
+# x = faithful$eruptions[1:15]
+# y = faithful$waiting[1:15]
+# fit <- psNormal(
+#   x,
+#   y,
+#   xl = min(x),
+#   xr = max(x),
+#   nseg = 5,
+#   bdeg = 3,
+#   pord = 2,
+#   lambda = 0.135,
+# )
+# print(fit$muhat)
+
 y_fit_1 = np.array(
     [
         78.50366225,
@@ -47,6 +66,21 @@ y_fit_1 = np.array(
         85.27375252,
     ]
 )
+
+# library("JOPS")
+# x = faithful$eruptions[1:15]
+# y = faithful$waiting[1:15]
+# fit <- psPoisson(
+#   x,
+#   y,
+#   xl = min(x),
+#   xr = max(x),
+#   nseg = 5,
+#   bdeg = 3,
+#   pord = 2,
+#   lambda = 0.135,
+# )
+# print(fit$muhat)
 
 y_fit_2 = np.array(
     [
@@ -85,6 +119,18 @@ y_2 = np.array(
         [0, 0, 0, 0, 0, 0, 0, 4],
     ]
 )
+
+# library("JOPS")
+# x = faithful$eruptions[1:15]
+# y = faithful$waiting[1:15]
+# h = hist2d(x, y, c(8, 8))
+
+# fit <- ps2DGLM(
+#   Data = cbind(rep(h$xgrid, 8), as.vector((matrix(rep(h$ygrid, 8), nrow=8, byrow=TRUE))), as.vector(h$H)),
+#   Pars = rbind(c(min(h$xgrid), max(h$xgrid), 5, 4, 0.135, 3),
+#                c(min(h$ygrid), max(h$ygrid), 4, 3, 12.87, 2)),
+#   family = "gaussian")
+# matrix(fit$mu, nrow=8)
 
 y_fit_3 = np.array(
     [
@@ -170,6 +216,18 @@ y_fit_3 = np.array(
         ],
     ]
 )
+
+# library("JOPS")
+# x = faithful$eruptions[1:15]
+# y = faithful$waiting[1:15]
+# h = hist2d(x, y, c(8, 8))
+
+# fit <- ps2DGLM(
+#   Data = cbind(rep(h$xgrid, 8), as.vector((matrix(rep(h$ygrid, 8), nrow=8, byrow=TRUE))), as.vector(h$H)),
+#   Pars = rbind(c(min(h$xgrid), max(h$xgrid), 5, 4, 0.135, 3),
+#                c(min(h$ygrid), max(h$ygrid), 4, 3, 12.87, 2)),
+#   family = "poisson")
+# matrix(fit$mu, nrow=8)
 
 y_fit_4 = np.array(
     [
