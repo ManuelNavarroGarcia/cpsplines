@@ -230,9 +230,7 @@ class GridCPsplines:
             )
         return None
 
-    def _get_obj_func_arrays(
-        self, x: Iterable[np.ndarray], y: np.ndarray
-    ) -> Dict[str, np.ndarray]:
+    def _get_obj_func_arrays(self, y: np.ndarray) -> Dict[str, np.ndarray]:
 
         """
         Gather all the arrays used to define the objective function of the
@@ -243,8 +241,6 @@ class GridCPsplines:
 
         Parameters
         ----------
-        x : Iterable[np.ndarray]
-            The covariate samples.
         y : np.ndarray
             The response variable sample.
 
@@ -528,7 +524,7 @@ class GridCPsplines:
             data_normalizer = None
 
         # Get the matrices used in the objective function
-        obj_matrices = self._get_obj_func_arrays(x=x, y=y)
+        obj_matrices = self._get_obj_func_arrays(y=y)
 
         # Auxiliary matrices derived from `obj_matrices`
         obj_matrices["B_w"] = get_weighted_B(bspline_bases=self.bspline_bases)
