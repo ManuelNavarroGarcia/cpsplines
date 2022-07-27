@@ -1,5 +1,4 @@
 import itertools
-from abc import abstractmethod
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import mosek.fusion
