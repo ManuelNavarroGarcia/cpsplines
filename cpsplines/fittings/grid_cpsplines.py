@@ -313,6 +313,10 @@ class GridCPsplines:
         )
 
         if self.pdf_constraint:
+            if self.family.name != "gaussian":
+                raise ValueError(
+                    "Probability density function constraints are only implemented for Gaussian data."
+                )
             pdf_cons = PDFConstraint(bspline=self.bspline_bases)
             # Incorporate the condition that the integral over all the space
             # must equal to 1
@@ -322,6 +326,12 @@ class GridCPsplines:
             self.int_constraints = pdf_cons.nonneg_cons(self.int_constraints)
 
         if self.int_constraints is not None:
+            max_deriv = max([max(v.keys()) for v in self.int_constraints.values()])
+            if max_deriv > 1 and self.family.name != "gaussian":
+                raise ValueError(
+                    "Interval constraints are only implemented for non Gaussian data up to the first derivative "
+                    f"Higher order derivative introduced in the constraints: {max_deriv})."
+                )
             matrices_S = {i: bsp.matrices_S for i, bsp in enumerate(self.bspline_bases)}
             # Iterate for every variable with constraints and for every
             # derivative order
@@ -351,6 +361,10 @@ class GridCPsplines:
             self.int_constraints = {}
 
         if self.pt_constraints is not None:
+            if self.family.name != "gaussian":
+                raise ValueError(
+                    "Point constraints are only implemented for Gaussian data."
+                )
             # Iterate for every combination of the derivative orders where
             # constraints must be enforced
             for deriv, info in self.pt_constraints.items():
