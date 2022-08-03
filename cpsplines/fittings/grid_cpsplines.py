@@ -575,13 +575,9 @@ class GridCPsplines:
             if y_range is not None:
                 self.sol = data_normalizer.inverse_transform(y=self.sol)
             # Compute the fitted values of the response variable
-            y_fitted = matrix_by_tensor_product(
-                [mat for mat in obj_matrices["B"]], self.sol
+            self.y_fitted = self.family.fitted(
+                matrix_by_tensor_product([mat for mat in obj_matrices["B"]], self.sol)
             )
-            if self.family.name == "gaussian":
-                self.y_fitted = y_fitted
-            elif self.family.name == "poisson":
-                self.y_fitted = np.exp(y_fitted)
         except mosek.fusion.SolutionError as e:
             raise NumericalError(
                 f"The solution for the smoothing parameter {self.best_sp} "
@@ -617,4 +613,6 @@ class GridCPsplines:
                 bsp.bspline_basis(x=x[i]) for i, bsp in enumerate(self.bspline_bases)
             ]
             # Get the predictions
-            return matrix_by_tensor_product([mat for mat in B_predict], self.sol)
+            return self.family.fitted(
+                matrix_by_tensor_product([mat for mat in B_predict], self.sol)
+            )
