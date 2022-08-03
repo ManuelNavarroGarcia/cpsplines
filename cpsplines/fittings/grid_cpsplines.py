@@ -528,6 +528,10 @@ class GridCPsplines:
         # of smoothing parameters
         _ = self._fill_sp_args()
         if y_range is not None:
+            if self.family.name != "gaussian":
+                raise ValueError(
+                    "The argument `y_range` is only available for Gaussian data."
+                )
             if len(y_range) != 2:
                 raise ValueError("The range for `y` must be an interval.")
             data_normalizer = DataNormalizer(feature_range=y_range)
