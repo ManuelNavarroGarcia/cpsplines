@@ -3,6 +3,7 @@ import itertools
 import numpy as np
 import pytest
 from cpsplines.fittings.grid_cpsplines import GridCPsplines
+from scipy.special import expit
 from scipy.stats import multivariate_normal, norm
 
 # np.cos(x) (unconstrained)
@@ -685,6 +686,28 @@ sol25 = np.array(
 )
 
 
+# int(100 * expit(x)) (Poisson, non-decreasing)
+# Using grid-search
+# No out-of-range prediction
+sol26 = np.array(
+    [
+        -12.65024251,
+        1.13650132,
+        1.39138262,
+        2.2406885,
+        2.89069317,
+        3.4905134,
+        3.93806305,
+        4.24168972,
+        4.42013462,
+        4.50801337,
+        4.56645515,
+        4.5296835,
+        5.58666755,
+    ]
+)
+
+
 @pytest.mark.parametrize(
     "deg, ord_d, n_int, x_range, sp_method, sp_args, family, int_constraints, pt_constraints, pdf_constraint, x, y, y_range, sol",
     [
@@ -1264,6 +1287,26 @@ sol25 = np.array(
             ).astype(int),
             None,
             sol25,
+        ),
+        (
+            (5,),
+            (3,),
+            (8,),
+            None,
+            "grid_search",
+            {
+                "grid": ((1.234e-5,),),
+                "verbose": False,
+                "parallel": False,
+            },
+            "poisson",
+            {0: {1: {"+": 0}}},
+            None,
+            False,
+            (np.linspace(-3, 3, 401),),
+            (expit(np.linspace(-3, 3, 401)) * 100).astype(int),
+            None,
+            sol26,
         ),
     ],
 )
