@@ -686,14 +686,12 @@ sol25 = np.array(
 
 
 @pytest.mark.parametrize(
-    "deg, ord_d, n_int, x, y, x_range, sp_method, sp_args, family, int_constraints, pt_constraints, pdf_constraint, y_range, sol",
+    "deg, ord_d, n_int, x_range, sp_method, sp_args, family, int_constraints, pt_constraints, pdf_constraint, x, y, y_range, sol",
     [
         (
             (3,),
             (2,),
             (11,),
-            (np.linspace(0, 2 * np.pi, 101),),
-            np.cos(np.linspace(0, 2 * np.pi, 101)),
             None,
             "grid_search",
             {"grid": ((0.1,),), "verbose": False, "parallel": False},
@@ -701,6 +699,8 @@ sol25 = np.array(
             None,
             None,
             False,
+            (np.linspace(0, 2 * np.pi, 101),),
+            np.cos(np.linspace(0, 2 * np.pi, 101)),
             None,
             sol1,
         ),
@@ -708,8 +708,6 @@ sol25 = np.array(
             (3,),
             (2,),
             (11,),
-            (np.linspace(0, 2 * np.pi, 101),),
-            np.cos(np.linspace(0, 2 * np.pi, 101)),
             None,
             "grid_search",
             {"grid": ((0.1,),), "verbose": False, "parallel": False},
@@ -717,6 +715,8 @@ sol25 = np.array(
             {0: {0: {"+": 0.0}}},
             None,
             False,
+            (np.linspace(0, 2 * np.pi, 101),),
+            np.cos(np.linspace(0, 2 * np.pi, 101)),
             None,
             sol2,
         ),
@@ -724,9 +724,6 @@ sol25 = np.array(
             (5,),
             (3,),
             (15,),
-            (np.linspace(0, 200, 201),),
-            np.exp(4 - np.linspace(0, 200, 201) / 25)
-            + 4 * np.cos(np.linspace(0, 200, 201) / 8),
             None,
             "grid_search",
             {"grid": ((0.73,),), "verbose": False, "parallel": False},
@@ -734,6 +731,9 @@ sol25 = np.array(
             None,
             None,
             False,
+            (np.linspace(0, 200, 201),),
+            np.exp(4 - np.linspace(0, 200, 201) / 25)
+            + 4 * np.cos(np.linspace(0, 200, 201) / 8),
             None,
             sol3,
         ),
@@ -741,9 +741,6 @@ sol25 = np.array(
             (5,),
             (3,),
             (15,),
-            (np.linspace(0, 200, 201),),
-            np.exp(4 - np.linspace(0, 200, 201) / 25)
-            + 4 * np.cos(np.linspace(0, 200, 201) / 8),
             None,
             "grid_search",
             {"grid": ((0.73,),), "verbose": False, "parallel": False},
@@ -751,6 +748,9 @@ sol25 = np.array(
             {0: {0: {"+": 10.0, "-": 40.0}}},
             None,
             False,
+            (np.linspace(0, 200, 201),),
+            np.exp(4 - np.linspace(0, 200, 201) / 25)
+            + 4 * np.cos(np.linspace(0, 200, 201) / 8),
             None,
             sol4,
         ),
@@ -758,8 +758,6 @@ sol25 = np.array(
             (2,),
             (1,),
             (10,),
-            (np.linspace(0, 1, 50),),
-            2 * (2 * np.linspace(0, 1, 50) - 1) ** 3,
             None,
             "optimizer",
             {
@@ -773,6 +771,8 @@ sol25 = np.array(
             None,
             None,
             False,
+            (np.linspace(0, 1, 50),),
+            2 * (2 * np.linspace(0, 1, 50) - 1) ** 3,
             None,
             sol5,
         ),
@@ -780,8 +780,6 @@ sol25 = np.array(
             (2,),
             (1,),
             (10,),
-            (np.linspace(0, 1, 50),),
-            2 * (2 * np.linspace(0, 1, 50) - 1) ** 3,
             None,
             "optimizer",
             {
@@ -795,6 +793,8 @@ sol25 = np.array(
             {0: {1: {"+": 0.0}, 2: {"-": 0.0}}},
             None,
             False,
+            (np.linspace(0, 1, 50),),
+            2 * (2 * np.linspace(0, 1, 50) - 1) ** 3,
             None,
             sol6,
         ),
@@ -802,11 +802,6 @@ sol25 = np.array(
             (3, 2),
             (2, 1),
             (5, 4),
-            (np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
-            np.outer(
-                np.sin(3 * np.pi * np.linspace(0, 1, 30)),
-                np.sin(2 * np.pi * np.linspace(0, 1, 20)),
-            ),
             None,
             "grid_search",
             {
@@ -818,6 +813,11 @@ sol25 = np.array(
             None,
             None,
             False,
+            (np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
+            np.outer(
+                np.sin(3 * np.pi * np.linspace(0, 1, 30)),
+                np.sin(2 * np.pi * np.linspace(0, 1, 20)),
+            ),
             None,
             sol7,
         ),
@@ -825,11 +825,6 @@ sol25 = np.array(
             (3, 2),
             (2, 1),
             (5, 4),
-            (np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
-            np.outer(
-                np.sin(3 * np.pi * np.linspace(0, 1, 30)),
-                np.sin(2 * np.pi * np.linspace(0, 1, 20)),
-            ),
             None,
             "grid_search",
             {
@@ -841,6 +836,11 @@ sol25 = np.array(
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}}},
             None,
             False,
+            (np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
+            np.outer(
+                np.sin(3 * np.pi * np.linspace(0, 1, 30)),
+                np.sin(2 * np.pi * np.linspace(0, 1, 20)),
+            ),
             None,
             sol8,
         ),
@@ -848,11 +848,6 @@ sol25 = np.array(
             (2, 2),
             (1, 1),
             (10, 4),
-            (np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
-            np.outer(
-                np.sin(3 * np.pi * np.linspace(0, 1, 30)),
-                np.sin(2 * np.pi * np.linspace(0, 1, 20)),
-            ),
             None,
             "optimizer",
             {
@@ -866,6 +861,11 @@ sol25 = np.array(
             None,
             None,
             False,
+            (np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
+            np.outer(
+                np.sin(3 * np.pi * np.linspace(0, 1, 30)),
+                np.sin(2 * np.pi * np.linspace(0, 1, 20)),
+            ),
             None,
             sol9,
         ),
@@ -873,11 +873,6 @@ sol25 = np.array(
             (2, 2),
             (1, 1),
             (10, 4),
-            (np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
-            np.outer(
-                np.sin(3 * np.pi * np.linspace(0, 1, 30)),
-                np.sin(2 * np.pi * np.linspace(0, 1, 20)),
-            ),
             None,
             "optimizer",
             {
@@ -891,6 +886,11 @@ sol25 = np.array(
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}, 1: {"+": 0}}},
             None,
             False,
+            (np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
+            np.outer(
+                np.sin(3 * np.pi * np.linspace(0, 1, 30)),
+                np.sin(2 * np.pi * np.linspace(0, 1, 20)),
+            ),
             None,
             sol10,
         ),
@@ -898,13 +898,6 @@ sol25 = np.array(
             (3, 4, 2),
             (2, 2, 1),
             (4, 6, 3),
-            (np.linspace(0, 1, 30), np.linspace(0, 1, 40), np.linspace(0, 1, 50)),
-            np.einsum(
-                "i,j,k->ijk",
-                np.sin(3 * np.pi * np.linspace(0, 1, 30)),
-                np.sin(2 * np.pi * np.linspace(0, 1, 40)),
-                np.sin(np.pi * np.linspace(0, 1, 50)),
-            ),
             None,
             "grid_search",
             {"verbose": False, "parallel": False, "grid": ((0.1,), (0.2,), (0.3,))},
@@ -912,6 +905,13 @@ sol25 = np.array(
             None,
             None,
             False,
+            (np.linspace(0, 1, 30), np.linspace(0, 1, 40), np.linspace(0, 1, 50)),
+            np.einsum(
+                "i,j,k->ijk",
+                np.sin(3 * np.pi * np.linspace(0, 1, 30)),
+                np.sin(2 * np.pi * np.linspace(0, 1, 40)),
+                np.sin(np.pi * np.linspace(0, 1, 50)),
+            ),
             None,
             sol11,
         ),
@@ -919,6 +919,13 @@ sol25 = np.array(
             (3, 4, 2),
             (2, 2, 1),
             (4, 6, 3),
+            None,
+            "grid_search",
+            {"verbose": False, "parallel": False, "grid": ((0.1,), (0.2,), (0.3,))},
+            "gaussian",
+            {0: {0: {"+": 0}}, 1: {0: {"+": 0}}, 2: {0: {"+": 0}}},
+            None,
+            False,
             (np.linspace(0, 1, 30), np.linspace(0, 1, 40), np.linspace(0, 1, 50)),
             np.einsum(
                 "i,j,k->ijk",
@@ -927,21 +934,12 @@ sol25 = np.array(
                 np.sin(np.pi * np.linspace(0, 1, 50)),
             ),
             None,
-            "grid_search",
-            {"verbose": False, "parallel": False, "grid": ((0.1,), (0.2,), (0.3,))},
-            "gaussian",
-            {0: {0: {"+": 0}}, 1: {0: {"+": 0}}, 2: {0: {"+": 0}}},
-            None,
-            False,
-            None,
             sol12,
         ),
         (
             (5,),
             (1,),
             (8,),
-            (np.linspace(0, np.pi, 51),),
-            np.sin(np.linspace(0, np.pi, 51)),
             {0: (-2, 5)},
             "optimizer",
             {
@@ -955,6 +953,8 @@ sol25 = np.array(
             None,
             None,
             False,
+            (np.linspace(0, np.pi, 51),),
+            np.sin(np.linspace(0, np.pi, 51)),
             None,
             sol13,
         ),
@@ -962,8 +962,6 @@ sol25 = np.array(
             (5,),
             (1,),
             (8,),
-            (np.linspace(0, np.pi, 51),),
-            np.sin(np.linspace(0, np.pi, 51)),
             {0: (4,)},
             "optimizer",
             {
@@ -977,6 +975,8 @@ sol25 = np.array(
             {0: {0: {"+": 0}}},
             None,
             False,
+            (np.linspace(0, np.pi, 51),),
+            np.sin(np.linspace(0, np.pi, 51)),
             None,
             sol14,
         ),
@@ -984,11 +984,6 @@ sol25 = np.array(
             (2, 2),
             (1, 1),
             (4, 3),
-            (np.linspace(0, np.pi / 3, 51), np.linspace(0, np.pi / 4, 41)),
-            np.outer(
-                np.arctan(np.linspace(0, np.pi / 3, 51)),
-                np.arctan(np.linspace(0, np.pi / 4, 41)),
-            ),
             {0: (1.1,), 1: (-0.1,)},
             "grid_search",
             {"verbose": False, "parallel": False, "grid": ((2,), (2,))},
@@ -996,6 +991,11 @@ sol25 = np.array(
             {1: {1: {"+": 0}}},
             None,
             False,
+            (np.linspace(0, np.pi / 3, 51), np.linspace(0, np.pi / 4, 41)),
+            np.outer(
+                np.arctan(np.linspace(0, np.pi / 3, 51)),
+                np.arctan(np.linspace(0, np.pi / 4, 41)),
+            ),
             None,
             sol15,
         ),
@@ -1003,8 +1003,6 @@ sol25 = np.array(
             (3,),
             (2,),
             (10,),
-            (np.linspace(0, 1, 50),),
-            2 * (2 * np.linspace(0, 1, 50) - 1) ** 3,
             None,
             "optimizer",
             {
@@ -1018,6 +1016,8 @@ sol25 = np.array(
             None,
             {(2,): ((np.array([0.8]),), np.array([700]), 1e-8)},
             False,
+            (np.linspace(0, 1, 50),),
+            2 * (2 * np.linspace(0, 1, 50) - 1) ** 3,
             None,
             sol16,
         ),
@@ -1025,11 +1025,6 @@ sol25 = np.array(
             (3, 2),
             (2, 1),
             (5, 4),
-            (np.linspace(0, 3 * np.pi, 30), np.linspace(0, 2 * np.pi, 20)),
-            np.outer(
-                np.sin(np.linspace(0, 3 * np.pi, 30)),
-                np.sin(np.linspace(0, 2 * np.pi, 20)),
-            ),
             None,
             "grid_search",
             {
@@ -1041,6 +1036,11 @@ sol25 = np.array(
             None,
             {(0, 0): ((np.array([4]), np.array([3])), np.array([4]), 1e-8)},
             False,
+            (np.linspace(0, 3 * np.pi, 30), np.linspace(0, 2 * np.pi, 20)),
+            np.outer(
+                np.sin(np.linspace(0, 3 * np.pi, 30)),
+                np.sin(np.linspace(0, 2 * np.pi, 20)),
+            ),
             None,
             sol17,
         ),
@@ -1048,8 +1048,6 @@ sol25 = np.array(
             (3,),
             (2,),
             (11,),
-            (np.linspace(0, 2 * np.pi, 101)[::-1],),  # Unordered data in 1-D
-            np.cos(np.linspace(0, 2 * np.pi, 101))[::-1],
             None,
             "grid_search",
             {"grid": ((0.1,),), "verbose": False, "parallel": False},
@@ -1057,6 +1055,8 @@ sol25 = np.array(
             None,
             None,
             False,
+            (np.linspace(0, 2 * np.pi, 101)[::-1],),  # Unordered data in 1-D
+            np.cos(np.linspace(0, 2 * np.pi, 101))[::-1],
             None,
             sol1,
         ),
@@ -1064,14 +1064,6 @@ sol25 = np.array(
             (3, 2),
             (2, 1),
             (5, 4),
-            (
-                np.linspace(0, 1, 30)[::-1],
-                np.linspace(0, 1, 20)[::-1],
-            ),  # Unordered data in 2-D
-            np.outer(
-                np.sin(3 * np.pi * np.linspace(0, 1, 30)[::-1]),
-                np.sin(2 * np.pi * np.linspace(0, 1, 20)[::-1]),
-            ),
             None,
             "grid_search",
             {
@@ -1083,6 +1075,14 @@ sol25 = np.array(
             None,
             None,
             False,
+            (
+                np.linspace(0, 1, 30)[::-1],
+                np.linspace(0, 1, 20)[::-1],
+            ),  # Unordered data in 2-D
+            np.outer(
+                np.sin(3 * np.pi * np.linspace(0, 1, 30)[::-1]),
+                np.sin(2 * np.pi * np.linspace(0, 1, 20)[::-1]),
+            ),
             None,
             sol7,
         ),
@@ -1090,8 +1090,6 @@ sol25 = np.array(
             (3,),
             (2,),
             (5,),
-            (np.linspace(-10, 10, 51),),
-            norm.pdf(np.linspace(-10, 10, 51), 0, 2),
             None,
             "optimizer",
             {
@@ -1105,6 +1103,8 @@ sol25 = np.array(
             None,  # Do not include non-negative constraint explicitly
             None,
             True,
+            (np.linspace(-10, 10, 51),),
+            norm.pdf(np.linspace(-10, 10, 51), 0, 2),
             None,
             sol18,
         ),
@@ -1112,14 +1112,6 @@ sol25 = np.array(
             (3, 2),
             (2, 1),
             (5, 4),
-            (np.linspace(-3, 3, 50), np.linspace(-4, 4, 60)),
-            multivariate_normal.pdf(
-                x=list(
-                    itertools.product(np.linspace(-3, 3, 50), np.linspace(-4, 4, 60))
-                ),
-                mean=[0, 0],
-                cov=[[2, 0.5], [0.5, 1]],
-            ).reshape((len(np.linspace(-3, 3, 50)), len(np.linspace(-4, 4, 60)))),
             None,
             "grid_search",
             {
@@ -1131,6 +1123,14 @@ sol25 = np.array(
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}}},
             None,
             True,
+            (np.linspace(-3, 3, 50), np.linspace(-4, 4, 60)),
+            multivariate_normal.pdf(
+                x=list(
+                    itertools.product(np.linspace(-3, 3, 50), np.linspace(-4, 4, 60))
+                ),
+                mean=[0, 0],
+                cov=[[2, 0.5], [0.5, 1]],
+            ).reshape((len(np.linspace(-3, 3, 50)), len(np.linspace(-4, 4, 60)))),
             None,
             sol19,
         ),
@@ -1138,9 +1138,6 @@ sol25 = np.array(
             (5,),
             (3,),
             (15,),
-            (np.linspace(0, 200, 201),),
-            np.exp(4 - np.linspace(0, 200, 201) / 25)
-            + 4 * np.cos(np.linspace(0, 200, 201) / 8),
             None,
             "grid_search",
             {"grid": ((0.73,),), "verbose": False, "parallel": False},
@@ -1148,6 +1145,9 @@ sol25 = np.array(
             {0: {0: {"+": 10.0, "-": 40.0}}},
             None,
             False,
+            (np.linspace(0, 200, 201),),
+            np.exp(4 - np.linspace(0, 200, 201) / 25)
+            + 4 * np.cos(np.linspace(0, 200, 201) / 8),
             (0, 1),
             sol20,
         ),
@@ -1155,8 +1155,6 @@ sol25 = np.array(
             (3,),
             (2,),
             (10,),
-            (np.linspace(0, 1, 50),),
-            (2 * np.linspace(0, 1, 50) - 1) ** 3,
             None,
             "optimizer",
             {
@@ -1170,6 +1168,8 @@ sol25 = np.array(
             None,
             {(2,): ((np.array([0.8]),), np.array([700]), 1e-8)},
             False,
+            (np.linspace(0, 1, 50),),
+            (2 * np.linspace(0, 1, 50) - 1) ** 3,
             (-0.6, 0.4),
             sol21,
         ),
@@ -1177,11 +1177,6 @@ sol25 = np.array(
             (3, 2),
             (2, 1),
             (5, 4),
-            (np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
-            np.outer(
-                np.sin(3 * np.pi * np.linspace(0, 1, 30)),
-                np.sin(2 * np.pi * np.linspace(0, 1, 20)),
-            ),
             None,
             "grid_search",
             {
@@ -1193,6 +1188,11 @@ sol25 = np.array(
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}}},
             None,
             False,
+            (np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
+            np.outer(
+                np.sin(3 * np.pi * np.linspace(0, 1, 30)),
+                np.sin(2 * np.pi * np.linspace(0, 1, 20)),
+            ),
             (0, 0.01),
             sol22,
         ),
@@ -1200,8 +1200,6 @@ sol25 = np.array(
             (3,),
             (2,),
             (10,),
-            (np.linspace(0, 10, 401),),
-            (np.abs(np.sin(np.linspace(0, 10, 401))) * 100).astype(int),
             None,
             "grid_search",
             {
@@ -1213,6 +1211,8 @@ sol25 = np.array(
             None,
             None,
             False,
+            (np.linspace(0, 10, 401),),
+            (np.abs(np.sin(np.linspace(0, 10, 401))) * 100).astype(int),
             None,
             sol23,
         ),
@@ -1220,8 +1220,6 @@ sol25 = np.array(
             (4,),
             (1,),
             (10,),
-            (np.linspace(0, 10, 401),),
-            (np.abs(np.sin(np.linspace(0, 10, 401))) * 100).astype(int),
             {0: (-0.7, 10.3)},
             "grid_search",
             {
@@ -1233,6 +1231,8 @@ sol25 = np.array(
             None,
             None,
             False,
+            (np.linspace(0, 10, 401),),
+            (np.abs(np.sin(np.linspace(0, 10, 401))) * 100).astype(int),
             None,
             sol24,
         ),
@@ -1240,15 +1240,6 @@ sol25 = np.array(
             (3, 2),
             (2, 1),
             (5, 4),
-            (np.linspace(0, 10, 41), np.linspace(0, 8, 21)),
-            (
-                np.abs(
-                    np.outer(
-                        np.sin(np.linspace(0, 10, 41)), np.sin(np.linspace(0, 8, 21))
-                    )
-                )
-                * 100
-            ).astype(int),
             None,
             "optimizer",
             {
@@ -1262,6 +1253,15 @@ sol25 = np.array(
             None,
             None,
             False,
+            (np.linspace(0, 10, 41), np.linspace(0, 8, 21)),
+            (
+                np.abs(
+                    np.outer(
+                        np.sin(np.linspace(0, 10, 41)), np.sin(np.linspace(0, 8, 21))
+                    )
+                )
+                * 100
+            ).astype(int),
             None,
             sol25,
         ),
