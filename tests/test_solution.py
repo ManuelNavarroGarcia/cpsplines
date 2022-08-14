@@ -637,10 +637,34 @@ sol23 = np.array(
     ]
 )
 
+# int(100 * np.abs(np.sin(x))) (Poisson)
+# Using grid search
+# Out-of-range prediction(both backwards and forward)
+sol24 = np.array(
+    [
+        -0.47367524,
+        -0.47367524,
+        0.73399856,
+        4.2482178,
+        5.04467335,
+        3.99779629,
+        2.5247231,
+        5.64885298,
+        3.96039615,
+        2.5997617,
+        5.11728104,
+        4.78225971,
+        1.8458942,
+        5.30524101,
+        7.00617827,
+        7.00617827,
+    ]
+)
+
 # int(100 * np.abs(np.sin(x) * np.sin(y))) (Poisson)
 # Using optimizer
 # No out-of-range prediction
-sol24 = np.array(
+sol25 = np.array(
     [
         [
             -31.1749285,
@@ -1193,6 +1217,26 @@ sol24 = np.array(
             sol23,
         ),
         (
+            (4,),
+            (1,),
+            (10,),
+            (np.linspace(0, 10, 401),),
+            (np.abs(np.sin(np.linspace(0, 10, 401))) * 100).astype(int),
+            {0: (-0.7, 10.3)},
+            "grid_search",
+            {
+                "grid": ((1.234,),),
+                "verbose": False,
+                "parallel": False,
+            },
+            "poisson",
+            None,
+            None,
+            False,
+            None,
+            sol24,
+        ),
+        (
             (3, 2),
             (2, 1),
             (5, 4),
@@ -1219,7 +1263,7 @@ sol24 = np.array(
             None,
             False,
             None,
-            sol24,
+            sol25,
         ),
     ],
 )
