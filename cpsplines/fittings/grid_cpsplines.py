@@ -338,6 +338,13 @@ class GridCPsplines:
             for var_name in self.int_constraints.keys():
                 for deriv in self.int_constraints[var_name].keys():
                     constraints = self.int_constraints[var_name][deriv]
+                    if (
+                        list(constraints.values())[0] != 0
+                        and self.family.name != "gaussian"
+                    ):
+                        raise ValueError(
+                            "No threshold is allowed in the shape constraints for non Gaussian data."
+                        )
                     # Scale the integer constraints thresholds in the case the
                     # data is scaled
                     if data_normalizer is not None:
