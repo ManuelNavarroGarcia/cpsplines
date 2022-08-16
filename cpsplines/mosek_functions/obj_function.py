@@ -154,7 +154,7 @@ class ObjectiveFunction:
                     f"rot_cone_{i}",
                     mosek.fusion.Expr.vstack(
                         self.var_dict[f"t_D_{i}"],
-                        1 / 2,
+                        1,
                         mosek.fusion.Expr.mul(
                             mosek.fusion.Matrix.sparse(L), flatten_theta
                         ),
@@ -180,11 +180,8 @@ class ObjectiveFunction:
                 )
             }
             # Compute the linear term coefficients of the objective function
-            lin_term = np.multiply(
-                -2,
-                matrix_by_tensor_product(
-                    [mat.T for mat in obj_matrices["B_w"]], obj_matrices["y"]
-                ),
+            lin_term = matrix_by_tensor_product(
+                [mat.T for mat in obj_matrices["B_w"]], obj_matrices["y"]
             ).flatten()
 
             # Compute the Cholesky decompositions (A = L @ L.T)
@@ -198,7 +195,7 @@ class ObjectiveFunction:
                     "rot_cone_B",
                     mosek.fusion.Expr.vstack(
                         self.var_dict["t_B"],
-                        1 / 2,
+                        1,
                         mosek.fusion.Expr.mul(
                             mosek.fusion.Matrix.sparse(L_B.T), flatten_theta
                         ),
@@ -210,7 +207,7 @@ class ObjectiveFunction:
             # the artificial variable t_B included during the reformulation and
             # a linear term depending on the response variable sample
             obj = mosek.fusion.Expr.add(
-                mosek.fusion.Expr.add(
+                mosek.fusion.Expr.sub(
                     self.var_dict["t_B"], mosek.fusion.Expr.dot(lin_term, flatten_theta)
                 ),
                 obj,
@@ -249,7 +246,7 @@ class ObjectiveFunction:
             obj = mosek.fusion.Expr.sub(
                 mosek.fusion.Expr.add(
                     mosek.fusion.Expr.sum(self.var_dict["t"]),
-                    mosek.fusion.Expr.mul(0.5, obj),
+                    obj,
                 ),
                 mosek.fusion.Expr.dot(lin_term, flatten_theta),
             )
