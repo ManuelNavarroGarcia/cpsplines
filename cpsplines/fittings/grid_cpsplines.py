@@ -150,7 +150,28 @@ class GridCPsplines:
         self.pdf_constraint = pdf_constraint
 
     @staticmethod
-    def _get_family(family) -> Family:
+    def _get_family(family: str) -> Family:
+        """Given a distribution name from a distribution belonging to the
+        exponential family, gets the corresponding Family object from
+        statsmodels.
+
+        Parameters
+        ----------
+        family : _type_
+            The name of the distribution. It must be either "gaussian",
+            "poisson" or "binomial"
+
+        Returns
+        -------
+        Family
+            The Family object from statsmodels corresponding to the
+            distribution.
+
+        Raises
+        ------
+        ValueError
+            Raise an error when the input `family` is not implemented.
+        """
         if family == "gaussian":
             family_statsmodels = Gaussian()
         elif family == "poisson":
