@@ -18,7 +18,7 @@ from cpsplines.utils.simulator_optimize import Simulator
 from cpsplines.utils.timer import timer
 from cpsplines.utils.weighted_b import get_idx_fitting_region, get_weighted_B
 from joblib import Parallel, delayed
-from statsmodels.genmod.families.family import Family, Gaussian, Poisson
+from statsmodels.genmod.families.family import Binomial, Family, Gaussian, Poisson
 
 
 class NumericalError(Exception):
@@ -157,7 +157,7 @@ class GridCPsplines:
 
         Parameters
         ----------
-        family : _type_
+        family : str
             The name of the distribution. It must be either "gaussian",
             "poisson" or "binomial"
 
@@ -176,6 +176,8 @@ class GridCPsplines:
             family_statsmodels = Gaussian()
         elif family == "poisson":
             family_statsmodels = Poisson()
+        elif family == "binomial":
+            family_statsmodels = Binomial()
         else:
             raise ValueError(f"Family {family} is not implemented.")
         family_statsmodels.name = family
