@@ -4,7 +4,7 @@ from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.psplines.penalty_matrix import PenaltyMatrix
 from cpsplines.utils.fast_kron import penalization_term
 from cpsplines.utils.irls import fit_irls
-from statsmodels.genmod.families.family import Gaussian, Poisson
+from statsmodels.genmod.families.family import Binomial, Gaussian, Poisson
 
 # Test IRLS algorithm for multidimensional data. The results coincides with the
 # ones from R package JOPS, version 0.1.15. The code used to fit the models with
@@ -314,6 +314,45 @@ y_fit_4 = np.array(
     ]
 )
 
+x_4 = np.array([71, 158, 128, 2, 1, 1, 61, 37, 113, 59, 82, 148, 18, 1, 168])
+
+y_3 = np.array([0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0])
+
+# library("JOPS")
+# x = kyphosis$Age[1:15]
+# y = kyphosis$Kyphosis[1:15]
+# fit <- psNormal(
+#   x,
+#   y,
+#   xl = min(x),
+#   xr = max(x),
+#   nseg = 8,
+#   bdeg = 3,
+#   pord = 2,
+#   lambda = 7.35,
+# )
+# print(fit$muhat)
+
+y_fit_5 = np.array(
+    [
+        0.28126164,
+        0.23495476,
+        0.29935169,
+        0.07773906,
+        0.07582148,
+        0.07582148,
+        0.25272689,
+        0.17208795,
+        0.31830259,
+        0.24641095,
+        0.30497569,
+        0.25805068,
+        0.11443907,
+        0.07582148,
+        0.21224924,
+    ]
+)
+
 
 @pytest.mark.parametrize(
     "deg, ord_d, n_int, sp, family, x, y, y_fit",
@@ -358,6 +397,16 @@ y_fit_4 = np.array(
             y_2,
             y_fit_4,
         ),
+        (
+            [3],
+            [2],
+            [8],
+            [7.35],
+            Binomial(),
+            [x_4],
+            y_3,
+            y_fit_5,
+        ),
     ],
 )
 def test_gcv(deg, ord_d, n_int, sp, family, x, y, y_fit):
@@ -380,4 +429,4 @@ def test_gcv(deg, ord_d, n_int, sp, family, x, y, y_fit):
     obj_matrices = {"B_w": B, "y": y}
 
     out = fit_irls(obj_matrices=obj_matrices, penalty_term=penalty_term, family=family)
-    np.testing.assert_allclose(out, y_fit, atol=1e-6)
+    np.testing.assert_allclose(out, y_fit, atol=1e-5, rtol=1e-5)
