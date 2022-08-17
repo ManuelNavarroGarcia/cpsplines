@@ -250,6 +250,70 @@ class ObjectiveFunction:
                 ),
                 mosek.fusion.Expr.dot(lin_term, flatten_theta),
             )
+        elif family.name == "binomial":
+            self.var_dict |= {
+                "t": self.model.variable(
+                    "t",
+                    np.prod(obj_matrices["y"].shape),
+                    mosek.fusion.Domain.greaterThan(0.0),
+                ),
+                "u": self.model.variable(
+                    "u",
+                    np.prod(obj_matrices["y"].shape),
+                    mosek.fusion.Domain.greaterThan(0.0),
+                ),
+                "v": self.model.variable(
+                    "v",
+                    np.prod(obj_matrices["y"].shape),
+                    mosek.fusion.Domain.greaterThan(0.0),
+                ),
+            }
+
+            coef = mosek.fusion.Expr.flatten(
+                matrix_by_tensor_product_mosek(
+                    matrices=obj_matrices["B_w"], mosek_var=self.var_dict["theta"]
+                )
+            )
+
+            cons.append(
+                self.model.constraint(
+                    mosek.fusion.Expr.hstack(
+                        self.var_dict["u"],
+                        mosek.fusion.Expr.constTerm(
+                            np.prod(obj_matrices["y"].shape), 1.0
+                        ),
+                        mosek.fusion.Expr.sub(coef, self.var_dict["t"]),
+                    ),
+                    mosek.fusion.Domain.inPExpCone(),
+                )
+            )
+
+            cons.append(
+                self.model.constraint(
+                    mosek.fusion.Expr.hstack(
+                        self.var_dict["v"],
+                        mosek.fusion.Expr.constTerm(
+                            np.prod(obj_matrices["y"].shape), 1.0
+                        ),
+                        mosek.fusion.Expr.mul(-1, self.var_dict["t"]),
+                    ),
+                    mosek.fusion.Domain.inPExpCone(),
+                )
+            )
+
+            cons.append(
+                self.model.constraint(
+                    mosek.fusion.Expr.add(self.var_dict["u"], self.var_dict["v"]),
+                    mosek.fusion.Domain.lessThan(1.0),
+                )
+            )
+            obj = mosek.fusion.Expr.sub(
+                mosek.fusion.Expr.add(
+                    mosek.fusion.Expr.sum(self.var_dict["t"]),
+                    obj,
+                ),
+                mosek.fusion.Expr.dot(obj_matrices["y"], coef),
+            )
 
         # Generate the minimization objective function object
         obj = self.model.objective(
