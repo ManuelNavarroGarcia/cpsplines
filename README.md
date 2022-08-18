@@ -47,6 +47,9 @@ efficient algorithms accelerating the computations (Currie, Durban and Eilers,
   at a certain point.
 * Enforcing the hypersurface is a probability density function, i.e., it is
   non-negative and it integrates to one.  
+* Choose among several distributions from the exponential family, currently
+  implemented for Gaussian, Poisson and Binomial. For the last two distribution,
+  only sign and monotonocity constraints can be enforced.
 
 Solving the optimization problems is done using [MOSEK](https://www.mosek.com)
 optimization software.
