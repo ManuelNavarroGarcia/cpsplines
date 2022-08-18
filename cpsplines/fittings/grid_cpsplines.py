@@ -18,7 +18,7 @@ from cpsplines.utils.simulator_optimize import Simulator
 from cpsplines.utils.timer import timer
 from cpsplines.utils.weighted_b import get_idx_fitting_region, get_weighted_B
 from joblib import Parallel, delayed
-from statsmodels.genmod.families.family import Family, Gaussian, Poisson
+from statsmodels.genmod.families.family import Binomial, Family, Gaussian, Poisson
 
 
 class NumericalError(Exception):
@@ -150,11 +150,34 @@ class GridCPsplines:
         self.pdf_constraint = pdf_constraint
 
     @staticmethod
-    def _get_family(family) -> Family:
+    def _get_family(family: str) -> Family:
+        """Given a distribution name from a distribution belonging to the
+        exponential family, gets the corresponding Family object from
+        statsmodels.
+
+        Parameters
+        ----------
+        family : str
+            The name of the distribution. It must be either "gaussian",
+            "poisson" or "binomial"
+
+        Returns
+        -------
+        Family
+            The Family object from statsmodels corresponding to the
+            distribution.
+
+        Raises
+        ------
+        ValueError
+            Raise an error when the input `family` is not implemented.
+        """
         if family == "gaussian":
             family_statsmodels = Gaussian()
         elif family == "poisson":
             family_statsmodels = Poisson()
+        elif family == "binomial":
+            family_statsmodels = Binomial()
         else:
             raise ValueError(f"Family {family} is not implemented.")
         family_statsmodels.name = family
