@@ -38,7 +38,7 @@ ipython==8.4.0
     # via ipykernel
 jedi==0.18.1
     # via ipython
-joblib==1.1.0
+joblib==1.2.0
     # via cpsplines (setup.py)
 jupyter-client==7.3.4
     # via ipykernel
