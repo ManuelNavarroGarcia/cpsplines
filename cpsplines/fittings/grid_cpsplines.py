@@ -657,9 +657,30 @@ class GridCPsplines:
         return None
 
     def predict(self, data: Union[pd.Series, pd.DataFrame]) -> np.ndarray:
+        """Generates output predictions for the input samples.
+
+        Parameters
+        ----------
+        data : Union[pd.Series, pd.DataFrame]
+            The input data where the predictions are to be computed.
+
+        Returns
+        -------
+        np.ndarray
+            Numpy array(s) of predictions.
+
+        Raises
+        ------
+        ValueError
+            If some of the coordinates are outside the definition range of the
+            B-spline bases.
+        """
+        # If no data is inputted, return an empty array
         if data.empty:
             return np.array([])
 
+        # Data must be in DataFrame for so the transpose can be performed in the
+        # next steps
         if isinstance(data, pd.Series):
             data = pd.DataFrame(data)
 
