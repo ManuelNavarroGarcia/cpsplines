@@ -1,8 +1,10 @@
 import itertools
+import logging
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import mosek.fusion
 import numpy as np
+import pandas as pd
 import scipy
 from cpsplines.mosek_functions.interval_constraints import IntConstraints
 from cpsplines.mosek_functions.obj_function import ObjectiveFunction
@@ -13,6 +15,7 @@ from cpsplines.psplines.penalty_matrix import PenaltyMatrix
 from cpsplines.utils.fast_kron import matrix_by_tensor_product, matrix_by_transpose
 from cpsplines.utils.gcv import GCV
 from cpsplines.utils.normalize_data import DataNormalizer
+from cpsplines.utils.rearrange_data import scatter_to_grid
 from cpsplines.utils.simulator_grid_search import print_grid_search_results
 from cpsplines.utils.simulator_optimize import Simulator
 from cpsplines.utils.timer import timer
@@ -509,10 +512,42 @@ class GridCPsplines:
         ).x
         return best_sp
 
+    def _preprocessor(
+        self, data: pd.DataFrame, y_col: str
+    ) -> Tuple[List[np.ndarray], np.ndarray]:
+        """Preprocesses the input data, checking if it can be rearranged into a
+        grid. If this is the case, the data is arranged accordingly.
+
+        Parameters
+        ----------
+        data : pd.DataFrame
+            Input data and target data.
+        y_col : str
+            The column name of the target variable.
+
+        Returns
+        -------
+        Tuple[List[np.ndarray], np.ndarray]
+            The preprocessed data, either in scatter or grid format. The first
+            element of the tuple corresponds to the covariate data and the
+            second to the response data.
+        """
+
+        # Get the covariate column names
+        x, y = scatter_to_grid(data=data, y_col=y_col)
+        if len(data) == np.prod(y.shape) and np.isnan(y).sum() == 0:
+            self.data_type = "gridded"
+            logging.info("Data is rearranged into a grid.")
+        else:
+            self.data_type = "scattered"
+            x = [row for row in data[data.columns.drop(y_col).tolist()].values.T]
+            y = data[y_col].values
+        return x, y
+
     def fit(
         self,
-        x: Iterable[np.ndarray],
-        y: np.ndarray,
+        data: pd.DataFrame,
+        y_col: str,
         y_range: Optional[Iterable[Union[int, float]]] = None,
     ):
 
@@ -522,10 +557,10 @@ class GridCPsplines:
 
         Parameters
         ----------
-        x : Iterable[np.ndarray]
-            The covariate samples.
-        y : np.ndarray
-            The response variable sample.
+        data : pd.DataFrame
+            Input data and target data.
+        y_col : str
+            The column name of the target variable.
         y_range : Optional[Iterable[Union[int, float]]]
             If not None, `y` is scaled in the range defined by this parameter.
             This scaling process is useful when `y` has very large norm, since
@@ -543,13 +578,13 @@ class GridCPsplines:
             If MOSEK could not arrive to a feasible solution.
         """
 
-        if len({len(i) for i in [self.deg, self.ord_d, self.n_int, x]}) != 1:
-            raise ValueError(
-                "The lengths of `deg`, `ord_d`, `n_int` and `x` must agree."
-            )
+        if len({len(i) for i in [self.deg, self.ord_d, self.n_int]}) != 1:
+            raise ValueError("The lengths of `deg`, `ord_d`, `n_int` must agree.")
 
         if self.sp_method not in ["grid_search", "optimizer"]:
-            raise ValueError(f"invalid `sp_method`: {self.sp_method}")
+            raise ValueError(f"Invalid `sp_method`: {self.sp_method}.")
+
+        x, y = self._preprocessor(data=data, y_col=y_col)
 
         # Construct the B-spline bases
         self.bspline_bases = self._get_bspline_bases(x=x)
@@ -621,32 +656,63 @@ class GridCPsplines:
 
         return None
 
-    def predict(self, x: Iterable[np.ndarray]) -> np.ndarray:
-        # Return empty dataset when not all the coordinates required are passed
-        if len([v for v in x if len(v) > 0]) < len(x):
+    def predict(self, data: Union[pd.Series, pd.DataFrame]) -> np.ndarray:
+        """Generates output predictions for the input samples.
+
+        Parameters
+        ----------
+        data : Union[pd.Series, pd.DataFrame]
+            The input data where the predictions are to be computed.
+
+        Returns
+        -------
+        np.ndarray
+            Numpy array(s) of predictions.
+
+        Raises
+        ------
+        ValueError
+            If some of the coordinates are outside the definition range of the
+            B-spline bases.
+        """
+        # If no data is inputted, return an empty array
+        if data.empty:
             return np.array([])
+
+        # Data must be in DataFrame for so the transpose can be performed in the
+        # next steps
+        if isinstance(data, pd.Series):
+            data = pd.DataFrame(data)
+
+        if self.data_type == "gridded":
+            x = [np.unique(row) for row in data.values.T]
         else:
-            x_min = np.array([np.min(v) for v in x])
-            x_max = np.array([np.max(v) for v in x])
-            bsp_min = np.array([bsp.knots[bsp.deg] for bsp in self.bspline_bases])
-            bsp_max = np.array([bsp.knots[-bsp.deg] for bsp in self.bspline_bases])
-            # If some coordinates are outside the range where the B-spline bases
-            # were defined, the problem must be fitted again
-            if (x_min < bsp_min).sum() > 0:
-                raise ValueError(
-                    f"Some of the coordinates are outside the definition range of "
-                    f"the B-spline bases."
-                )
-            if (x_max > bsp_max).sum() > 0:
-                raise ValueError(
-                    f"Some of the coordinates are outside the definition range of "
-                    f"the B-spline bases."
-                )
-            # Compute the basis matrix at the coordinates to be predicted
-            B_predict = [
-                bsp.bspline_basis(x=x[i]) for i, bsp in enumerate(self.bspline_bases)
-            ]
-            # Get the predictions
-            return self.family.fitted(
+            x = [row for row in data.values.T]
+
+        x_min = np.array([np.min(v) for v in x])
+        x_max = np.array([np.max(v) for v in x])
+        bsp_min = np.array([bsp.knots[bsp.deg] for bsp in self.bspline_bases])
+        bsp_max = np.array([bsp.knots[-bsp.deg] for bsp in self.bspline_bases])
+        # If some coordinates are outside the range where the B-spline bases
+        # were defined, the problem must be fitted again
+        if (x_min < bsp_min).sum() > 0:
+            raise ValueError(
+                f"Some of the coordinates are outside the definition range of "
+                f"the B-spline bases."
+            )
+        if (x_max > bsp_max).sum() > 0:
+            raise ValueError(
+                f"Some of the coordinates are outside the definition range of "
+                f"the B-spline bases."
+            )
+        # Compute the basis matrix at the coordinates to be predicted
+        B_predict = [
+            bsp.bspline_basis(x=x[i]) for i, bsp in enumerate(self.bspline_bases)
+        ]
+        if self.data_type == "gridded":
+            y_pred = self.family.fitted(
                 matrix_by_tensor_product([mat for mat in B_predict], self.sol)
             )
+        else:
+            raise ValueError(f"Not implemented.")
+        return y_pred

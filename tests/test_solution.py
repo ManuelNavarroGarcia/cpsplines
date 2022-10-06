@@ -1,8 +1,10 @@
 import itertools
 
 import numpy as np
+import pandas as pd
 import pytest
 from cpsplines.fittings.grid_cpsplines import GridCPsplines
+from cpsplines.utils.rearrange_data import grid_to_scatter
 from scipy.special import expit
 from scipy.stats import multivariate_normal, norm
 
@@ -784,7 +786,7 @@ sol29 = np.array(
 
 
 @pytest.mark.parametrize(
-    "deg, ord_d, n_int, x_range, sp_method, sp_args, family, int_constraints, pt_constraints, pdf_constraint, x, y, y_range, sol",
+    "deg, ord_d, n_int, x_range, sp_method, sp_args, family, int_constraints, pt_constraints, pdf_constraint, data, y_range, sol",
     [
         (
             (3,),
@@ -797,8 +799,12 @@ sol29 = np.array(
             None,
             None,
             False,
-            (np.linspace(0, 2 * np.pi, 101),),
-            np.cos(np.linspace(0, 2 * np.pi, 101)),
+            pd.DataFrame(
+                {
+                    "x": np.linspace(0, 2 * np.pi, 101),
+                    "y": np.cos(np.linspace(0, 2 * np.pi, 101)),
+                }
+            ),
             None,
             sol1,
         ),
@@ -813,8 +819,12 @@ sol29 = np.array(
             {0: {0: {"+": 0.0}}},
             None,
             False,
-            (np.linspace(0, 2 * np.pi, 101),),
-            np.cos(np.linspace(0, 2 * np.pi, 101)),
+            pd.DataFrame(
+                {
+                    "x": np.linspace(0, 2 * np.pi, 101),
+                    "y": np.cos(np.linspace(0, 2 * np.pi, 101)),
+                }
+            ),
             None,
             sol2,
         ),
@@ -829,9 +839,13 @@ sol29 = np.array(
             None,
             None,
             False,
-            (np.linspace(0, 200, 201),),
-            np.exp(4 - np.linspace(0, 200, 201) / 25)
-            + 4 * np.cos(np.linspace(0, 200, 201) / 8),
+            pd.DataFrame(
+                {
+                    "x": np.linspace(0, 200, 201),
+                    "y": np.exp(4 - np.linspace(0, 200, 201) / 25)
+                    + 4 * np.cos(np.linspace(0, 200, 201) / 8),
+                }
+            ),
             None,
             sol3,
         ),
@@ -846,9 +860,13 @@ sol29 = np.array(
             {0: {0: {"+": 10.0, "-": 40.0}}},
             None,
             False,
-            (np.linspace(0, 200, 201),),
-            np.exp(4 - np.linspace(0, 200, 201) / 25)
-            + 4 * np.cos(np.linspace(0, 200, 201) / 8),
+            pd.DataFrame(
+                {
+                    "x": np.linspace(0, 200, 201),
+                    "y": np.exp(4 - np.linspace(0, 200, 201) / 25)
+                    + 4 * np.cos(np.linspace(0, 200, 201) / 8),
+                }
+            ),
             None,
             sol4,
         ),
@@ -869,8 +887,12 @@ sol29 = np.array(
             None,
             None,
             False,
-            (np.linspace(0, 1, 50),),
-            2 * (2 * np.linspace(0, 1, 50) - 1) ** 3,
+            pd.DataFrame(
+                {
+                    "x": np.linspace(0, 1, 50),
+                    "y": 2 * (2 * np.linspace(0, 1, 50) - 1) ** 3,
+                }
+            ),
             None,
             sol5,
         ),
@@ -891,8 +913,12 @@ sol29 = np.array(
             {0: {1: {"+": 0.0}, 2: {"-": 0.0}}},
             None,
             False,
-            (np.linspace(0, 1, 50),),
-            2 * (2 * np.linspace(0, 1, 50) - 1) ** 3,
+            pd.DataFrame(
+                {
+                    "x": np.linspace(0, 1, 50),
+                    "y": 2 * (2 * np.linspace(0, 1, 50) - 1) ** 3,
+                }
+            ),
             None,
             sol6,
         ),
@@ -911,10 +937,12 @@ sol29 = np.array(
             None,
             None,
             False,
-            (np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
-            np.outer(
-                np.sin(3 * np.pi * np.linspace(0, 1, 30)),
-                np.sin(2 * np.pi * np.linspace(0, 1, 20)),
+            grid_to_scatter(
+                x=(np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
+                y=np.outer(
+                    np.sin(3 * np.pi * np.linspace(0, 1, 30)),
+                    np.sin(2 * np.pi * np.linspace(0, 1, 20)),
+                ),
             ),
             None,
             sol7,
@@ -934,10 +962,12 @@ sol29 = np.array(
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}}},
             None,
             False,
-            (np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
-            np.outer(
-                np.sin(3 * np.pi * np.linspace(0, 1, 30)),
-                np.sin(2 * np.pi * np.linspace(0, 1, 20)),
+            grid_to_scatter(
+                x=(np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
+                y=np.outer(
+                    np.sin(3 * np.pi * np.linspace(0, 1, 30)),
+                    np.sin(2 * np.pi * np.linspace(0, 1, 20)),
+                ),
             ),
             None,
             sol8,
@@ -959,10 +989,12 @@ sol29 = np.array(
             None,
             None,
             False,
-            (np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
-            np.outer(
-                np.sin(3 * np.pi * np.linspace(0, 1, 30)),
-                np.sin(2 * np.pi * np.linspace(0, 1, 20)),
+            grid_to_scatter(
+                x=(np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
+                y=np.outer(
+                    np.sin(3 * np.pi * np.linspace(0, 1, 30)),
+                    np.sin(2 * np.pi * np.linspace(0, 1, 20)),
+                ),
             ),
             None,
             sol9,
@@ -984,10 +1016,12 @@ sol29 = np.array(
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}, 1: {"+": 0}}},
             None,
             False,
-            (np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
-            np.outer(
-                np.sin(3 * np.pi * np.linspace(0, 1, 30)),
-                np.sin(2 * np.pi * np.linspace(0, 1, 20)),
+            grid_to_scatter(
+                x=(np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
+                y=np.outer(
+                    np.sin(3 * np.pi * np.linspace(0, 1, 30)),
+                    np.sin(2 * np.pi * np.linspace(0, 1, 20)),
+                ),
             ),
             None,
             sol10,
@@ -1003,12 +1037,14 @@ sol29 = np.array(
             None,
             None,
             False,
-            (np.linspace(0, 1, 30), np.linspace(0, 1, 40), np.linspace(0, 1, 50)),
-            np.einsum(
-                "i,j,k->ijk",
-                np.sin(3 * np.pi * np.linspace(0, 1, 30)),
-                np.sin(2 * np.pi * np.linspace(0, 1, 40)),
-                np.sin(np.pi * np.linspace(0, 1, 50)),
+            grid_to_scatter(
+                x=(np.linspace(0, 1, 30), np.linspace(0, 1, 40), np.linspace(0, 1, 50)),
+                y=np.einsum(
+                    "i,j,k->ijk",
+                    np.sin(3 * np.pi * np.linspace(0, 1, 30)),
+                    np.sin(2 * np.pi * np.linspace(0, 1, 40)),
+                    np.sin(np.pi * np.linspace(0, 1, 50)),
+                ),
             ),
             None,
             sol11,
@@ -1024,12 +1060,14 @@ sol29 = np.array(
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}}, 2: {0: {"+": 0}}},
             None,
             False,
-            (np.linspace(0, 1, 30), np.linspace(0, 1, 40), np.linspace(0, 1, 50)),
-            np.einsum(
-                "i,j,k->ijk",
-                np.sin(3 * np.pi * np.linspace(0, 1, 30)),
-                np.sin(2 * np.pi * np.linspace(0, 1, 40)),
-                np.sin(np.pi * np.linspace(0, 1, 50)),
+            grid_to_scatter(
+                x=(np.linspace(0, 1, 30), np.linspace(0, 1, 40), np.linspace(0, 1, 50)),
+                y=np.einsum(
+                    "i,j,k->ijk",
+                    np.sin(3 * np.pi * np.linspace(0, 1, 30)),
+                    np.sin(2 * np.pi * np.linspace(0, 1, 40)),
+                    np.sin(np.pi * np.linspace(0, 1, 50)),
+                ),
             ),
             None,
             sol12,
@@ -1051,8 +1089,12 @@ sol29 = np.array(
             None,
             None,
             False,
-            (np.linspace(0, np.pi, 51),),
-            np.sin(np.linspace(0, np.pi, 51)),
+            pd.DataFrame(
+                {
+                    "x": np.linspace(0, np.pi, 51),
+                    "y": np.sin(np.linspace(0, np.pi, 51)),
+                }
+            ),
             None,
             sol13,
         ),
@@ -1073,8 +1115,12 @@ sol29 = np.array(
             {0: {0: {"+": 0}}},
             None,
             False,
-            (np.linspace(0, np.pi / 2, 51),),
-            np.sin(np.linspace(0, np.pi / 2, 51)),
+            pd.DataFrame(
+                {
+                    "x": np.linspace(0, np.pi / 2, 51),
+                    "y": np.sin(np.linspace(0, np.pi / 2, 51)),
+                }
+            ),
             None,
             sol14,
         ),
@@ -1089,10 +1135,12 @@ sol29 = np.array(
             {1: {1: {"+": 0}}},
             None,
             False,
-            (np.linspace(0, np.pi / 3, 51), np.linspace(0, np.pi / 4, 41)),
-            np.outer(
-                np.arctan(np.linspace(0, np.pi / 3, 51)),
-                np.arctan(np.linspace(0, np.pi / 4, 41)),
+            grid_to_scatter(
+                x=(np.linspace(0, np.pi / 3, 51), np.linspace(0, np.pi / 4, 41)),
+                y=np.outer(
+                    np.arctan(np.linspace(0, np.pi / 3, 51)),
+                    np.arctan(np.linspace(0, np.pi / 4, 41)),
+                ),
             ),
             None,
             sol15,
@@ -1114,8 +1162,12 @@ sol29 = np.array(
             None,
             {(2,): ((np.array([0.8]),), np.array([700]), 1e-8)},
             False,
-            (np.linspace(0, 1, 50),),
-            2 * (2 * np.linspace(0, 1, 50) - 1) ** 3,
+            pd.DataFrame(
+                {
+                    "x": np.linspace(0, 1, 50),
+                    "y": 2 * (2 * np.linspace(0, 1, 50) - 1) ** 3,
+                }
+            ),
             None,
             sol16,
         ),
@@ -1134,10 +1186,12 @@ sol29 = np.array(
             None,
             {(0, 0): ((np.array([4]), np.array([3])), np.array([4]), 1e-8)},
             False,
-            (np.linspace(0, 3 * np.pi, 30), np.linspace(0, 2 * np.pi, 20)),
-            np.outer(
-                np.sin(np.linspace(0, 3 * np.pi, 30)),
-                np.sin(np.linspace(0, 2 * np.pi, 20)),
+            grid_to_scatter(
+                x=(np.linspace(0, 3 * np.pi, 30), np.linspace(0, 2 * np.pi, 20)),
+                y=np.outer(
+                    np.sin(np.linspace(0, 3 * np.pi, 30)),
+                    np.sin(np.linspace(0, 2 * np.pi, 20)),
+                ),
             ),
             None,
             sol17,
@@ -1153,8 +1207,12 @@ sol29 = np.array(
             None,
             None,
             False,
-            (np.linspace(0, 2 * np.pi, 101)[::-1],),  # Unordered data in 1-D
-            np.cos(np.linspace(0, 2 * np.pi, 101))[::-1],
+            pd.DataFrame(
+                {
+                    "x": np.linspace(0, 2 * np.pi, 101)[::-1],
+                    "y": np.cos(np.linspace(0, 2 * np.pi, 101))[::-1],
+                }
+            ),
             None,
             sol1,
         ),
@@ -1173,13 +1231,15 @@ sol29 = np.array(
             None,
             None,
             False,
-            (
-                np.linspace(0, 1, 30)[::-1],
-                np.linspace(0, 1, 20)[::-1],
-            ),  # Unordered data in 2-D
-            np.outer(
-                np.sin(3 * np.pi * np.linspace(0, 1, 30)[::-1]),
-                np.sin(2 * np.pi * np.linspace(0, 1, 20)[::-1]),
+            grid_to_scatter(
+                x=(
+                    np.linspace(0, 1, 30)[::-1],
+                    np.linspace(0, 1, 20)[::-1],
+                ),
+                y=np.outer(
+                    np.sin(3 * np.pi * np.linspace(0, 1, 30)[::-1]),
+                    np.sin(2 * np.pi * np.linspace(0, 1, 20)[::-1]),
+                ),
             ),
             None,
             sol7,
@@ -1201,8 +1261,12 @@ sol29 = np.array(
             None,  # Do not include non-negative constraint explicitly
             None,
             True,
-            (np.linspace(-10, 10, 51),),
-            norm.pdf(np.linspace(-10, 10, 51), 0, 2),
+            pd.DataFrame(
+                {
+                    "x": np.linspace(-10, 10, 51),
+                    "y": norm.pdf(np.linspace(-10, 10, 51), 0, 2),
+                }
+            ),
             None,
             sol18,
         ),
@@ -1221,14 +1285,18 @@ sol29 = np.array(
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}}},
             None,
             True,
-            (np.linspace(-3, 3, 50), np.linspace(-4, 4, 60)),
-            multivariate_normal.pdf(
-                x=list(
-                    itertools.product(np.linspace(-3, 3, 50), np.linspace(-4, 4, 60))
-                ),
-                mean=[0, 0],
-                cov=[[2, 0.5], [0.5, 1]],
-            ).reshape((len(np.linspace(-3, 3, 50)), len(np.linspace(-4, 4, 60)))),
+            grid_to_scatter(
+                x=(np.linspace(-3, 3, 50), np.linspace(-4, 4, 60)),
+                y=multivariate_normal.pdf(
+                    x=list(
+                        itertools.product(
+                            np.linspace(-3, 3, 50), np.linspace(-4, 4, 60)
+                        )
+                    ),
+                    mean=[0, 0],
+                    cov=[[2, 0.5], [0.5, 1]],
+                ).reshape((len(np.linspace(-3, 3, 50)), len(np.linspace(-4, 4, 60)))),
+            ),
             None,
             sol19,
         ),
@@ -1243,9 +1311,13 @@ sol29 = np.array(
             {0: {0: {"+": 10.0, "-": 40.0}}},
             None,
             False,
-            (np.linspace(0, 200, 201),),
-            np.exp(4 - np.linspace(0, 200, 201) / 25)
-            + 4 * np.cos(np.linspace(0, 200, 201) / 8),
+            pd.DataFrame(
+                {
+                    "x": np.linspace(0, 200, 201),
+                    "y": np.exp(4 - np.linspace(0, 200, 201) / 25)
+                    + 4 * np.cos(np.linspace(0, 200, 201) / 8),
+                }
+            ),
             (0, 1),
             sol20,
         ),
@@ -1266,8 +1338,12 @@ sol29 = np.array(
             None,
             {(2,): ((np.array([0.8]),), np.array([700]), 1e-8)},
             False,
-            (np.linspace(0, 1, 50),),
-            (2 * np.linspace(0, 1, 50) - 1) ** 3,
+            pd.DataFrame(
+                {
+                    "x": np.linspace(0, 1, 50),
+                    "y": (2 * np.linspace(0, 1, 50) - 1) ** 3,
+                }
+            ),
             (-0.6, 0.4),
             sol21,
         ),
@@ -1286,10 +1362,12 @@ sol29 = np.array(
             {0: {0: {"+": 0}}, 1: {0: {"+": 0}}},
             None,
             False,
-            (np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
-            np.outer(
-                np.sin(3 * np.pi * np.linspace(0, 1, 30)),
-                np.sin(2 * np.pi * np.linspace(0, 1, 20)),
+            grid_to_scatter(
+                x=(np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
+                y=np.outer(
+                    np.sin(3 * np.pi * np.linspace(0, 1, 30)),
+                    np.sin(2 * np.pi * np.linspace(0, 1, 20)),
+                ),
             ),
             (0, 0.01),
             sol22,
@@ -1309,8 +1387,12 @@ sol29 = np.array(
             None,
             None,
             False,
-            (np.linspace(0, 10, 401),),
-            (np.abs(np.sin(np.linspace(0, 10, 401))) * 100).astype(int),
+            pd.DataFrame(
+                {
+                    "x": np.linspace(0, 10, 401),
+                    "y": (np.abs(np.sin(np.linspace(0, 10, 401))) * 100).astype(int),
+                }
+            ),
             None,
             sol23,
         ),
@@ -1329,8 +1411,12 @@ sol29 = np.array(
             None,
             None,
             False,
-            (np.linspace(0, 10, 401),),
-            (np.abs(np.sin(np.linspace(0, 10, 401))) * 100).astype(int),
+            pd.DataFrame(
+                {
+                    "x": np.linspace(0, 10, 401),
+                    "y": (np.abs(np.sin(np.linspace(0, 10, 401))) * 100).astype(int),
+                }
+            ),
             None,
             sol24,
         ),
@@ -1351,15 +1437,18 @@ sol29 = np.array(
             None,
             None,
             False,
-            (np.linspace(0, 10, 41), np.linspace(0, 8, 21)),
-            (
-                np.abs(
-                    np.outer(
-                        np.sin(np.linspace(0, 10, 41)), np.sin(np.linspace(0, 8, 21))
+            grid_to_scatter(
+                x=(np.linspace(0, 10, 41), np.linspace(0, 8, 21)),
+                y=(
+                    np.abs(
+                        np.outer(
+                            np.sin(np.linspace(0, 10, 41)),
+                            np.sin(np.linspace(0, 8, 21)),
+                        )
                     )
-                )
-                * 100
-            ).astype(int),
+                    * 100
+                ).astype(int),
+            ),
             None,
             sol25,
         ),
@@ -1378,8 +1467,12 @@ sol29 = np.array(
             {0: {1: {"+": 0}}},
             None,
             False,
-            (np.linspace(-3, 3, 401),),
-            (expit(np.linspace(-3, 3, 401)) * 100).astype(int),
+            pd.DataFrame(
+                {
+                    "x": np.linspace(-3, 3, 401),
+                    "y": (expit(np.linspace(-3, 3, 401)) * 100).astype(int),
+                }
+            ),
             None,
             sol26,
         ),
@@ -1398,8 +1491,14 @@ sol29 = np.array(
             None,
             None,
             False,
-            (np.linspace(0, 80, 80),),
-            np.concatenate((np.zeros(20), np.tile([0, 1], 20), np.ones(20))),
+            pd.DataFrame(
+                {
+                    "x": np.linspace(0, 80, 80),
+                    "y": np.concatenate(
+                        (np.zeros(20), np.tile([0, 1], 20), np.ones(20))
+                    ),
+                }
+            ),
             None,
             sol27,
         ),
@@ -1420,8 +1519,14 @@ sol29 = np.array(
             {0: {1: {"+": 0.0}}},
             None,
             False,
-            (np.linspace(0, 80, 80),),
-            np.concatenate((np.zeros(20), np.tile([0, 1], 20), np.ones(20))),
+            pd.DataFrame(
+                {
+                    "x": np.linspace(0, 80, 80),
+                    "y": np.concatenate(
+                        (np.zeros(20), np.tile([0, 1], 20), np.ones(20))
+                    ),
+                }
+            ),
             None,
             sol28,
         ),
@@ -1440,14 +1545,16 @@ sol29 = np.array(
             None,
             None,
             False,
-            (np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
-            np.abs(
-                np.round(
-                    np.outer(
-                        np.sin(3 * np.pi * np.linspace(0, 1, 30)),
-                        np.sin(2 * np.pi * np.linspace(0, 1, 20)),
+            grid_to_scatter(
+                x=(np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
+                y=np.abs(
+                    np.round(
+                        np.outer(
+                            np.sin(3 * np.pi * np.linspace(0, 1, 30)),
+                            np.sin(2 * np.pi * np.linspace(0, 1, 20)),
+                        )
                     )
-                )
+                ),
             ),
             None,
             sol29,
@@ -1462,8 +1569,7 @@ def test_sol(
     deg,
     ord_d,
     n_int,
-    x,
-    y,
+    data,
     x_range,
     sp_method,
     sp_args,
@@ -1486,5 +1592,5 @@ def test_sol(
         pt_constraints=pt_constraints,
         pdf_constraint=pdf_constraint,
     )
-    out.fit(x=x, y=y, y_range=y_range)
+    out.fit(data=data, y_col="y", y_range=y_range)
     np.testing.assert_allclose(out.sol, sol, rtol=0.01, atol=1e-2)
