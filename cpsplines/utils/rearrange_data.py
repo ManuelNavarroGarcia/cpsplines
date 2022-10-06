@@ -48,12 +48,16 @@ def grid_to_scatter(
         if len({len(i) for i in [x, x_cols]}) != 1:
             raise ValueError("The lengths of `x`, `x_cols` must agree.")
 
-    return pd.DataFrame(
-        np.c_[
-            np.stack(np.meshgrid(*x, indexing="ij"), -1).reshape(-1, len(x)),
-            y.flatten(),
-        ],
-        columns=x_cols + [y_col],
+    return (
+        pd.DataFrame(
+            np.c_[
+                np.stack(np.meshgrid(*x, indexing="ij"), -1).reshape(-1, len(x)),
+                y.flatten(),
+            ],
+            columns=x_cols + [y_col],
+        )
+        .dropna()
+        .reset_index(drop=True)
     )
 
 
