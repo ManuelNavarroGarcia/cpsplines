@@ -1,8 +1,10 @@
 import itertools
+import logging
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import mosek.fusion
 import numpy as np
+import pandas as pd
 import scipy
 from cpsplines.mosek_functions.interval_constraints import IntConstraints
 from cpsplines.mosek_functions.obj_function import ObjectiveFunction
@@ -13,6 +15,7 @@ from cpsplines.psplines.penalty_matrix import PenaltyMatrix
 from cpsplines.utils.fast_kron import matrix_by_tensor_product, matrix_by_transpose
 from cpsplines.utils.gcv import GCV
 from cpsplines.utils.normalize_data import DataNormalizer
+from cpsplines.utils.rearrange_data import scatter_to_grid
 from cpsplines.utils.simulator_grid_search import print_grid_search_results
 from cpsplines.utils.simulator_optimize import Simulator
 from cpsplines.utils.timer import timer
