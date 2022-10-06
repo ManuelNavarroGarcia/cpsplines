@@ -509,10 +509,42 @@ class GridCPsplines:
         ).x
         return best_sp
 
+    def _preprocessor(
+        self, data: pd.DataFrame, y_col: str
+    ) -> Tuple[List[np.ndarray], np.ndarray]:
+        """Preprocesses the input data, checking if it can be rearranged into a
+        grid. If this is the case, the data is arranged accordingly.
+
+        Parameters
+        ----------
+        data : pd.DataFrame
+            Input data and target data.
+        y_col : str
+            The column name of the target variable.
+
+        Returns
+        -------
+        Tuple[List[np.ndarray], np.ndarray]
+            The preprocessed data, either in scatter or grid format. The first
+            element of the tuple corresponds to the covariate data and the
+            second to the response data.
+        """
+
+        # Get the covariate column names
+        x, y = scatter_to_grid(data=data, y_col=y_col)
+        if len(data) == np.prod(y.shape) and np.isnan(y).sum() == 0:
+            self.data_type = "gridded"
+            logging.info("Data is rearranged into a grid.")
+        else:
+            self.data_type = "scattered"
+            x = [row for row in data[data.columns.drop(y_col).tolist()].values.T]
+            y = data[y_col].values
+        return x, y
+
     def fit(
         self,
-        x: Iterable[np.ndarray],
-        y: np.ndarray,
+        data: pd.DataFrame,
+        y_col: str,
         y_range: Optional[Iterable[Union[int, float]]] = None,
     ):
 
@@ -522,10 +554,10 @@ class GridCPsplines:
 
         Parameters
         ----------
-        x : Iterable[np.ndarray]
-            The covariate samples.
-        y : np.ndarray
-            The response variable sample.
+        data : pd.DataFrame
+            Input data and target data.
+        y_col : str
+            The column name of the target variable.
         y_range : Optional[Iterable[Union[int, float]]]
             If not None, `y` is scaled in the range defined by this parameter.
             This scaling process is useful when `y` has very large norm, since
@@ -543,13 +575,13 @@ class GridCPsplines:
             If MOSEK could not arrive to a feasible solution.
         """
 
-        if len({len(i) for i in [self.deg, self.ord_d, self.n_int, x]}) != 1:
-            raise ValueError(
-                "The lengths of `deg`, `ord_d`, `n_int` and `x` must agree."
-            )
+        if len({len(i) for i in [self.deg, self.ord_d, self.n_int]}) != 1:
+            raise ValueError("The lengths of `deg`, `ord_d`, `n_int` must agree.")
 
         if self.sp_method not in ["grid_search", "optimizer"]:
-            raise ValueError(f"invalid `sp_method`: {self.sp_method}")
+            raise ValueError(f"Invalid `sp_method`: {self.sp_method}.")
+
+        x, y = self._preprocessor(data=data, y_col=y_col)
 
         # Construct the B-spline bases
         self.bspline_bases = self._get_bspline_bases(x=x)
