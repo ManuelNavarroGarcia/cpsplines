@@ -316,7 +316,7 @@ def plot_surfaces(
             )
             ext_y = np.concatenate([pred_up, ext_y], axis=0)
         if x_right[0].size > 0:
-            pred_down= surface.predict(
+            pred_down = surface.predict(
                 data=pd.DataFrame(
                     [
                         np.repeat(x_right[0], len(ext_x1)),
