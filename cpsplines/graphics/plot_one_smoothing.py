@@ -4,6 +4,7 @@ from typing import Iterable, Optional, Tuple, Union
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 from cpsplines.fittings.grid_cpsplines import GridCPsplines
 from cpsplines.graphics.plot_utils import granulate_prediction_range
 
@@ -126,9 +127,9 @@ def plot_curves(
             np.concatenate([x_left[0], np.sort(bsp.xsample), x_right[0]]),
             np.concatenate(
                 [
-                    curve.predict([x_left[0]]),
+                    curve.predict(pd.Series(x_left[0])),
                     curve.y_fitted[bsp.int_back : y_end][np.argsort(bsp.xsample)],
-                    curve.predict([x_right[0]]),
+                    curve.predict(pd.Series(x_right[0])),
                 ]
             ),
             col_curve[i],
@@ -285,18 +286,44 @@ def plot_surfaces(
         ]
         # Add the predictions of the new points to the extended response matrix
         if x_left[1].size > 0:
-            pred_left = surface.predict(x=[surface.bspline_bases[0].xsample, x_left[1]])
+            pred_left = surface.predict(
+                data=pd.DataFrame(
+                    [
+                        np.repeat(surface.bspline_bases[0].xsample, len(x_left[1])),
+                        np.tile(x_left[1], len(surface.bspline_bases[0].xsample)),
+                    ]
+                ).T
+            )
             ext_y = np.concatenate([pred_left, ext_y], axis=1)
         if x_right[1].size > 0:
             pred_right = surface.predict(
-                x=[surface.bspline_bases[0].xsample, x_right[1]]
+                data=pd.DataFrame(
+                    [
+                        np.repeat(surface.bspline_bases[0].xsample, len(x_right[1])),
+                        np.tile(x_right[1], len(surface.bspline_bases[0].xsample)),
+                    ]
+                ).T
             )
             ext_y = np.concatenate([ext_y, pred_right], axis=1)
         if x_left[0].size > 0:
-            pred_up = surface.predict(x=[x_left[0], ext_x1])
+            pred_up = surface.predict(
+                data=pd.DataFrame(
+                    [
+                        np.repeat(x_left[0], len(ext_x1)),
+                        np.tile(ext_x1, len(x_left[0])),
+                    ]
+                ).T
+            )
             ext_y = np.concatenate([pred_up, ext_y], axis=0)
         if x_right[0].size > 0:
-            pred_down = surface.predict(x=[x_right[0], ext_x1])
+            pred_down= surface.predict(
+                data=pd.DataFrame(
+                    [
+                        np.repeat(x_right[0], len(ext_x1)),
+                        np.tile(ext_x1, len(x_right[0])),
+                    ]
+                ).T
+            )
             ext_y = np.concatenate([ext_y, pred_down], axis=0)
 
         # Plot the surface and include the colorbar
