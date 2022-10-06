@@ -656,32 +656,42 @@ class GridCPsplines:
 
         return None
 
-    def predict(self, x: Iterable[np.ndarray]) -> np.ndarray:
-        # Return empty dataset when not all the coordinates required are passed
-        if len([v for v in x if len(v) > 0]) < len(x):
+    def predict(self, data: Union[pd.Series, pd.DataFrame]) -> np.ndarray:
+        if data.empty:
             return np.array([])
+
+        if isinstance(data, pd.Series):
+            data = pd.DataFrame(data)
+
+        if self.data_type == "gridded":
+            x = [np.unique(row) for row in data.values.T]
         else:
-            x_min = np.array([np.min(v) for v in x])
-            x_max = np.array([np.max(v) for v in x])
-            bsp_min = np.array([bsp.knots[bsp.deg] for bsp in self.bspline_bases])
-            bsp_max = np.array([bsp.knots[-bsp.deg] for bsp in self.bspline_bases])
-            # If some coordinates are outside the range where the B-spline bases
-            # were defined, the problem must be fitted again
-            if (x_min < bsp_min).sum() > 0:
-                raise ValueError(
-                    f"Some of the coordinates are outside the definition range of "
-                    f"the B-spline bases."
-                )
-            if (x_max > bsp_max).sum() > 0:
-                raise ValueError(
-                    f"Some of the coordinates are outside the definition range of "
-                    f"the B-spline bases."
-                )
-            # Compute the basis matrix at the coordinates to be predicted
-            B_predict = [
-                bsp.bspline_basis(x=x[i]) for i, bsp in enumerate(self.bspline_bases)
-            ]
-            # Get the predictions
-            return self.family.fitted(
+            x = [row for row in data.values.T]
+
+        x_min = np.array([np.min(v) for v in x])
+        x_max = np.array([np.max(v) for v in x])
+        bsp_min = np.array([bsp.knots[bsp.deg] for bsp in self.bspline_bases])
+        bsp_max = np.array([bsp.knots[-bsp.deg] for bsp in self.bspline_bases])
+        # If some coordinates are outside the range where the B-spline bases
+        # were defined, the problem must be fitted again
+        if (x_min < bsp_min).sum() > 0:
+            raise ValueError(
+                f"Some of the coordinates are outside the definition range of "
+                f"the B-spline bases."
+            )
+        if (x_max > bsp_max).sum() > 0:
+            raise ValueError(
+                f"Some of the coordinates are outside the definition range of "
+                f"the B-spline bases."
+            )
+        # Compute the basis matrix at the coordinates to be predicted
+        B_predict = [
+            bsp.bspline_basis(x=x[i]) for i, bsp in enumerate(self.bspline_bases)
+        ]
+        if self.data_type == "gridded":
+            y_pred = self.family.fitted(
                 matrix_by_tensor_product([mat for mat in B_predict], self.sol)
             )
+        else:
+            raise ValueError(f"Not implemented.")
+        return y_pred
