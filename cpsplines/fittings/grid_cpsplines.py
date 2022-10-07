@@ -94,15 +94,16 @@ class GridCPsplines:
         are dictionareis, whose keys are the signs of the constraints (either
         "+" or "-") and the values are numbers denoting the upper or lower
         threshold of the constraints. By default, None.
-    pt_constraints : Optional[Dict[Tuple[int], Any]], optional
+    pt_constraints : Optional[Dict[Tuple[int], Dict[str, pd.DataFrame]]],
+    optional
         A dictionary containing the point constraints to be enforced. The keys
         of the dictionary are tuples representing the order of the derivatives
-        where the constraints acts on. The values are tuples that must contain
-        the items (in this order):
-        - An array of unidimensional arrays with the coordinates of the points
-        where the value needs to be fixed.
-        - An array with the values of the derivative to be enforced.
-        - A number corresponding to the tolerancea allowed in the constraint.
+        where the constraints acts on. The values are dictionaries where the
+        keys can be "greaterThan", "lessThan" or "equalsTo", depending on the
+        sign of the constraints. The values are DataFrames, with the same
+        columns as the data inputted into .fit(), with the points and values
+        involved in the constraints. This DataFrame can also have a column,
+        "tol", with tolerances for each point.
     pdf_constraint : bool, optional
         A boolean indicating whether the fitted hypersurface must satisfy
         Probability Density Function (PDF) conditions, i.e., it is non-negative
@@ -138,7 +139,7 @@ class GridCPsplines:
         int_constraints: Optional[
             Dict[int, Dict[int, Dict[str, Union[int, float]]]]
         ] = None,
-        pt_constraints: Optional[Dict[Tuple[int], Any]] = None,
+        pt_constraints: Optional[Dict[Tuple[int], Dict[str, pd.DataFrame]]] = None,
         pdf_constraint: bool = False,
     ):
         self.deg = deg
@@ -301,7 +302,8 @@ class GridCPsplines:
 
     def _initialize_model(
         self,
-        obj_matrices: Dict[str, Iterable[np.ndarray]],
+        obj_matrices: Union[np.ndarray, Iterable[np.ndarray]],
+        y_col: str,
         data_normalizer: Optional[DataNormalizer] = None,
     ) -> mosek.fusion.Model:
 
@@ -310,14 +312,10 @@ class GridCPsplines:
 
         Parameters
         ----------
-        lin_term : np.ndarray
-            An array containing the coefficients of the linear term.
-        L_B : np.ndarray
-            The Cholesky decomposition of B.T @ B, where B is the Kronecker
-            product of the B-spline basis matrices.
-        L_D : Iterable[np.ndarray]
-            An array containing the Cholesky decomposition of P_i, where P_i is
-            the penalty matrix along the i axis.
+        obj_matrices : Dict[str, Union[np.ndarray, Iterable[np.ndarray]]
+            A dictionary containing the arrays used in the optimization problem.
+        y_col : str
+            The column name of the target variable.
         data_normalizer : Optional[DataNormalizer]
             The DataNormalizer object if `y_range` is not None and None
             otherwise. By default, None.
@@ -400,25 +398,36 @@ class GridCPsplines:
                 )
             # Iterate for every combination of the derivative orders where
             # constraints must be enforced
-            for deriv, info in self.pt_constraints.items():
-                value = info[1]
-                tolerance = info[2]
-                # Scale the point constraints thresholds in the case the data is
-                # scaled
-                if data_normalizer is not None:
-                    derivative = any(v != 0 for v in deriv)
-                    value = data_normalizer.transform(y=value, derivative=derivative)
-                    tolerance = data_normalizer.transform(
-                        y=tolerance, derivative=False
-                    ) - data_normalizer.transform(y=0, derivative=False)
-                cons2 = PointConstraints(
-                    pts=info[0],
-                    value=value,
-                    derivative=deriv,
-                    bspline=self.bspline_bases,
-                    tolerance=tolerance,
-                )
-                cons2.point_cons(var_dict=mos_obj_f.var_dict, model=M)
+            for deriv, dict_deriv in self.pt_constraints.items():
+                for sense, data in dict_deriv.items():
+                    # Scale the point constraints thresholds in the case the data is
+                    # scaled
+                    if data_normalizer is not None:
+                        derivative = any(v != 0 for v in deriv)
+                        data = data.assign(
+                            y=data_normalizer.transform(
+                                y=data[y_col], derivative=derivative
+                            )
+                        )
+                        if "tol" in data.columns:
+                            data = data.assign(
+                                tol=data_normalizer.transform(
+                                    y=data["tol"], derivative=False
+                                )
+                                - data_normalizer.transform(y=0, derivative=False)
+                            )
+                    cons2 = PointConstraints(
+                        derivative=deriv,
+                        sense=sense,
+                        bspline=self.bspline_bases,
+                    )
+                    cons2.point_cons(
+                        data=data,
+                        y_col=y_col,
+                        data_arrangement=self.data_arrangement,
+                        var_dict=mos_obj_f.var_dict,
+                        model=M,
+                    )
         else:
             self.pt_constraints = {}
         return M
@@ -536,10 +545,10 @@ class GridCPsplines:
         # Get the covariate column names
         x, y = scatter_to_grid(data=data, y_col=y_col)
         if len(data) == np.prod(y.shape) and np.isnan(y).sum() == 0:
-            self.data_type = "gridded"
+            self.data_arrangement = "gridded"
             logging.info("Data is rearranged into a grid.")
         else:
-            self.data_type = "scattered"
+            self.data_arrangement = "scattered"
             x = [row for row in data[data.columns.drop(y_col).tolist()].values.T]
             y = data[y_col].values
         return x, y
@@ -614,7 +623,7 @@ class GridCPsplines:
 
         # Initialize the model
         M = self._initialize_model(
-            obj_matrices=obj_matrices, data_normalizer=data_normalizer
+            obj_matrices=obj_matrices, y_col=y_col, data_normalizer=data_normalizer
         )
         model_params = {"theta": M.getVariable("theta")}
         for i, _ in enumerate(self.deg):
@@ -684,7 +693,7 @@ class GridCPsplines:
         if isinstance(data, pd.Series):
             data = pd.DataFrame(data)
 
-        if self.data_type == "gridded":
+        if self.data_arrangement == "gridded":
             x = [np.unique(row) for row in data.values.T]
         else:
             x = [row for row in data.values.T]
@@ -709,7 +718,7 @@ class GridCPsplines:
         B_predict = [
             bsp.bspline_basis(x=x[i]) for i, bsp in enumerate(self.bspline_bases)
         ]
-        if self.data_type == "gridded":
+        if self.data_arrangement == "gridded":
             y_pred = self.family.fitted(
                 matrix_by_tensor_product([mat for mat in B_predict], self.sol)
             )
