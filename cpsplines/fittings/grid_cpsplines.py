@@ -302,6 +302,7 @@ class GridCPsplines:
     def _initialize_model(
         self,
         obj_matrices: Dict[str, Iterable[np.ndarray]],
+        y_col: str,
         data_normalizer: Optional[DataNormalizer] = None,
     ) -> mosek.fusion.Model:
 
@@ -625,7 +626,7 @@ class GridCPsplines:
 
         # Initialize the model
         M = self._initialize_model(
-            obj_matrices=obj_matrices, data_normalizer=data_normalizer
+            obj_matrices=obj_matrices, y_col=y_col, data_normalizer=data_normalizer
         )
         model_params = {"theta": M.getVariable("theta")}
         for i, _ in enumerate(self.deg):
