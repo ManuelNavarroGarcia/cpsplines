@@ -536,10 +536,10 @@ class GridCPsplines:
         # Get the covariate column names
         x, y = scatter_to_grid(data=data, y_col=y_col)
         if len(data) == np.prod(y.shape) and np.isnan(y).sum() == 0:
-            self.data_type = "gridded"
+            self.data_arrangement = "gridded"
             logging.info("Data is rearranged into a grid.")
         else:
-            self.data_type = "scattered"
+            self.data_arrangement = "scattered"
             x = [row for row in data[data.columns.drop(y_col).tolist()].values.T]
             y = data[y_col].values
         return x, y
@@ -684,7 +684,7 @@ class GridCPsplines:
         if isinstance(data, pd.Series):
             data = pd.DataFrame(data)
 
-        if self.data_type == "gridded":
+        if self.data_arrangement == "gridded":
             x = [np.unique(row) for row in data.values.T]
         else:
             x = [row for row in data.values.T]
@@ -709,7 +709,7 @@ class GridCPsplines:
         B_predict = [
             bsp.bspline_basis(x=x[i]) for i, bsp in enumerate(self.bspline_bases)
         ]
-        if self.data_type == "gridded":
+        if self.data_arrangement == "gridded":
             y_pred = self.family.fitted(
                 matrix_by_tensor_product([mat for mat in B_predict], self.sol)
             )
