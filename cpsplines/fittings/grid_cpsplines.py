@@ -400,13 +400,10 @@ class GridCPsplines:
                 )
             # Iterate for every combination of the derivative orders where
             # constraints must be enforced
-            for deriv, info in self.pt_constraints.items():
-                value = info[1]
-                tolerance = info[2]
-                # Scale the point constraints thresholds in the case the data is
-                # scaled
-                if data_normalizer is not None:
-                    derivative = any(v != 0 for v in deriv)
+            for deriv, dict_deriv in self.pt_constraints.items():
+                for sense, data in dict_deriv.items():
+                    # Scale the point constraints thresholds in the case the data is
+                    # scaled
                             )
                     cons2 = PointConstraints(
                         derivative=deriv,
