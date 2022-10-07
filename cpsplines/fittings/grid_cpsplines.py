@@ -302,7 +302,7 @@ class GridCPsplines:
 
     def _initialize_model(
         self,
-        obj_matrices: Dict[str, Iterable[np.ndarray]],
+        obj_matrices: Union[np.ndarray, Iterable[np.ndarray]],
         y_col: str,
         data_normalizer: Optional[DataNormalizer] = None,
     ) -> mosek.fusion.Model:
@@ -312,14 +312,10 @@ class GridCPsplines:
 
         Parameters
         ----------
-        lin_term : np.ndarray
-            An array containing the coefficients of the linear term.
-        L_B : np.ndarray
-            The Cholesky decomposition of B.T @ B, where B is the Kronecker
-            product of the B-spline basis matrices.
-        L_D : Iterable[np.ndarray]
-            An array containing the Cholesky decomposition of P_i, where P_i is
-            the penalty matrix along the i axis.
+        obj_matrices : Dict[str, Union[np.ndarray, Iterable[np.ndarray]]
+            A dictionary containing the arrays used in the optimization problem.
+        y_col : str
+            The column name of the target variable.
         data_normalizer : Optional[DataNormalizer]
             The DataNormalizer object if `y_range` is not None and None
             otherwise. By default, None.
