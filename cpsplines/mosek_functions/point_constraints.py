@@ -118,7 +118,7 @@ class PointConstraints:
                 )
             else:
                 right_side = mosek.fusion.Domain.equalsTo(y)
-        elif self.sense == "greatherThan":
+        elif self.sense == "greaterThan":
             right_side = mosek.fusion.Domain.greaterThan(y)
         elif self.sense == "lessThan":
             right_side = mosek.fusion.Domain.lessThan(y)
