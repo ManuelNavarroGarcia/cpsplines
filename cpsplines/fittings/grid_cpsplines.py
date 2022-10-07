@@ -94,15 +94,16 @@ class GridCPsplines:
         are dictionareis, whose keys are the signs of the constraints (either
         "+" or "-") and the values are numbers denoting the upper or lower
         threshold of the constraints. By default, None.
-    pt_constraints : Optional[Dict[Tuple[int], Any]], optional
+    pt_constraints : Optional[Dict[Tuple[int], Dict[str, pd.DataFrame]]],
+    optional
         A dictionary containing the point constraints to be enforced. The keys
         of the dictionary are tuples representing the order of the derivatives
-        where the constraints acts on. The values are tuples that must contain
-        the items (in this order):
-        - An array of unidimensional arrays with the coordinates of the points
-        where the value needs to be fixed.
-        - An array with the values of the derivative to be enforced.
-        - A number corresponding to the tolerancea allowed in the constraint.
+        where the constraints acts on. The values are dictionaries where the
+        keys can be "greaterThan", "lessThan" or "equalsTo", depending on the
+        sign of the constraints. The values are DataFrames, with the same
+        columns as the data inputted into .fit(), with the points and values
+        involved in the constraints. This DataFrame can also have a column,
+        "tol", with tolerances for each point.
     pdf_constraint : bool, optional
         A boolean indicating whether the fitted hypersurface must satisfy
         Probability Density Function (PDF) conditions, i.e., it is non-negative
@@ -138,7 +139,7 @@ class GridCPsplines:
         int_constraints: Optional[
             Dict[int, Dict[int, Dict[str, Union[int, float]]]]
         ] = None,
-        pt_constraints: Optional[Dict[Tuple[int], Any]] = None,
+        pt_constraints: Optional[Dict[Tuple[int], Dict[str, pd.DataFrame]]] = None,
         pdf_constraint: bool = False,
     ):
         self.deg = deg
