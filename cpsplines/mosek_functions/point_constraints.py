@@ -107,14 +107,25 @@ class PointConstraints:
                         matrices=bsp_x, mosek_var=var_dict["theta"]
                     )
                 )
-        # The output should be constrained on the interval (v - tol, v + tol)
-        # vstack is necessary since `coef` may be a column matrix
+        if self.sense == "equalsTo":
+            # The output should be constrained in (v - tol, v + tol) vstack is
+            # necessary since `coef` may be a column matrix
+            if "tol" in data.columns:
+                right_side = mosek.fusion.Domain.inRange(
+                    (y - data["tol"]).values, (y + data["tol"]).values
+                )
+            else:
+                right_side = mosek.fusion.Domain.equalsTo(y)
+        elif self.sense == "greatherThan":
+            right_side = mosek.fusion.Domain.greaterThan(y)
+        elif self.sense == "lessThan":
+            right_side = mosek.fusion.Domain.lessThan(y)
+        else:
+            raise ValueError(f"The sense {self.sense} is not implemented.")
         list_cons.append(
             model.constraint(
                 mosek.fusion.Expr.flatten(mosek.fusion.Expr.vstack(coef)),
-                mosek.fusion.Domain.inRange(
-                    self.value - self.tolerance, self.value + self.tolerance
-                ),
+                right_side,
             )
         )
         return tuple(list_cons)
