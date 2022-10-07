@@ -46,10 +46,12 @@ class PointConstraints:
         self.value = value
         self.derivative = derivative
         self.bspline = bspline
-        self.tolerance = tolerance
 
     def point_cons(
         self,
+        data: pd.DataFrame,
+        y_col: str,
+        data_arrangement: str,
         var_dict: Dict[str, mosek.fusion.LinearVariable],
         model: mosek.fusion.Model,
     ) -> Tuple[mosek.fusion.LinearConstraint]:
