@@ -12,28 +12,21 @@ class PointConstraints:
 
     """
     Define the constraints that the smoothing (or a derivative in a particular
-    direction) at a certain point must be bounded around an input value. The
-    width of the bound is controlled by a tolerance parameter. All these
-    constraints share the derivatives orders enforced.
+    direction) at a certain point must be equal, above or below a target value.
+    The width of the bound with the sense "equalsTo" may be controlled by a
+    tolerance parameter. All these constraints share the derivatives orders
+    enforced.
 
     Parameters
     ----------
-    pts : Iterable[np.ndarray]
-        An iterable of arrays containing the coordinates of the points where the
-        constraints are enforced. The first vector contain the coordinates in
-        the 0-th axis, the second vector the coordinates in the 1-st axis, and
-        so on.
-    value : mosek.fusion.Model
-        The middle point of the bounds that the smoothing (or derivative) must
-        fulfill.
     derivative : Iterable[int]
         The orders of the derivatives. The first element corresponds to the
         derivative along the 0-th axis, the second element along the 1-st axis,
         and so on.
+    sense : str
+        It can be "greaterThan", "lessThan" or "equalsTo".
     bspline : Iterable[BsplineBasis]
         The B-spline bases objects.
-    tolerance : Union[int, float]
-        The tolerance used to define the bounds.
     """
 
     def __init__(
@@ -65,6 +58,12 @@ class PointConstraints:
 
         Parameters
         ----------
+        data : pd.DataFrame
+            Input data and target data.
+        y_col : str
+            The column name of the target variable.
+        data_arrangement : str
+            Type of arrangement of the data. It can be "gridded" or "scattered".
         var_dict : Dict[str, mosek.fusion.LinearVariable]
             A dictionary containing the decision variables.
         model : mosek.fusion.Model
