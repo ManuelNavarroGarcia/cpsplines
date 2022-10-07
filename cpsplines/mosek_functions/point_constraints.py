@@ -80,29 +80,33 @@ class PointConstraints:
             `derivative` have different length than the number of B-spline bases.
         """
 
-        if any(len(x) != len(self.bspline) for x in [self.pts, self.derivative]):
+        x_cols = data.columns.drop([y_col, "tol"], errors="ignore").tolist()
+        if len(x_cols) != len(self.bspline):
             raise ValueError(
-                "`pts` and `derivative` lengths must be equal the number of covariates."
+                "The number of covariates and the derivative indexes must agree."
             )
-        # Get the evaluations of the coordinates at their respective B-spline
-        # basis and the corresponding derivative order
-        bsp_eval = {
-            i: bsp.bspline_basis.derivative(nu=self.derivative[i])(self.pts[i])
-            for i, bsp in enumerate(self.bspline)
-        }
 
         list_cons = []
-        # For every point constraint, extract the evaluation of the
-        # corresponding coordinates and multiply them by the multidimensional
-        # array of the expansion coefficients
         coef = []
-        for i, _ in enumerate(self.value):
-            bsp_x = [np.expand_dims(val[i, :], axis=1).T for val in bsp_eval.values()]
-            coef.append(
-                matrix_by_tensor_product_mosek(
-                    matrices=bsp_x, mosek_var=var_dict["theta"]
+        if data_arrangement == "gridded":
+            x, y = scatter_to_grid(data=data, y_col=y_col)
+            y = y.flatten().astype(float)
+            # Get the evaluations of the coordinates at their respective B-spline
+            # basis and the corresponding derivative order
+            bsp_eval = [
+                bsp.bspline_basis.derivative(nu=nu)(coords)
+                for bsp, nu, coords in zip(self.bspline, self.derivative, x)
+            ]
+            # For every point constraint, extract the evaluation of the
+            # corresponding coordinates and multiply them by the multidimensional
+            # array of the expansion coefficients
+            for i, _ in enumerate(y):
+                bsp_x = [np.expand_dims(val[i, :], axis=1).T for val in bsp_eval]
+                coef.append(
+                    matrix_by_tensor_product_mosek(
+                        matrices=bsp_x, mosek_var=var_dict["theta"]
+                    )
                 )
-            )
         # The output should be constrained on the interval (v - tol, v + tol)
         # vstack is necessary since `coef` may be a column matrix
         list_cons.append(
