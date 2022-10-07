@@ -784,6 +784,28 @@ sol29 = np.array(
     ]
 )
 
+# 3 + np.log(x) (non-decreasing and concate)
+# Using grid search
+# No out-of-range prediction
+# The curve must be above the observed data
+sol30 = np.array(
+    [
+        2.3244702,
+        3.06816558,
+        3.69266421,
+        4.04449385,
+        4.31861322,
+        4.53264478,
+        4.70943064,
+        4.859875,
+        4.99066232,
+        5.10646676,
+        5.21015859,
+        5.30383713,
+        5.39526059,
+    ]
+)
+
 
 @pytest.mark.parametrize(
     "deg, ord_d, n_int, x_range, sp_method, sp_args, family, int_constraints, pt_constraints, pdf_constraint, data, y_range, sol",
@@ -1564,6 +1586,36 @@ sol29 = np.array(
             ),
             None,
             sol29,
+        ),
+        (
+            (3,),
+            (2,),
+            (10,),
+            None,
+            "grid_search",
+            {
+                "grid": ((0.1,),),
+                "verbose": False,
+                "parallel": False,
+            },
+            "gaussian",
+            {0: {1: {"+": 0}, 2: {"-": 0}}},
+            {
+                (0,): {
+                    "greaterThan": pd.DataFrame(
+                        {
+                            "x": np.linspace(1, 10, 100),
+                            "y": 3 + np.log(np.linspace(1, 10, 100)),
+                        }
+                    )
+                }
+            },
+            False,
+            pd.DataFrame(
+                {"x": np.linspace(1, 10, 100), "y": 3 + np.log(np.linspace(1, 10, 100))}
+            ),
+            None,
+            sol30,
         ),
     ],
 )
