@@ -404,6 +404,19 @@ class GridCPsplines:
                 for sense, data in dict_deriv.items():
                     # Scale the point constraints thresholds in the case the data is
                     # scaled
+                    if data_normalizer is not None:
+                        derivative = any(v != 0 for v in deriv)
+                        data = data.assign(
+                            y=data_normalizer.transform(
+                                y=data[y_col], derivative=derivative
+                            )
+                        )
+                        if "tol" in data.columns:
+                            data = data.assign(
+                                tol=data_normalizer.transform(
+                                    y=data["tol"], derivative=False
+                                )
+                                - data_normalizer.transform(y=0, derivative=False)
                             )
                     cons2 = PointConstraints(
                         derivative=deriv,
