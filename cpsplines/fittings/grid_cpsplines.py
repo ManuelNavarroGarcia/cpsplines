@@ -407,18 +407,19 @@ class GridCPsplines:
                 # scaled
                 if data_normalizer is not None:
                     derivative = any(v != 0 for v in deriv)
-                    value = data_normalizer.transform(y=value, derivative=derivative)
-                    tolerance = data_normalizer.transform(
-                        y=tolerance, derivative=False
-                    ) - data_normalizer.transform(y=0, derivative=False)
-                cons2 = PointConstraints(
-                    pts=info[0],
-                    value=value,
-                    derivative=deriv,
-                    bspline=self.bspline_bases,
-                    tolerance=tolerance,
-                )
-                cons2.point_cons(var_dict=mos_obj_f.var_dict, model=M)
+                            )
+                    cons2 = PointConstraints(
+                        derivative=deriv,
+                        sense=sense,
+                        bspline=self.bspline_bases,
+                    )
+                    cons2.point_cons(
+                        data=data,
+                        y_col=y_col,
+                        data_arrangement=self.data_arrangement,
+                        var_dict=mos_obj_f.var_dict,
+                        model=M,
+                    )
         else:
             self.pt_constraints = {}
         return M

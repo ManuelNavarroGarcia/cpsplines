@@ -36,15 +36,12 @@ class PointConstraints:
 
     def __init__(
         self,
-        pts: Iterable[np.ndarray],
-        value: Iterable[Union[int, float]],
         derivative: Iterable[int],
+        sense: str,
         bspline: Iterable[BsplineBasis],
-        tolerance: Union[int, float],
     ):
-        self.pts = pts
-        self.value = value
         self.derivative = derivative
+        self.sense = sense
         self.bspline = bspline
 
     def point_cons(
