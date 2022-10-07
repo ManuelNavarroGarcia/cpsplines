@@ -1,9 +1,10 @@
-from typing import Dict, Iterable, Tuple, Union
+from typing import Dict, Iterable, Tuple
 
 import mosek.fusion
 import numpy as np
-from cpsplines.mosek_functions.utils_mosek import matrix_by_tensor_product_mosek
+import pandas as pd
 from cpsplines.psplines.bspline_basis import BsplineBasis
+from cpsplines.utils.rearrange_data import scatter_to_grid
 
 
 class PointConstraints:
