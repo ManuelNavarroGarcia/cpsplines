@@ -1160,7 +1160,7 @@ sol29 = np.array(
             },
             "gaussian",
             None,
-            {(2,): ((np.array([0.8]),), np.array([700]), 1e-8)},
+            {(2,): {"equalsTo": pd.DataFrame({"x": [0.8], "y": [700], "tol": [1e-8]})}},
             False,
             pd.DataFrame(
                 {
@@ -1184,7 +1184,13 @@ sol29 = np.array(
             },
             "gaussian",
             None,
-            {(0, 0): ((np.array([4]), np.array([3])), np.array([4]), 1e-8)},
+            {
+                (0, 0): {
+                    "equalsTo": pd.DataFrame(
+                        {"x1": [4], "x2": [3], "y": [4], "tol": [1e-8]}
+                    )
+                }
+            },
             False,
             grid_to_scatter(
                 x=(np.linspace(0, 3 * np.pi, 30), np.linspace(0, 2 * np.pi, 20)),
@@ -1336,7 +1342,7 @@ sol29 = np.array(
             },
             "gaussian",
             None,
-            {(2,): ((np.array([0.8]),), np.array([700]), 1e-8)},
+            {(2,): {"equalsTo": pd.DataFrame({"x": [0.8], "y": [700], "tol": [1e-8]})}},
             False,
             pd.DataFrame(
                 {
