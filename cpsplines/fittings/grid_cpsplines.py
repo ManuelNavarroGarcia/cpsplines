@@ -12,7 +12,8 @@ from cpsplines.mosek_functions.pdf_constraints import PDFConstraint
 from cpsplines.mosek_functions.point_constraints import PointConstraints
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.psplines.penalty_matrix import PenaltyMatrix
-from cpsplines.utils.fast_kron import matrix_by_tensor_product, matrix_by_transpose
+from cpsplines.utils.fast_kron import (matrix_by_tensor_product,
+                                       matrix_by_transpose)
 from cpsplines.utils.gcv import GCV
 from cpsplines.utils.normalize_data import DataNormalizer
 from cpsplines.utils.rearrange_data import scatter_to_grid
@@ -21,7 +22,8 @@ from cpsplines.utils.simulator_optimize import Simulator
 from cpsplines.utils.timer import timer
 from cpsplines.utils.weighted_b import get_idx_fitting_region, get_weighted_B
 from joblib import Parallel, delayed
-from statsmodels.genmod.families.family import Binomial, Family, Gaussian, Poisson
+from statsmodels.genmod.families.family import (Binomial, Family, Gaussian,
+                                                Poisson)
 
 
 class NumericalError(Exception):
@@ -579,8 +581,7 @@ class GridCPsplines:
         Raises
         ------
         ValueError
-            If the degree, difference order, number of interval and coordinates
-            vectors length differs.
+            If the degree, difference order and number of intervals differ.
         ValueError
             If `sp_method` input is different from "grid_search" or "optimizer".
         NumericalError
