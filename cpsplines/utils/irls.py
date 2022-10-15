@@ -12,6 +12,7 @@ def fit_irls(
     obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
     penalty_term: np.ndarray,
     family: statsmodels.genmod.families.family,
+    data_arrangement: str,
     threshold: Union[int, float] = 1e-8,
     maxiter: int = 100,
     verbose: bool = False,
@@ -30,6 +31,8 @@ def fit_irls(
     family : statsmodels.genmod.families.family
         The specific exponential family distribution where the response variable
         belongs to.
+    data_arrangement : str
+        The way the data is arranged.
     threshold : Union[int, float], optional
         An optional quantity to use as the convergence criterion for the change
         in L2-norm of the fitted coefficients, by default 1e-8.
