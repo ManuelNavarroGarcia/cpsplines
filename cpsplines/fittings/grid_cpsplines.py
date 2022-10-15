@@ -731,9 +731,8 @@ class GridCPsplines:
             bsp.bspline_basis(x=x[i]) for i, bsp in enumerate(self.bspline_bases)
         ]
         if self.data_arrangement == "gridded":
-            y_pred = self.family.fitted(
-                matrix_by_tensor_product([mat for mat in B_predict], self.sol)
-            )
+            y_pred = matrix_by_tensor_product([mat for mat in B_predict], self.sol)
+
         else:
-            raise ValueError(f"Not implemented.")
-        return y_pred
+            y_pred = np.dot(reduce(box_product, B_predict), self.sol.flatten())
+        return self.family.fitted(y_pred)
