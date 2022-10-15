@@ -69,7 +69,7 @@ out3 = 0.11298981533051085
 
 
 @pytest.mark.parametrize(
-    "deg, ord_d, n_int, sp, family, x, y, gcv",
+    "deg, ord_d, n_int, sp, family, data_arrangement, x, y, gcv",
     [
         (
             [3],
@@ -77,6 +77,7 @@ out3 = 0.11298981533051085
             [5],
             [0.123],
             Gaussian(),
+            "gridded",
             [np.linspace(0, 2 * np.pi, 11)],
             y_1,
             out1,
@@ -87,6 +88,7 @@ out3 = 0.11298981533051085
             [5, 4],
             [0.456, 7.89],
             Gaussian(),
+            "gridded",
             [np.linspace(0, 3 * np.pi, 7), np.linspace(0, 2 * np.pi, 5)],
             y_2,
             out2,
@@ -97,6 +99,7 @@ out3 = 0.11298981533051085
             [2, 5, 4],
             [0.12, 1.345, 0.011],
             Gaussian(),
+            "gridded",
             [
                 np.linspace(0, 3 * np.pi, 3),
                 np.linspace(0, 2 * np.pi, 6),
@@ -107,7 +110,7 @@ out3 = 0.11298981533051085
         ),
     ],
 )
-def test_gcv(deg, ord_d, n_int, sp, family, x, y, gcv):
+def test_gcv(deg, ord_d, n_int, sp, family, data_arrangement, x, y, gcv):
     bspline = [
         BsplineBasis(deg=d, xsample=xsam, n_int=n) for d, xsam, n in zip(deg, x, n_int)
     ]
@@ -121,5 +124,10 @@ def test_gcv(deg, ord_d, n_int, sp, family, x, y, gcv):
     ]
     obj_matrices = {"B_w": B, "D_mul": D_mul, "y": y}
 
-    gcv_out = GCV(sp=sp, obj_matrices=obj_matrices, family=family)
+    gcv_out = GCV(
+        sp=sp,
+        obj_matrices=obj_matrices,
+        family=family,
+        data_arrangement=data_arrangement,
+    )
     np.testing.assert_allclose(gcv_out, gcv)
