@@ -10,6 +10,7 @@ def quadratic_term(
     sp: Iterable[Union[int, float]],
     obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
     family: statsmodels.genmod.families.family,
+    data_arrangement: str,
 ) -> Tuple[np.ndarray, np.ndarray]:
 
     """
@@ -27,6 +28,8 @@ def quadratic_term(
     family : statsmodels.genmod.families.family, optional
         The specific exponential family distribution where the response variable
         belongs to, by default "gaussian".
+    data_arrangement : str
+            The way the data is arranged.
 
     Returns
     -------
@@ -47,6 +50,7 @@ def GCV(
     sp: Iterable[Union[int, float]],
     obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
     family: statsmodels.genmod.families.family,
+    data_arrangement: str,
 ) -> float:
 
     """
@@ -63,6 +67,8 @@ def GCV(
     family : statsmodels.genmod.families.family
         The specific exponential family distribution where the response variable
         belongs to.
+    data_arrangement : str
+        The way the data is arranged.
 
     References
     ----------
@@ -77,10 +83,16 @@ def GCV(
     """
 
     bases_term, penalty_term = quadratic_term(
-        sp=sp, obj_matrices=obj_matrices, family=family
+        sp=sp,
+        obj_matrices=obj_matrices,
+        family=family,
+        data_arrangement=data_arrangement,
     )
     y_hat = fit_irls(
-        obj_matrices=obj_matrices, family=family, penalty_term=penalty_term
+        obj_matrices=obj_matrices,
+        family=family,
+        penalty_term=penalty_term,
+        data_arrangement=data_arrangement,
     )
     # Return the GCV value, which is n * RSS / (n - tr(H))**2, where RSS is the
     # residual sum of squares, n is the product of the dimensions of y and H is
