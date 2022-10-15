@@ -295,8 +295,11 @@ class GridCPsplines:
 
         # Reorder the response variable array so the covariate coordinates are
         # non-decreasing
-        y_ext = np.zeros(tuple([B.shape[0] for B in obj_matrices["B"]]))
-        y_ext[get_idx_fitting_region(self.bspline_bases)] = y
+        if self.data_arrangement == "gridded":
+            y_ext = np.zeros(tuple([B.shape[0] for B in obj_matrices["B"]]))
+            y_ext[get_idx_fitting_region(self.bspline_bases)] = y
+        else:
+            y_ext = y.copy()
         obj_matrices["y"] = y_ext
         return obj_matrices
 
