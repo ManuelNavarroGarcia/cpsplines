@@ -36,7 +36,15 @@ def quadratic_term(
     Tuple[np.ndarray, np.ndarray]
         A tuple containing the bases related term and the penalty term (in this
         order).
+
+    Raises
+    ------
+    ValueError
+        If `data_arrangement` is not "gridded" or "scattered".
     """
+
+    if data_arrangement not in ("gridded", "scattered"):
+        raise ValueError(f"Invalid `data_arrangement`: {data_arrangement}.")
 
     mu = family.starting_mu(obj_matrices["y"])
     W = family.weights(mu)

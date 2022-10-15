@@ -133,6 +133,8 @@ class ObjectiveFunction:
         ValueError
             If lengths of the smoothing parameter vector and penalty matrix
             iterable differ.
+        ValueError
+            If `data_arrangement` is not "gridded" or "scattered".
         """
         if data_arrangement not in ("gridded", "scattered"):
             raise ValueError(f"Invalid `data_arrangement`: {data_arrangement}.")
