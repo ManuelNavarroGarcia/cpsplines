@@ -40,7 +40,10 @@ def quadratic_term(
 
     mu = family.starting_mu(obj_matrices["y"])
     W = family.weights(mu)
-    bases_term = weighted_double_kronecker(matrices=obj_matrices["B_w"], W=W)
+    bases_term = weighted_double_kronecker(
+        matrices=obj_matrices["B_w"],
+        W=W if data_arrangement == "gridded" else np.diag(W),
+    )
     penalty_list = penalization_term(matrices=obj_matrices["D_mul"])
     penalty_term = np.add.reduce([np.multiply(s, P) for P, s in zip(penalty_list, sp)])
     return (bases_term, penalty_term)
