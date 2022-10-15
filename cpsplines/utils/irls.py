@@ -66,20 +66,31 @@ def fit_irls(
         Z = eta + family.link.deriv(mu) * (obj_matrices["y"] - mu)
 
         # With this modified dependent variable, update the coefficients
-        bases_term = weighted_double_kronecker(matrices=obj_matrices["B_w"], W=W)
+        bases_term = weighted_double_kronecker(
+            matrices=obj_matrices["B_w"],
+            W=W if data_arrangement == "gridded" else np.diag(W),
+        )
 
+        T = np.multiply(W, Z)
         theta = np.reshape(
             np.linalg.solve(
                 bases_term + penalty_term,
                 matrix_by_tensor_product(
-                    [B.T for B in obj_matrices["B_w"]], np.multiply(W, Z)
+                    [B.T for B in obj_matrices["B_w"]],
+                    T if data_arrangement == "gridded" else np.diag(T),
                 ).flatten(),
             ),
             tuple([mat.shape[1] for mat in obj_matrices["B_w"]]),
         )
 
         # Update `eta` and `mu`
-        eta = matrix_by_tensor_product([mat for mat in obj_matrices["B_w"]], theta)
+        if data_arrangement == "gridded":
+            eta = matrix_by_tensor_product(
+                [mat for mat in obj_matrices["B_w"]],
+                theta,
+            )
+        else:
+            eta = np.dot(reduce(box_product, obj_matrices["B_w"]), theta.flatten())
         mu = family.fitted(eta)
         # Check convergence
         if np.linalg.norm(theta - theta_old) < threshold:
