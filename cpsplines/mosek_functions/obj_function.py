@@ -6,6 +6,7 @@ import numpy as np
 import statsmodels.genmod.families.family
 from cpsplines.mosek_functions.utils_mosek import matrix_by_tensor_product_mosek
 from cpsplines.psplines.bspline_basis import BsplineBasis
+from cpsplines.utils.box_product import box_product
 from cpsplines.utils.cholesky_semidefinite import cholesky_semidef
 from cpsplines.utils.fast_kron import (
     fast_kronecker_product,
@@ -184,16 +185,22 @@ class ObjectiveFunction:
                     "t_B", 1, mosek.fusion.Domain.greaterThan(0.0)
                 )
             }
-            # Compute the linear term coefficients of the objective function
-            lin_term = matrix_by_tensor_product(
-                [mat.T for mat in obj_matrices["B_w"]], obj_matrices["y"]
-            ).flatten()
+            if data_arrangement == "gridded":
+                # Compute the linear term coefficients of the objective function
+                lin_term = matrix_by_tensor_product(
+                    [mat.T for mat in obj_matrices["B_w"]], obj_matrices["y"]
+                ).flatten()
 
-            # Compute the Cholesky decompositions (A = L @ L.T)
-            L_B = reduce(
-                fast_kronecker_product,
-                list(map(cholesky_semidef, obj_matrices["B_mul"])),
-            )
+                # Compute the Cholesky decompositions (A = L @ L.T)
+                L_B = reduce(
+                    fast_kronecker_product,
+                    list(map(cholesky_semidef, obj_matrices["B_mul"])),
+                )
+            else:
+                B = reduce(box_product, obj_matrices["B_w"])
+                lin_term = np.dot(obj_matrices["y"], B)
+                L_B = cholesky_semidef(B.T @ B)
+
             # Create the rotated quadratic cone constraint of B^TB
             cons.append(
                 self.model.constraint(
