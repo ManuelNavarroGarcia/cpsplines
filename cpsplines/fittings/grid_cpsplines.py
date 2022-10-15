@@ -23,8 +23,7 @@ from cpsplines.utils.simulator_optimize import Simulator
 from cpsplines.utils.timer import timer
 from cpsplines.utils.weighted_b import get_idx_fitting_region, get_weighted_B
 from joblib import Parallel, delayed
-from statsmodels.genmod.families.family import (Binomial, Family, Gaussian,
-                                                Poisson)
+from statsmodels.genmod.families.family import Binomial, Family, Gaussian, Poisson
 
 
 class NumericalError(Exception):
