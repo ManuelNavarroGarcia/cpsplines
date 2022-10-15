@@ -285,10 +285,8 @@ class GridCPsplines:
         obj_matrices["D_mul"] = []
         # The extended response variable sample dimensions can be obtained as
         # the number of rows of the design matrix B
-        y_ext_dim = []
         for bsp, ord_d in zip(self.bspline_bases, self.ord_d):
             B = bsp.matrixB
-            y_ext_dim.append(B.shape[0])
             obj_matrices["B"].append(B)
             penaltymat = PenaltyMatrix(bspline=bsp)
             P = penaltymat.get_penalty_matrix(**{"ord_d": ord_d})
@@ -297,7 +295,7 @@ class GridCPsplines:
 
         # Reorder the response variable array so the covariate coordinates are
         # non-decreasing
-        y_ext = np.zeros(tuple(y_ext_dim))
+        y_ext = np.zeros(tuple([B.shape[0] for B in obj_matrices["B"]]))
         y_ext[get_idx_fitting_region(self.bspline_bases)] = y
         obj_matrices["y"] = y_ext
         return obj_matrices
