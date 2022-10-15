@@ -355,7 +355,7 @@ y_fit_5 = np.array(
 
 
 @pytest.mark.parametrize(
-    "deg, ord_d, n_int, sp, family, x, y, y_fit",
+    "deg, ord_d, n_int, sp, family, data_arrangement, x, y, y_fit",
     [
         (
             [3],
@@ -363,6 +363,7 @@ y_fit_5 = np.array(
             [5],
             [0.135],
             Gaussian(),
+            "gridded",
             [x_1],
             y_1,
             y_fit_1,
@@ -373,6 +374,7 @@ y_fit_5 = np.array(
             [5],
             [0.135],
             Poisson(),
+            "gridded",
             [x_1],
             y_1,
             y_fit_2,
@@ -383,6 +385,7 @@ y_fit_5 = np.array(
             [5, 4],
             [0.135, 12.87],
             Gaussian(),
+            "gridded",
             [x_2, x_3],
             y_2,
             y_fit_3,
@@ -393,6 +396,7 @@ y_fit_5 = np.array(
             [5, 4],
             [0.135, 12.87],
             Poisson(),
+            "gridded",
             [x_2, x_3],
             y_2,
             y_fit_4,
@@ -403,13 +407,14 @@ y_fit_5 = np.array(
             [8],
             [7.35],
             Binomial(),
+            "gridded",
             [x_4],
             y_3,
             y_fit_5,
         ),
     ],
 )
-def test_gcv(deg, ord_d, n_int, sp, family, x, y, y_fit):
+def test_gcv(deg, ord_d, n_int, sp, family, data_arrangement, x, y, y_fit):
     bspline = [
         BsplineBasis(deg=d, xsample=xsam, n_int=n) for d, xsam, n in zip(deg, x, n_int)
     ]
@@ -428,5 +433,10 @@ def test_gcv(deg, ord_d, n_int, sp, family, x, y, y_fit):
 
     obj_matrices = {"B_w": B, "y": y}
 
-    out = fit_irls(obj_matrices=obj_matrices, penalty_term=penalty_term, family=family)
+    out = fit_irls(
+        obj_matrices=obj_matrices,
+        penalty_term=penalty_term,
+        family=family,
+        data_arrangement=data_arrangement,
+    )
     np.testing.assert_allclose(out, y_fit, atol=1e-5, rtol=1e-5)
