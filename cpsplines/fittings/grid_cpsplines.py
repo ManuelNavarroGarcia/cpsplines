@@ -12,7 +12,7 @@ from cpsplines.mosek_functions.pdf_constraints import PDFConstraint
 from cpsplines.mosek_functions.point_constraints import PointConstraints
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.psplines.penalty_matrix import PenaltyMatrix
-from cpsplines.utils.fast_kron import (matrix_by_tensor_product,
+from cpsplines.utils.box_product import box_product
                                        matrix_by_transpose)
 from cpsplines.utils.gcv import GCV
 from cpsplines.utils.normalize_data import DataNormalizer
@@ -658,9 +658,16 @@ class GridCPsplines:
             if y_range is not None:
                 self.sol = data_normalizer.inverse_transform(y=self.sol)
             # Compute the fitted values of the response variable
-            self.y_fitted = self.family.fitted(
-                matrix_by_tensor_product([mat for mat in obj_matrices["B"]], self.sol)
-            )
+
+            if self.data_arrangement == "gridded":
+                y_fitted = matrix_by_tensor_product(
+                    [mat for mat in obj_matrices["B"]], self.sol
+                )
+            else:
+                y_fitted = np.dot(
+                    reduce(box_product, obj_matrices["B"]), self.sol.flatten()
+                )
+            self.y_fitted = self.family.fitted(y_fitted)
         except mosek.fusion.SolutionError as e:
             raise NumericalError(
                 f"The solution for the smoothing parameter {self.best_sp} "
