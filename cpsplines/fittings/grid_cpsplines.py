@@ -1,5 +1,6 @@
 import itertools
 import logging
+from functools import reduce
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import mosek.fusion
@@ -13,7 +14,7 @@ from cpsplines.mosek_functions.point_constraints import PointConstraints
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.psplines.penalty_matrix import PenaltyMatrix
 from cpsplines.utils.box_product import box_product
-                                       matrix_by_transpose)
+from cpsplines.utils.fast_kron import matrix_by_tensor_product, matrix_by_transpose
 from cpsplines.utils.gcv import GCV
 from cpsplines.utils.normalize_data import DataNormalizer
 from cpsplines.utils.rearrange_data import scatter_to_grid
