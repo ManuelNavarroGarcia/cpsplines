@@ -336,7 +336,10 @@ class GridCPsplines:
         sp = [M.parameter(f"sp_{i}", 1) for i, _ in enumerate(self.deg)]
         # Build the objective function of the problem
         mos_obj_f.create_obj_function(
-            obj_matrices=obj_matrices, sp=sp, family=self.family
+            obj_matrices=obj_matrices,
+            sp=sp,
+            family=self.family,
+            data_arrangement=self.data_arrangement,
         )
 
         if self.pdf_constraint:

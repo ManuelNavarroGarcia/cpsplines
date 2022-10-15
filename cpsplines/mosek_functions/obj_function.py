@@ -85,6 +85,7 @@ class ObjectiveFunction:
         obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
         sp: Iterable[Union[int, float]],
         family: statsmodels.genmod.families.family,
+        data_arrangement: str,
     ) -> Tuple[Union[None, mosek.fusion.ConicConstraint]]:
 
         """
@@ -111,6 +112,8 @@ class ObjectiveFunction:
         family : statsmodels.genmod.families.family
             The specific exponential family distribution where the response
             variable belongs to.
+        data_arrangement : str
+            The way the data is arranged.
 
         References
         ----------
@@ -130,6 +133,8 @@ class ObjectiveFunction:
             If lengths of the smoothing parameter vector and penalty matrix
             iterable differ.
         """
+        if data_arrangement not in ("gridded", "scattered"):
+            raise ValueError(f"Invalid `data_arrangement`: {data_arrangement}.")
 
         L_D = penalization_term(matrices=obj_matrices["D"])
 
