@@ -234,16 +234,19 @@ class ObjectiveFunction:
                     mosek.fusion.Domain.greaterThan(0.0),
                 )
             }
-
-            lin_term = matrix_by_tensor_product(
-                [mat.T for mat in obj_matrices["B_w"]], obj_matrices["y"]
-            ).flatten()
-
-            coef = mosek.fusion.Expr.flatten(
-                matrix_by_tensor_product_mosek(
-                    matrices=obj_matrices["B_w"], mosek_var=self.var_dict["theta"]
+            if data_arrangement == "gridded":
+                lin_term = matrix_by_tensor_product(
+                    [mat.T for mat in obj_matrices["B_w"]], obj_matrices["y"]
+                ).flatten()
+                coef = mosek.fusion.Expr.flatten(
+                    matrix_by_tensor_product_mosek(
+                        matrices=obj_matrices["B_w"], mosek_var=self.var_dict["theta"]
+                    )
                 )
-            )
+            else:
+                B = reduce(box_product, obj_matrices["B_w"])
+                lin_term = np.dot(obj_matrices["y"], B)
+                coef = mosek.fusion.Expr.mul(B, flatten_theta)
             cons.append(
                 self.model.constraint(
                     mosek.fusion.Expr.hstack(
