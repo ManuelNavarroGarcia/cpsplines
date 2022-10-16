@@ -286,11 +286,15 @@ class ObjectiveFunction:
                 ),
             }
 
-            coef = mosek.fusion.Expr.flatten(
-                matrix_by_tensor_product_mosek(
-                    matrices=obj_matrices["B_w"], mosek_var=self.var_dict["theta"]
+            if data_arrangement == "gridded":
+                coef = mosek.fusion.Expr.flatten(
+                    matrix_by_tensor_product_mosek(
+                        matrices=obj_matrices["B_w"], mosek_var=self.var_dict["theta"]
+                    )
                 )
-            )
+            else:
+                B = reduce(box_product, obj_matrices["B_w"])
+                coef = mosek.fusion.Expr.mul(B, flatten_theta)
 
             cons.append(
                 self.model.constraint(
