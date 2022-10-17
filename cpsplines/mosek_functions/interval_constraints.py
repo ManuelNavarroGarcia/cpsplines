@@ -268,8 +268,8 @@ class IntConstraints:
             # `derivative` rows are deleted
             if self.var_name == j:
                 matrices_S[self.var_name] = [
-                    self.matricesW[i] @ np.delete(s, range(self.derivative), axis=0)
-                    for i, s in enumerate(matrices_S[self.var_name])
+                    w @ np.delete(s, range(self.derivative), axis=0)
+                    for w, s in zip(self.matricesW, matrices_S[self.var_name])
                 ]
             # Since the knot sequence is evenly spaced, the value of the
             # B-splines is periodic an it is always the same, so we pick up the
@@ -281,7 +281,7 @@ class IntConstraints:
                     ],
                     axis=0,
                 )
-                matrices_S[j] = [value_at_knots for _ in range(len(matrices_S[j]))]
+                matrices_S[j] = [value_at_knots] * len(matrices_S[j])
         # For every interval on the `var_name` axis, count how many interval
         # constraints of the same sign and fixed derivative need to be
         # considered
