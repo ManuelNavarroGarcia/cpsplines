@@ -707,11 +707,7 @@ class GridCPsplines:
         if isinstance(data, pd.Series):
             data = pd.DataFrame(data)
 
-        if self.data_arrangement == "gridded":
-            x = [np.unique(row) for row in data.values.T]
-        else:
-            x = [row for row in data.values.T]
-
+        x = [row for row in data.values.T]
         x_min = np.array([np.min(v) for v in x])
         x_max = np.array([np.max(v) for v in x])
         bsp_min = np.array([bsp.knots[bsp.deg] for bsp in self.bspline_bases])
@@ -732,9 +728,6 @@ class GridCPsplines:
         B_predict = [
             bsp.bspline_basis(x=x[i]) for i, bsp in enumerate(self.bspline_bases)
         ]
-        if self.data_arrangement == "gridded":
-            y_pred = matrix_by_tensor_product([mat for mat in B_predict], self.sol)
-
-        else:
-            y_pred = np.dot(reduce(box_product, B_predict), self.sol.flatten())
-        return self.family.fitted(y_pred)
+        return self.family.fitted(
+            np.dot(reduce(box_product, B_predict), self.sol.flatten())
+        )
