@@ -124,7 +124,7 @@ class CurvesDisplay:
         bsp = estimator.bspline_bases[0]
 
         # Generate extra points at the prediction regions with the
-        # `prediction_step` parameter so the curves are plotted smoother
+        # `prediction_step` parameter so the curve is plotted smoother
         x_left, x_right = granulate_prediction_range(
             bspline_bases=[bsp], prediction_step=[prediction_step]
         )
