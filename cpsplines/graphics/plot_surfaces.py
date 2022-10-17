@@ -61,6 +61,10 @@ class SurfacesDisplay:
         ax_contour: Optional[plt.axes] = None,
         contour_plot: bool = True,
         knot_positions: bool = False,
+        prediction_step: Iterable[Iterable[Union[int, float]]] = (
+            (0.5, 0.5),
+            (0.5, 0.5),
+        ),
         zlim: Optional[Tuple[Union[int, float]]] = None,
         orientation: Optional[Tuple[Union[int, float]]] = None,
         figsize: Tuple[Union[int, float]] = (15, 10),
@@ -69,10 +73,17 @@ class SurfacesDisplay:
         bsp1 = estimator.bspline_bases[0]
         bsp2 = estimator.bspline_bases[1]
 
+        x_left, x_right = granulate_prediction_range(
+            bspline_bases=estimator.bspline_bases, prediction_step=prediction_step
+        )
+        # Get the extended regressor samples
+        ext_1 = np.concatenate([x_left[0], bsp1.xsample, x_right[0]])
+        ext_2 = np.concatenate([x_left[1], bsp2.xsample, x_right[1]])
+
         X = pd.DataFrame(
             {
-                "x0": np.repeat(bsp1.xsample, len(bsp2.xsample)),
-                "x1": np.tile(bsp2.xsample, len(bsp1.xsample)),
+                "x0": np.repeat(ext_1, len(ext_2)),
+                "x1": np.tile(ext_2, len(ext_1)),
             }
         )
 
