@@ -169,9 +169,22 @@ class SurfacesDisplay:
         x_left, x_right = granulate_prediction_range(
             bspline_bases=estimator.bspline_bases, prediction_step=prediction_step
         )
-        # Get the extended regressor samples
-        ext_1 = np.concatenate([x_left[0], bsp1.xsample, x_right[0]])
-        ext_2 = np.concatenate([x_left[1], bsp2.xsample, x_right[1]])
+        # Get the extended regressor samples. The fitting region is split in 200
+        # subintervals with equal length
+        ext_1 = np.concatenate(
+            [
+                x_left[0],
+                np.linspace(bsp1.xsample.min(), bsp1.xsample.max(), 200),
+                x_right[0],
+            ]
+        )
+        ext_2 = np.concatenate(
+            [
+                x_left[1],
+                np.linspace(bsp2.xsample.min(), bsp2.xsample.max(), 200),
+                x_right[1],
+            ]
+        )
 
         # .predict() requires data in scatter format
         X = pd.DataFrame(
