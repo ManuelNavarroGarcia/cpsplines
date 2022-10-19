@@ -268,7 +268,10 @@ class IntConstraints:
             # `derivative` rows are deleted
             if self.var_name == j:
                 matrices_S[self.var_name] = [
-                    w @ np.delete(s, range(self.derivative), axis=0)
+                    np.r_[
+                        np.zeros((self.derivative, s.shape[1])),
+                        w @ np.delete(s, range(self.derivative), axis=0),
+                    ]
                     for w, s in zip(self.matricesW, matrices_S[self.var_name])
                 ]
             # Since the knot sequence is evenly spaced, the value of the
@@ -341,7 +344,7 @@ class IntConstraints:
                 # contribution
                 poly_coef = mosek.fusion.Expr.flatten(
                     matrix_by_tensor_product_mosek(matrices=mat, mosek_var=coef_theta)
-                )
+                ).slice(self.derivative, self.bspline[self.var_name].deg + 1)
                 # Loop over the different sign constraints
                 for k, key in enumerate(self.constraints.keys()):
                     sign_cons = 1 if key == "+" else -1
