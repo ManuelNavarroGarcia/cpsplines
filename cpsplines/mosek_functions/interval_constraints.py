@@ -278,13 +278,12 @@ class IntConstraints:
             # B-splines is periodic an it is always the same, so we pick up the
             # value of all the B-splines at the first knot
             else:
-                value_at_knots = np.expand_dims(
-                    bsp.matrixB[
-                        bsp.int_back, bsp.int_back : bsp.int_back + bsp.deg + 1
-                    ],
-                    axis=0,
+                value_at_knots = np.vander(
+                    bsp.knots[bsp.deg : -bsp.deg], N=bsp.deg + 1, increasing=True
                 )
-                matrices_S[j] = [value_at_knots] * len(matrices_S[j])
+                matrices_S[j] = [
+                    value_at_knots[i, :] @ s for i, s in enumerate(matrices_S[j])
+                ]
         # For every interval on the `var_name` axis, count how many interval
         # constraints of the same sign and fixed derivative need to be
         # considered
