@@ -1,9 +1,9 @@
 import itertools
+from functools import reduce
 from typing import Dict, Iterable, List, Tuple, Union
 
 import mosek.fusion
 import numpy as np
-from cpsplines.mosek_functions.utils_mosek import matrix_by_tensor_product_mosek
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from scipy.special import comb, factorial
 
@@ -341,8 +341,8 @@ class IntConstraints:
                 )
                 # Multiply the sliced variable on each face by the correct
                 # contribution
-                poly_coef = mosek.fusion.Expr.flatten(
-                    matrix_by_tensor_product_mosek(matrices=mat, mosek_var=coef_theta)
+                poly_coef = mosek.fusion.Expr.mul(
+                    reduce(np.kron, mat), mosek.fusion.Expr.flatten(coef_theta)
                 ).slice(self.derivative, self.bspline[self.var_name].deg + 1)
                 # Loop over the different sign constraints
                 for k, key in enumerate(self.constraints.keys()):
