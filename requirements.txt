@@ -26,6 +26,8 @@ decorator==5.1.1
     # via ipython
 entrypoints==0.4
     # via jupyter-client
+exceptiongroup==1.0.4
+    # via pytest
 executing==0.8.3
     # via stack-data
 fonttools==4.34.4
@@ -70,7 +72,6 @@ numpy==1.23.1
     # via
     #   cpsplines (setup.py)
     #   matplotlib
-    #   mosek
     #   pandas
     #   patsy
     #   scipy
@@ -115,15 +116,13 @@ ptyprocess==0.7.0
     # via pexpect
 pure-eval==0.2.2
     # via stack-data
-py==1.11.0
-    # via pytest
 pygments==2.12.0
     # via ipython
 pyparsing==3.0.9
     # via
     #   matplotlib
     #   packaging
-pytest==7.1.2
+pytest==7.2.0
     # via cpsplines (setup.py)
 python-dateutil==2.8.2
     # via
