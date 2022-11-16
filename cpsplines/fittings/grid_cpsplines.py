@@ -17,7 +17,7 @@ from cpsplines.utils.box_product import box_product
 from cpsplines.utils.fast_kron import matrix_by_tensor_product, matrix_by_transpose
 from cpsplines.utils.gcv import GCV
 from cpsplines.utils.normalize_data import DataNormalizer
-from cpsplines.utils.rearrange_data import scatter_to_grid
+from cpsplines.utils.rearrange_data import RearrangingError, scatter_to_grid
 from cpsplines.utils.simulator_grid_search import print_grid_search_results
 from cpsplines.utils.simulator_optimize import Simulator
 from cpsplines.utils.timer import timer
@@ -550,15 +550,17 @@ class GridCPsplines:
             second to the response data.
         """
 
-        # Get the covariate column names
-        x, y = scatter_to_grid(data=data, y_col=y_col)
-        if len(data) == np.prod(y.shape) and np.isnan(y).sum() == 0:
-            self.data_arrangement = "gridded"
-            logging.info("Data is rearranged into a grid.")
-        else:
-            self.data_arrangement = "scattered"
-            x = [row for row in data[data.columns.drop(y_col).tolist()].values.T]
-            y = data[y_col].values
+        self.data_arrangement = "scattered"
+        x = [row for row in data[data.columns.drop(y_col).tolist()].values.T]
+        y = data[y_col].values
+        try:
+            z, t = scatter_to_grid(data=data, y_col=y_col)
+            if len(data) == np.prod(t.shape) and np.isnan(t).sum() == 0:
+                self.data_arrangement = "gridded"
+                x, y = z.copy(), t.copy()
+                logging.info("Data is rearranged into a grid.")
+        except RearrangingError:
+            pass
         return x, y
 
     def fit(
