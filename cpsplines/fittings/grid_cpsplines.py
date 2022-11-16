@@ -118,8 +118,6 @@ class GridCPsplines:
         `_get_bspline_bases`.
     sol : np.ndarray
         The fitted decision variables of the B-spline expansion.
-    y_fitted : np.ndarray
-        The fitted values for the response variable.
 
     References
     ----------
@@ -661,17 +659,6 @@ class GridCPsplines:
             self.sol = model_params["theta"].level().reshape(theta_shape)
             if y_range is not None:
                 self.sol = data_normalizer.inverse_transform(y=self.sol)
-            # Compute the fitted values of the response variable
-
-            if self.data_arrangement == "gridded":
-                y_fitted = matrix_by_tensor_product(
-                    [mat for mat in obj_matrices["B"]], self.sol
-                )
-            else:
-                y_fitted = np.dot(
-                    reduce(box_product, obj_matrices["B"]), self.sol.flatten()
-                )
-            self.y_fitted = self.family.fitted(y_fitted)
         except mosek.fusion.SolutionError as e:
             raise NumericalError(
                 f"The solution for the smoothing parameter {self.best_sp} "
