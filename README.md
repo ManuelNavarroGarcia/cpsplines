@@ -309,12 +309,17 @@ research paper or under current research. If these techniques are helpful to
 your own research, consider citing the related papers of the project:
 
 ```{bash}
-@TECHREPORT{navarro2020,
-  Author = {Navarro-Garc{\'ia}, M. and Guerrero, V. and Durban, M.},
-  Title = {Constrained smoothing and out-of-range prediction using cubic {P}-splines: a semidefinite programming approach},
- Institution = {Universidad Carlos III de Madrid},
-  Address ={\url{https://www.researchgate.net/publication/347836694_Constrained_smoothing_and_out-of-range_prediction_using_cubic_P_-splines_a_semidefinite_programming_approach4}},
-  Year = {2020}
+@article{NAVARROGARCIA2023,
+title = {On constrained smoothing and out-of-range prediction using P-splines: A conic optimization approach},
+journal = {Applied Mathematics and Computation},
+volume = {441},
+pages = {127679},
+year = {2023},
+issn = {0096-3003},
+doi = {https://doi.org/10.1016/j.amc.2022.127679},
+url = {https://www.sciencedirect.com/science/article/pii/S0096300322007470},
+author = {Manuel Navarro-García and Vanesa Guerrero and María Durban},
+keywords = {Data science, Penalized splines, Conic optimization, Smoothing, Prediction},
 }
 ```
 
