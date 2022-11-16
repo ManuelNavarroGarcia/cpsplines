@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pytest
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.psplines.penalty_matrix import PenaltyMatrix
@@ -63,9 +64,12 @@ y_3 = np.array(
     ]
 )
 
+ethanol = pd.read_csv("./data/ethanol.csv")
+
 out1 = 0.06655360566286558
 out2 = 0.8886437800778839
 out3 = 0.11298981533051085
+out4 = 0.8648914644625973
 
 
 @pytest.mark.parametrize(
@@ -107,6 +111,17 @@ out3 = 0.11298981533051085
             ],
             y_3,
             out3,
+        ),
+        (
+            [3, 3],
+            [2, 1],
+            [10, 8],
+            [1.23, 3.45],
+            Gaussian(),
+            "scattered",
+            [ethanol["C"].values, ethanol["E"].values],
+            ethanol["NOx"].values,
+            out4,
         ),
     ],
 )
