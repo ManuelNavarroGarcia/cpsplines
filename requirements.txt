@@ -42,7 +42,7 @@ joblib==1.2.0
     # via cpsplines (setup.py)
 jupyter-client==7.3.4
     # via ipykernel
-jupyter-core==4.11.1
+jupyter-core==4.11.2
     # via jupyter-client
 kiwisolver==1.4.4
     # via matplotlib
@@ -99,7 +99,7 @@ pexpect==4.8.0
     # via ipython
 pickleshare==0.7.5
     # via ipython
-pillow==9.2.0
+pillow==9.3.0
     # via matplotlib
 pip-tools==6.8.0
     # via cpsplines (setup.py)
