@@ -333,7 +333,7 @@ class ObjectiveFunction:
                     mosek.fusion.Expr.sum(self.var_dict["t"]),
                     obj,
                 ),
-                mosek.fusion.Expr.dot(obj_matrices["y"], coef),
+                mosek.fusion.Expr.dot(obj_matrices["y"].astype(float), coef),
             )
 
         # Generate the minimization objective function object
