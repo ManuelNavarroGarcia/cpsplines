@@ -5,6 +5,10 @@ import numpy as np
 import pandas as pd
 
 
+class RearrangingError(Exception):
+    pass
+
+
 def grid_to_scatter(
     x: List[np.ndarray],
     y: np.ndarray,
