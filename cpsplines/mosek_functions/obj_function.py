@@ -286,7 +286,7 @@ class ObjectiveFunction:
             }
 
             if data_arrangement == "gridded":
-                coef = coef = mosek.fusion.Expr.mul(
+                coef = mosek.fusion.Expr.mul(
                     reduce(np.kron, obj_matrices["B_w"]),
                     mosek.fusion.Expr.flatten(self.var_dict["theta"]),
                 )
