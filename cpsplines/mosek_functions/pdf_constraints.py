@@ -1,3 +1,4 @@
+from functools import reduce
 from typing import Dict, Iterable, Optional, Union
 
 import mosek.fusion
@@ -80,8 +81,9 @@ class PDFConstraint:
             banded_list.append(banded)
         # Multiply by the coefficient array and sum all the entries
         sum_coef = mosek.fusion.Expr.sum(
-            matrix_by_tensor_product_mosek(
-                matrices=banded_list, mosek_var=var_dict["theta"]
+            mosek.fusion.Expr.mul(
+                reduce(np.kron, banded_list),
+                mosek.fusion.Expr.flatten(var_dict["theta"]),
             )
         )
         cons = model.constraint(sum_coef, mosek.fusion.Domain.equalsTo(1.0))
