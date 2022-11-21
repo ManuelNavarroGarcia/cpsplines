@@ -428,7 +428,6 @@ class GridCPsplines:
                     cons2.point_cons(
                         data=data,
                         y_col=y_col,
-                        data_arrangement=self.data_arrangement,
                         var_dict=mos_obj_f.var_dict,
                         model=M,
                     )
