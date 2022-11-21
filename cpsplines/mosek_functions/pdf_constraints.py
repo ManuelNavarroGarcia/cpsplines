@@ -3,7 +3,6 @@ from typing import Dict, Iterable, Optional, Union
 
 import mosek.fusion
 import numpy as np
-from cpsplines.mosek_functions.utils_mosek import matrix_by_tensor_product_mosek
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from scipy.sparse import diags
 
