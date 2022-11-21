@@ -4,7 +4,6 @@ from typing import Dict, Iterable, Tuple, Union
 import mosek.fusion
 import numpy as np
 import statsmodels.genmod.families.family
-from cpsplines.mosek_functions.utils_mosek import matrix_by_tensor_product_mosek
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.utils.box_product import box_product
 from cpsplines.utils.cholesky_semidefinite import cholesky_semidef
@@ -238,11 +237,11 @@ class ObjectiveFunction:
                 lin_term = matrix_by_tensor_product(
                     [mat.T for mat in obj_matrices["B_w"]], obj_matrices["y"]
                 ).flatten()
-                coef = mosek.fusion.Expr.flatten(
-                    matrix_by_tensor_product_mosek(
-                        matrices=obj_matrices["B_w"], mosek_var=self.var_dict["theta"]
-                    )
+                coef = mosek.fusion.Expr.mul(
+                    reduce(np.kron, obj_matrices["B_w"]),
+                    mosek.fusion.Expr.flatten(self.var_dict["theta"]),
                 )
+
             else:
                 B = reduce(box_product, obj_matrices["B_w"])
                 lin_term = np.dot(obj_matrices["y"], B)
@@ -287,10 +286,9 @@ class ObjectiveFunction:
             }
 
             if data_arrangement == "gridded":
-                coef = mosek.fusion.Expr.flatten(
-                    matrix_by_tensor_product_mosek(
-                        matrices=obj_matrices["B_w"], mosek_var=self.var_dict["theta"]
-                    )
+                coef = coef = mosek.fusion.Expr.mul(
+                    reduce(np.kron, obj_matrices["B_w"]),
+                    mosek.fusion.Expr.flatten(self.var_dict["theta"]),
                 )
             else:
                 B = reduce(box_product, obj_matrices["B_w"])
