@@ -1,11 +1,12 @@
 import numpy as np
 import pandas as pd
 import pytest
+from statsmodels.genmod.families.family import Binomial, Gaussian, Poisson
+
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.psplines.penalty_matrix import PenaltyMatrix
 from cpsplines.utils.fast_kron import penalization_term
 from cpsplines.utils.irls import fit_irls
-from statsmodels.genmod.families.family import Binomial, Gaussian, Poisson
 
 # Test IRLS algorithm for multidimensional data. The results coincides with the
 # ones from R package JOPS, version 0.1.15. The code used to fit the models with
@@ -658,7 +659,7 @@ def test_gcv(deg, ord_d, n_int, sp, family, data_arrangement, x, y, y_fit):
     penalty_list = penalization_term(matrices=D_mul)
     penalty_term = np.add.reduce([np.multiply(s, P) for P, s in zip(penalty_list, sp)])
 
-    obj_matrices = {"B_w": B, "y": y}
+    obj_matrices = {"B": B, "y": y}
 
     out = fit_irls(
         obj_matrices=obj_matrices,

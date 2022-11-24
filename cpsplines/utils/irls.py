@@ -3,6 +3,7 @@ from typing import Dict, Iterable, Union
 
 import numpy as np
 import statsmodels.genmod.families.family
+
 from cpsplines.utils.box_product import box_product
 from cpsplines.utils.fast_kron import (
     matrix_by_tensor_product,
@@ -63,7 +64,7 @@ def fit_irls(
     if data_arrangement not in ("gridded", "scattered"):
         raise ValueError(f"Invalid `data_arrangement`: {data_arrangement}.")
     # Obtain an initial value of the fitting coefficients
-    theta_old = np.zeros(tuple([mat.shape[1] for mat in obj_matrices["B_w"]]))
+    theta_old = np.zeros(tuple([mat.shape[1] for mat in obj_matrices["B"]]))
     # Use this initial value to estimate initial values for `mu` (mean of the
     # exponential family) and `eta` (transformed mu through the link function)
     mu = family.starting_mu(obj_matrices["y"])
@@ -76,7 +77,7 @@ def fit_irls(
 
         # With this modified dependent variable, update the coefficients
         bases_term = weighted_double_kronecker(
-            matrices=obj_matrices["B_w"],
+            matrices=obj_matrices["B"],
             W=W if data_arrangement == "gridded" else np.diag(W),
         )
 
@@ -85,21 +86,21 @@ def fit_irls(
             np.linalg.solve(
                 bases_term + penalty_term,
                 matrix_by_tensor_product(
-                    [B.T for B in obj_matrices["B_w"]],
+                    [B.T for B in obj_matrices["B"]],
                     T if data_arrangement == "gridded" else np.diag(T),
                 ).flatten(),
             ),
-            tuple([mat.shape[1] for mat in obj_matrices["B_w"]]),
+            tuple([mat.shape[1] for mat in obj_matrices["B"]]),
         )
 
         # Update `eta` and `mu`
         if data_arrangement == "gridded":
             eta = matrix_by_tensor_product(
-                [mat for mat in obj_matrices["B_w"]],
+                [mat for mat in obj_matrices["B"]],
                 theta,
             )
         else:
-            eta = np.dot(reduce(box_product, obj_matrices["B_w"]), theta.flatten())
+            eta = np.dot(reduce(box_product, obj_matrices["B"]), theta.flatten())
         mu = family.fitted(eta)
         # Check convergence
         if np.linalg.norm(theta - theta_old) < threshold:

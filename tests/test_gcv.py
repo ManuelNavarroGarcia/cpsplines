@@ -1,10 +1,11 @@
 import numpy as np
 import pandas as pd
 import pytest
+from statsmodels.genmod.families.family import Gaussian
+
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.psplines.penalty_matrix import PenaltyMatrix
 from cpsplines.utils.gcv import GCV
-from statsmodels.genmod.families.family import Gaussian
 
 y_1 = np.array(
     [
@@ -137,7 +138,7 @@ def test_gcv(deg, ord_d, n_int, sp, family, data_arrangement, x, y, gcv):
         PenaltyMatrix(bspline=bsp).get_penalty_matrix(**{"ord_d": o})
         for bsp, o in zip(bspline, ord_d)
     ]
-    obj_matrices = {"B_w": B, "D_mul": D_mul, "y": y}
+    obj_matrices = {"B": B, "D_mul": D_mul, "y": y}
 
     gcv_out = GCV(
         sp=sp,

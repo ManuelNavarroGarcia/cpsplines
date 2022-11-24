@@ -277,7 +277,7 @@ class GridCPsplines:
         """
 
         obj_matrices = {}
-        obj_matrices["B_w"] = []
+        obj_matrices["B"] = []
         obj_matrices["D"] = []
         obj_matrices["D_mul"] = []
         # The extended response variable sample dimensions can be obtained as
@@ -285,7 +285,7 @@ class GridCPsplines:
         indexes_fit = get_idx_fitting_region(self.bspline_bases)
         for bsp, ord_d, idx in zip(self.bspline_bases, self.ord_d, indexes_fit):
             B = bsp.matrixB
-            obj_matrices["B_w"].append(B[idx])
+            obj_matrices["B"].append(B[idx])
             penaltymat = PenaltyMatrix(bspline=bsp)
             P = penaltymat.get_penalty_matrix(**{"ord_d": ord_d})
             obj_matrices["D"].append(penaltymat.matrixD)
@@ -617,7 +617,7 @@ class GridCPsplines:
         obj_matrices = self._get_obj_func_arrays(y=y)
 
         # Auxiliary matrices derived from `obj_matrices`
-        obj_matrices["B_mul"] = list(map(matrix_by_transpose, obj_matrices["B_w"]))
+        obj_matrices["B_mul"] = list(map(matrix_by_transpose, obj_matrices["B"]))
 
         # Initialize the model
         M = self._initialize_model(

@@ -4,6 +4,7 @@ from typing import Dict, Iterable, Tuple, Union
 import mosek.fusion
 import numpy as np
 import statsmodels.genmod.families.family
+
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.utils.box_product import box_product
 from cpsplines.utils.cholesky_semidefinite import cholesky_semidef
@@ -189,7 +190,7 @@ class ObjectiveFunction:
             if data_arrangement == "gridded":
                 # Compute the linear term coefficients of the objective function
                 lin_term = matrix_by_tensor_product(
-                    [mat.T for mat in obj_matrices["B_w"]], obj_matrices["y"]
+                    [mat.T for mat in obj_matrices["B"]], obj_matrices["y"]
                 ).flatten()
 
                 # Compute the Cholesky decompositions (A = L @ L.T)
@@ -198,7 +199,7 @@ class ObjectiveFunction:
                     list(map(cholesky_semidef, obj_matrices["B_mul"])),
                 )
             else:
-                B = reduce(box_product, obj_matrices["B_w"])
+                B = reduce(box_product, obj_matrices["B"])
                 lin_term = np.dot(obj_matrices["y"], B)
                 L_B = cholesky_semidef(B.T @ B)
 
@@ -235,15 +236,15 @@ class ObjectiveFunction:
             }
             if data_arrangement == "gridded":
                 lin_term = matrix_by_tensor_product(
-                    [mat.T for mat in obj_matrices["B_w"]], obj_matrices["y"]
+                    [mat.T for mat in obj_matrices["B"]], obj_matrices["y"]
                 ).flatten()
                 coef = mosek.fusion.Expr.mul(
-                    reduce(np.kron, obj_matrices["B_w"]),
+                    reduce(np.kron, obj_matrices["B"]),
                     mosek.fusion.Expr.flatten(self.var_dict["theta"]),
                 )
 
             else:
-                B = reduce(box_product, obj_matrices["B_w"])
+                B = reduce(box_product, obj_matrices["B"])
                 lin_term = np.dot(obj_matrices["y"], B)
                 coef = mosek.fusion.Expr.mul(B, flatten_theta)
             cons.append(
@@ -287,11 +288,11 @@ class ObjectiveFunction:
 
             if data_arrangement == "gridded":
                 coef = mosek.fusion.Expr.mul(
-                    reduce(np.kron, obj_matrices["B_w"]),
+                    reduce(np.kron, obj_matrices["B"]),
                     mosek.fusion.Expr.flatten(self.var_dict["theta"]),
                 )
             else:
-                B = reduce(box_product, obj_matrices["B_w"])
+                B = reduce(box_product, obj_matrices["B"])
                 coef = mosek.fusion.Expr.mul(B, flatten_theta)
 
             cons.append(

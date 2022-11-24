@@ -2,6 +2,7 @@ from typing import Dict, Iterable, Tuple, Union
 
 import numpy as np
 import statsmodels.genmod.families.family
+
 from cpsplines.utils.fast_kron import penalization_term, weighted_double_kronecker
 from cpsplines.utils.irls import fit_irls
 
@@ -49,7 +50,7 @@ def quadratic_term(
     mu = family.starting_mu(obj_matrices["y"])
     W = family.weights(mu)
     bases_term = weighted_double_kronecker(
-        matrices=obj_matrices["B_w"],
+        matrices=obj_matrices["B"],
         W=W if data_arrangement == "gridded" else np.diag(W),
     )
     penalty_list = penalization_term(matrices=obj_matrices["D_mul"])
