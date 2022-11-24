@@ -261,9 +261,7 @@ class GridCPsplines:
         """
         Gather all the arrays used to define the objective function of the
         optimization funcion. These are the design matrices of the B-spline
-        basis, the penalty matrices and the extended response variable sample
-        (which is equal to zero outside the fitting region and coincides with
-        the response variable sample inside it).
+        basis, the penalty matrices and the response variable sample.
 
         Parameters
         ----------
@@ -274,7 +272,7 @@ class GridCPsplines:
         -------
         Dict[str, np.ndarray]
             A dictionary containing design matrices of the B-spline basis, the
-            penalty matrices and the extended response variable sample.
+            penalty matrices and the response variable sample.
         """
 
         obj_matrices = {}
