@@ -6,7 +6,7 @@ import pytest
 from scipy.special import expit
 from scipy.stats import multivariate_normal, norm
 
-from cpsplines.fittings.grid_cpsplines import GridCPsplines
+from cpsplines.fittings.grid_cpsplines import CPsplines
 from cpsplines.utils.rearrange_data import grid_to_scatter
 
 # np.cos(x) (unconstrained)
@@ -1819,7 +1819,7 @@ def test_sol(
     y_range,
     sol,
 ):
-    out = GridCPsplines(
+    out = CPsplines(
         deg=deg,
         ord_d=ord_d,
         n_int=n_int,

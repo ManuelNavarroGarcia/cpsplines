@@ -31,7 +31,7 @@ class NumericalError(Exception):
     pass
 
 
-class GridCPsplines:
+class CPsplines:
 
     """
     Create the constrained P-splines model when data are in array form. The

@@ -3,7 +3,8 @@ from typing import Iterable, Optional, Tuple, Union
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from cpsplines.fittings.grid_cpsplines import GridCPsplines
+
+from cpsplines.fittings.grid_cpsplines import CPsplines
 from cpsplines.graphics.plot_utils import granulate_prediction_range
 from cpsplines.utils.rearrange_data import scatter_to_grid
 
@@ -99,7 +100,7 @@ class SurfacesDisplay:
     @classmethod
     def from_estimator(
         cls,
-        estimator: GridCPsplines,
+        estimator: CPsplines,
         contour_plot: bool = True,
         ax: Optional[plt.axes] = None,
         ax_contour: Optional[plt.axes] = None,
@@ -117,8 +118,8 @@ class SurfacesDisplay:
 
         Parameters
         ----------
-        estimator : GridCPsplines
-            A fitted `GridCPsplines` object.
+        estimator : CPsplines
+            A fitted `CPsplines` object.
         contour_plot : bool, optional
             If True, the contour plot of the surface is plotted with the same
             colormap as the surface plot. By default, True.

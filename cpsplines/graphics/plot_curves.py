@@ -3,7 +3,8 @@ from typing import Iterable, Optional, Tuple, Union
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from cpsplines.fittings.grid_cpsplines import GridCPsplines
+
+from cpsplines.fittings.grid_cpsplines import CPsplines
 from cpsplines.graphics.plot_utils import granulate_prediction_range
 
 
@@ -68,7 +69,7 @@ class CurvesDisplay:
     @classmethod
     def from_estimator(
         cls,
-        estimator: GridCPsplines,
+        estimator: CPsplines,
         X: Union[pd.Series, pd.DataFrame],
         y: pd.Series,
         knot_positions: bool = False,
@@ -84,8 +85,8 @@ class CurvesDisplay:
 
         Parameters
         ----------
-        estimator : GridCPsplines
-            A fitted `GridCPsplines` object.
+        estimator : CPsplines
+            A fitted `CPsplines` object.
         X : Union[pd.Series, pd.DataFrame]
             The abscissa of the points used in the fitting procedure.
         y : pd.Series
