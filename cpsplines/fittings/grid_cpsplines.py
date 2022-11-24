@@ -8,8 +8,7 @@ import numpy as np
 import pandas as pd
 import scipy
 from joblib import Parallel, delayed
-from statsmodels.genmod.families.family import (Binomial, Family, Gaussian,
-                                                Poisson)
+from statsmodels.genmod.families.family import Binomial, Family, Gaussian, Poisson
 
 from cpsplines.mosek_functions.interval_constraints import IntConstraints
 from cpsplines.mosek_functions.obj_function import ObjectiveFunction
@@ -121,7 +120,7 @@ class GridCPsplines:
     sol : np.ndarray
         The fitted decision variables of the B-spline expansion.
     data_arrangement : str
-        The structure of the data. Must be either "gridded" or "scattered". 
+        The structure of the data. Must be either "gridded" or "scattered".
 
     References
     ----------
