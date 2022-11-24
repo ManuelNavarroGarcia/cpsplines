@@ -292,14 +292,7 @@ class GridCPsplines:
             obj_matrices["D"].append(penaltymat.matrixD)
             obj_matrices["D_mul"].append(P)
 
-        # Reorder the response variable array so the covariate coordinates are
-        # non-decreasing
-        if self.data_arrangement == "gridded":
-            y_ext = np.zeros(tuple([B.shape[0] for B in obj_matrices["B"]]))
-            y_ext[get_idx_fitting_region(self.bspline_bases)] = y
-        else:
-            y_ext = y.copy()
-        obj_matrices["y"] = y_ext
+        obj_matrices["y"] = y.copy()
         return obj_matrices
 
     def _initialize_model(
