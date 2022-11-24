@@ -7,6 +7,9 @@ import mosek.fusion
 import numpy as np
 import pandas as pd
 import scipy
+from joblib import Parallel, delayed
+from statsmodels.genmod.families.family import Binomial, Family, Gaussian, Poisson
+
 from cpsplines.mosek_functions.interval_constraints import IntConstraints
 from cpsplines.mosek_functions.obj_function import ObjectiveFunction
 from cpsplines.mosek_functions.pdf_constraints import PDFConstraint
@@ -21,9 +24,7 @@ from cpsplines.utils.rearrange_data import RearrangingError, scatter_to_grid
 from cpsplines.utils.simulator_grid_search import print_grid_search_results
 from cpsplines.utils.simulator_optimize import Simulator
 from cpsplines.utils.timer import timer
-from cpsplines.utils.weighted_b import get_idx_fitting_region, get_weighted_B
-from joblib import Parallel, delayed
-from statsmodels.genmod.families.family import Binomial, Family, Gaussian, Poisson
+from cpsplines.utils.weighted_b import get_idx_fitting_region
 
 
 class NumericalError(Exception):
