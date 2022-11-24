@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from cpsplines.fittings.grid_cpsplines import CPsplines
+from cpsplines.fittings.fit_cpsplines import CPsplines
 from cpsplines.graphics.plot_utils import granulate_prediction_range
 
 

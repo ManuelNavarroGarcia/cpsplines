@@ -6,7 +6,7 @@ import pytest
 from scipy.special import expit
 from scipy.stats import multivariate_normal, norm
 
-from cpsplines.fittings.grid_cpsplines import CPsplines
+from cpsplines.fittings.fit_cpsplines import CPsplines
 from cpsplines.utils.rearrange_data import grid_to_scatter
 
 # np.cos(x) (unconstrained)
