@@ -616,7 +616,6 @@ class GridCPsplines:
         obj_matrices = self._get_obj_func_arrays(y=y)
 
         # Auxiliary matrices derived from `obj_matrices`
-        obj_matrices["B_w"] = get_weighted_B(bspline_bases=self.bspline_bases)
         obj_matrices["B_mul"] = list(map(matrix_by_transpose, obj_matrices["B_w"]))
 
         # Initialize the model
