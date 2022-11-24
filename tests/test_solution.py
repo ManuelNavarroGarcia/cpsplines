@@ -3,10 +3,11 @@ import itertools
 import numpy as np
 import pandas as pd
 import pytest
-from cpsplines.fittings.grid_cpsplines import GridCPsplines
-from cpsplines.utils.rearrange_data import grid_to_scatter
 from scipy.special import expit
 from scipy.stats import multivariate_normal, norm
+
+from cpsplines.fittings.grid_cpsplines import GridCPsplines
+from cpsplines.utils.rearrange_data import grid_to_scatter
 
 # np.cos(x) (unconstrained)
 # Using grid search
@@ -839,6 +840,87 @@ sol32 = np.array(
         [-0.43563876, 0.67218153, 0.20379547, -0.03523921, -0.01238228, -0.02169573],
         [-0.74115103, 0.8003905, 0.21315646, -0.08538237, 0.13537096, -0.03081965],
         [-1.05825658, 0.85567317, 0.17041346, -0.16277384, 0.2700411, -0.04256863],
+    ]
+)
+
+# np.sin(3 * pi * x) * np.sin(2 * pi * y) (non-decreasing on second covariate)
+# Using grid search
+# Forecasting second covariate
+# Scatter data
+sol33 = np.array(
+    [
+        [
+            0.14486093,
+            -0.05904518,
+            -0.06992968,
+            0.21620561,
+            0.22518483,
+            -0.01533738,
+            0.28988021,
+        ],
+        [
+            0.06966106,
+            0.09066459,
+            0.09358899,
+            0.04617677,
+            0.04375403,
+            0.06398283,
+            0.29258121,
+        ],
+        [
+            -0.02788336,
+            0.09200862,
+            0.09119552,
+            -0.00529088,
+            -0.00457915,
+            0.15502788,
+            0.29528222,
+        ],
+        [
+            -0.18012447,
+            -0.20693637,
+            -0.20660839,
+            0.22674943,
+            0.22632527,
+            0.25494822,
+            0.29798322,
+        ],
+        [
+            -0.25520822,
+            -0.2678526,
+            -0.2683514,
+            0.24782299,
+            0.24880791,
+            0.23633132,
+            0.30068424,
+        ],
+        [
+            -0.10378429,
+            -0.02639488,
+            -0.02472765,
+            -0.00768298,
+            -0.01119853,
+            0.01008489,
+            0.30338526,
+        ],
+        [
+            0.08268948,
+            0.32599124,
+            0.31982114,
+            -0.26453193,
+            -0.25145468,
+            -0.23466739,
+            0.30608628,
+        ],
+        [
+            0.26214394,
+            0.65638192,
+            0.65320937,
+            -0.50275616,
+            -0.47142458,
+            -0.47614594,
+            0.3087873,
+        ],
     ]
 )
 
@@ -1694,6 +1776,27 @@ sol32 = np.array(
             ).sample(156, random_state=1),
             None,
             sol32,
+        ),
+        (
+            (3, 2),
+            (2, 1),
+            (5, 4),
+            {1: (1.2,)},
+            "grid_search",
+            {"grid": ((1.234,),)},
+            "gaussian",
+            {1: {1: {"+": 0}}},
+            None,
+            False,
+            grid_to_scatter(
+                x=(np.linspace(0, 1, 30), np.linspace(0, 1, 20)),
+                y=np.outer(
+                    np.sin(3 * np.pi * np.linspace(0, 1, 30)),
+                    np.sin(2 * np.pi * np.linspace(0, 1, 20)),
+                ),
+            ).sample(156, random_state=1),
+            None,
+            sol33,
         ),
     ],
 )
