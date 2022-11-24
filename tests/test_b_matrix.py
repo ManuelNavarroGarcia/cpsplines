@@ -1,7 +1,8 @@
 import numpy as np
 import pytest
+
 from cpsplines.psplines.bspline_basis import BsplineBasis
-from cpsplines.utils.weighted_b import get_idx_fitting_region, get_weighted_B
+from cpsplines.utils.weighted_b import get_idx_fitting_region
 
 B1 = (1 / 8) * np.array(
     [
@@ -53,21 +54,21 @@ B3 = (1 / 240000) * np.array(
 
 BV1 = (1 / 50) * np.array(
     [
-        [0, 0, 0, 0, 0, 0, 0, 0],
+        [25, 25, 0, 0, 0, 0, 0, 0],
         [0, 25, 25, 0, 0, 0, 0, 0],
         [0, 4, 37, 9, 0, 0, 0, 0],
         [0, 0, 16, 33, 1, 0, 0, 0],
         [0, 0, 1, 33, 16, 0, 0, 0],
         [0, 0, 0, 9, 37, 4, 0, 0],
         [0, 0, 0, 0, 25, 25, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 25, 25, 0],
+        [0, 0, 0, 0, 0, 0, 25, 25],
     ]
 )
 BV2 = (1 / 162) * np.array(
     [
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [27, 108, 27, 0, 0, 0, 0, 0, 0],
+        [0, 27, 108, 27, 0, 0, 0, 0, 0],
         [0, 0, 27, 108, 27, 0, 0, 0, 0],
         [0, 0, 1, 60, 93, 8, 0, 0, 0],
         [0, 0, 0, 8, 93, 60, 1, 0, 0],
@@ -88,8 +89,8 @@ BV3 = (1 / 98) * np.array(
         [0, 0, 0, 9, 73, 16, 0, 0, 0],
         [0, 0, 0, 0, 25, 69, 4, 0, 0],
         [0, 0, 0, 0, 0, 49, 49, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 49, 49, 0],
+        [0, 0, 0, 0, 0, 0, 0, 49, 49],
     ]
 )
 
@@ -121,10 +122,8 @@ def test_B_matrix(x_sam, deg, n_int, prediction, B):
         bsp.get_matrix_B()
         bspline.append(bsp)
 
-    B_out = get_weighted_B(bspline_bases=bspline)
-
-    for P, Q in zip(B_out, B):
-        np.testing.assert_allclose(P, Q)
+    for bsp, Q in zip(bspline, B):
+        np.testing.assert_allclose(bsp.matrixB, Q)
 
 
 # Test correct ranges of the fitting region given a regressor sample
