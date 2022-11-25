@@ -5,6 +5,10 @@ import numpy as np
 import pandas as pd
 
 
+class RearrangingError(Exception):
+    pass
+
+
 def grid_to_scatter(
     x: List[np.ndarray],
     y: np.ndarray,
@@ -99,7 +103,7 @@ def scatter_to_grid(
         # The indexes are now the coordinates, and the values the response sample
         df = data.groupby(x_cols).mean()
         if len(data) != len(df):
-            raise ValueError(
+            raise RearrangingError(
                 "Multiple responses for the same coordinates. Data cannot be rearranged into a grid."
             )
         # Create an empty array of NaN of the right dimensions

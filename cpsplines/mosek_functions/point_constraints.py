@@ -1,11 +1,10 @@
+from functools import reduce
 from typing import Dict, Iterable, Tuple
 
 import mosek.fusion
 import numpy as np
 import pandas as pd
-from cpsplines.mosek_functions.utils_mosek import matrix_by_tensor_product_mosek
 from cpsplines.psplines.bspline_basis import BsplineBasis
-from cpsplines.utils.rearrange_data import scatter_to_grid
 
 
 class PointConstraints:
@@ -43,7 +42,6 @@ class PointConstraints:
         self,
         data: pd.DataFrame,
         y_col: str,
-        data_arrangement: str,
         var_dict: Dict[str, mosek.fusion.LinearVariable],
         model: mosek.fusion.Model,
     ) -> Tuple[mosek.fusion.LinearConstraint]:
@@ -62,8 +60,6 @@ class PointConstraints:
             Input data and target data.
         y_col : str
             The column name of the target variable.
-        data_arrangement : str
-            Type of arrangement of the data. It can be "gridded" or "scattered".
         var_dict : Dict[str, mosek.fusion.LinearVariable]
             A dictionary containing the decision variables.
         model : mosek.fusion.Model
@@ -89,25 +85,20 @@ class PointConstraints:
 
         list_cons = []
         coef = []
-        if data_arrangement == "gridded":
-            x, y = scatter_to_grid(data=data, y_col=y_col)
-            y = y.flatten().astype(float)
-            # Get the evaluations of the coordinates at their respective B-spline
-            # basis and the corresponding derivative order
-            bsp_eval = [
-                bsp.bspline_basis.derivative(nu=nu)(coords)
-                for bsp, nu, coords in zip(self.bspline, self.derivative, x)
-            ]
-            # For every point constraint, extract the evaluation of the
-            # corresponding coordinates and multiply them by the multidimensional
-            # array of the expansion coefficients
-            for i, _ in enumerate(y):
-                bsp_x = [np.expand_dims(val[i, :], axis=1).T for val in bsp_eval]
-                coef.append(
-                    matrix_by_tensor_product_mosek(
-                        matrices=bsp_x, mosek_var=var_dict["theta"]
-                    )
-                )
+        # Get the evaluations of the coordinates at their respective B-spline
+        # basis and the corresponding derivative order
+        bsp_eval = [
+            bsp.bspline_basis.derivative(nu=nu)(data.iloc[:, i])
+            for i, (bsp, nu) in enumerate(zip(self.bspline, self.derivative))
+        ]
+        # For every point constraint, extract the evaluation of the
+        # corresponding coordinates and multiply them by the multidimensional
+        # array of the expansion coefficients
+        coef = mosek.fusion.Expr.mul(
+            reduce(np.kron, bsp_eval), mosek.fusion.Expr.flatten(var_dict["theta"])
+        )
+        y = data.loc[:, y_col].values.astype(float)
+
         if self.sense == "equalsTo":
             # The output should be constrained in (v - tol, v + tol) vstack is
             # necessary since `coef` may be a column matrix
@@ -123,10 +114,5 @@ class PointConstraints:
             right_side = mosek.fusion.Domain.lessThan(y)
         else:
             raise ValueError(f"The sense {self.sense} is not implemented.")
-        list_cons.append(
-            model.constraint(
-                mosek.fusion.Expr.flatten(mosek.fusion.Expr.vstack(coef)),
-                right_side,
-            )
-        )
+        list_cons.append(model.constraint(coef, right_side))
         return tuple(list_cons)

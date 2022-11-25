@@ -1,9 +1,9 @@
 import itertools
+from functools import reduce
 from typing import Dict, Iterable, List, Tuple, Union
 
 import mosek.fusion
 import numpy as np
-from cpsplines.mosek_functions.utils_mosek import matrix_by_tensor_product_mosek
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from scipy.special import comb, factorial
 
@@ -268,20 +268,22 @@ class IntConstraints:
             # `derivative` rows are deleted
             if self.var_name == j:
                 matrices_S[self.var_name] = [
-                    self.matricesW[i] @ np.delete(s, range(self.derivative), axis=0)
-                    for i, s in enumerate(matrices_S[self.var_name])
+                    np.r_[
+                        np.zeros((self.derivative, s.shape[1])),
+                        w @ np.delete(s, range(self.derivative), axis=0),
+                    ]
+                    for w, s in zip(self.matricesW, matrices_S[self.var_name])
                 ]
             # Since the knot sequence is evenly spaced, the value of the
             # B-splines is periodic an it is always the same, so we pick up the
             # value of all the B-splines at the first knot
             else:
-                value_at_knots = np.expand_dims(
-                    bsp.matrixB[
-                        bsp.int_back, bsp.int_back : bsp.int_back + bsp.deg + 1
-                    ],
-                    axis=0,
+                value_at_knots = np.vander(
+                    bsp.knots[bsp.deg : -bsp.deg], N=bsp.deg + 1, increasing=True
                 )
-                matrices_S[j] = [value_at_knots for _ in range(len(matrices_S[j]))]
+                matrices_S[j] = [
+                    value_at_knots[i, :] @ s for i, s in enumerate(matrices_S[j])
+                ]
         # For every interval on the `var_name` axis, count how many interval
         # constraints of the same sign and fixed derivative need to be
         # considered
@@ -339,9 +341,9 @@ class IntConstraints:
                 )
                 # Multiply the sliced variable on each face by the correct
                 # contribution
-                poly_coef = mosek.fusion.Expr.flatten(
-                    matrix_by_tensor_product_mosek(matrices=mat, mosek_var=coef_theta)
-                )
+                poly_coef = mosek.fusion.Expr.mul(
+                    reduce(np.kron, mat), mosek.fusion.Expr.flatten(coef_theta)
+                ).slice(self.derivative, self.bspline[self.var_name].deg + 1)
                 # Loop over the different sign constraints
                 for k, key in enumerate(self.constraints.keys()):
                     sign_cons = 1 if key == "+" else -1

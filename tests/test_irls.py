@@ -1,10 +1,12 @@
 import numpy as np
+import pandas as pd
 import pytest
+from statsmodels.genmod.families.family import Binomial, Gaussian, Poisson
+
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.psplines.penalty_matrix import PenaltyMatrix
 from cpsplines.utils.fast_kron import penalization_term
 from cpsplines.utils.irls import fit_irls
-from statsmodels.genmod.families.family import Binomial, Gaussian, Poisson
 
 # Test IRLS algorithm for multidimensional data. The results coincides with the
 # ones from R package JOPS, version 0.1.15. The code used to fit the models with
@@ -353,9 +355,213 @@ y_fit_5 = np.array(
     ]
 )
 
+# library(SemiPar)
+# library(fields)
+# library(spam)
+# library(JOPS)
+# data(ethanol)
+# x <- ethanol$C
+# y <- ethanol$E
+# xpars <- c(min(x), max(x), 10, 3, 1.23, 2)
+# ypars <- c(min(y), max(y), 8, 3, 3.45, 1)
+# fit <- ps2DGLM(cbind(x, y, ethanol$NOx), Pars = rbind(xpars, ypars))
+ethanol = pd.read_csv("./data/ethanol.csv")
+
+y_fit_6 = np.array(
+    [
+        2.35732921503072,
+        2.16470753265761,
+        1.8858453021524,
+        2.18635151560878,
+        1.67739636538458,
+        2.24188538629718,
+        1.47140679668452,
+        1.74503071624402,
+        2.10700334116269,
+        1.63845461348825,
+        2.34718472367444,
+        1.75643912587685,
+        1.70474371250869,
+        1.9647431048985,
+        1.728357735427,
+        1.99061442767589,
+        2.00708042921099,
+        1.92807579626334,
+        2.31805020077296,
+        2.25666574648932,
+        1.96227184964801,
+        2.2274575153761,
+        1.69224453183841,
+        1.41891622386521,
+        1.55363387389652,
+        1.53619771557198,
+        2.24575105750634,
+        1.98559444820113,
+        2.23785927428983,
+        2.43899902647983,
+        1.66557375823154,
+        1.8359755989485,
+        1.52949275493084,
+        2.06789909037836,
+        1.74530164951052,
+        1.91916018514287,
+        2.41569115209956,
+        1.96504003412567,
+        1.68561724735827,
+        2.08867330712324,
+        2.44927002505239,
+        1.78495876663868,
+        1.98398877649075,
+        1.43743075681612,
+        1.67514841481877,
+        1.96144608501031,
+        1.89274575207124,
+        2.42146215791562,
+        1.97735243951497,
+        2.37940456512807,
+        2.16780711844152,
+        1.78099157163131,
+        2.0907757642482,
+        2.35082742079592,
+        2.29013290705264,
+        1.8064997643802,
+        1.83626187605441,
+        2.41198643957443,
+        2.15568356708935,
+        1.61552438319821,
+        1.91260782803424,
+        2.40020902764212,
+        2.25138603057602,
+        2.46601826054161,
+        1.41724042593958,
+        2.45793004489147,
+        2.27204987615192,
+        2.22465015848179,
+        1.82670653053518,
+        1.52138749459615,
+        2.13361907495118,
+        1.58984462187636,
+        1.83929701025051,
+        2.23050396709783,
+        2.06436558283886,
+        1.60005552942088,
+        2.40669193675787,
+        1.50962615900559,
+        1.56326349063686,
+        2.10218929651412,
+        2.29059782880908,
+        1.47844695239212,
+        1.59227896696079,
+        1.63375985317418,
+        1.8137727757895,
+        1.5290517189414,
+        1.86261659746967,
+        2.09441832576854,
+    ]
+)
+
+# library(fields)
+# library(JOPS)
+# library(rpart)
+# Kyphosis <- kyphosis$Kyphosis
+# Age <- kyphosis$Age
+# Start <- kyphosis$Start
+# y <- 1 * (Kyphosis == "present")
+# fit <- ps2DGLM(
+#   Data = cbind(Start, Age, y),
+#   Pars = rbind(c(min(Start), max(Start), 10, 4, 9.56, 3),
+#                c(min(Age), max(Age), 11, 3, .123, 2)),
+#   family = "binomial", link = "logit")
+kyphosis = pd.read_csv("./data/kyphosis.csv")
+y_fit_7 = np.array(
+    [
+        0.706280220370801,
+        0.0435755980077,
+        0.803711059853411,
+        0.265831049000224,
+        0.00158424024632154,
+        0.00117943247263959,
+        0.00891333289151436,
+        0.00866368290774403,
+        0.0121123764578951,
+        0.331649558417962,
+        0.211759062823792,
+        0.00562402272712768,
+        0.31095117318562,
+        0.00430685750990153,
+        0.000285501678161395,
+        0.00117943247263959,
+        0.0933805810816002,
+        0.0653250082197775,
+        0.0331205656873724,
+        0.128706319489732,
+        0.003753840458077,
+        0.843222504957666,
+        0.525128735325283,
+        0.671557564076014,
+        0.290196718205005,
+        0.00581900516332295,
+        0.077692386342954,
+        0.160087703039301,
+        0.0013876726914286,
+        0.00544464200390141,
+        0.00622219315894683,
+        0.482314555179436,
+        0.148076244059664,
+        0.0125896115990206,
+        0.40046201499265,
+        0.0259025879604251,
+        0.0134833634735285,
+        0.587368707899069,
+        0.0734861830641149,
+        0.542353763577357,
+        0.382966608780518,
+        0.0479094154706554,
+        0.564215007511498,
+        0.370952411389371,
+        0.0227247173419589,
+        0.54662122193331,
+        0.0206025676788627,
+        0.145388326364309,
+        0.724948278276927,
+        0.0271758939268653,
+        0.63846800553843,
+        0.0012505942607886,
+        0.75779391768339,
+        0.000933948606760137,
+        0.0195933605232887,
+        0.0877263453704481,
+        0.00328726417353867,
+        0.810909148556737,
+        0.476355477319779,
+        0.305434158467219,
+        0.399258934250358,
+        0.829328706396727,
+        0.400773499219091,
+        0.0101030957877829,
+        0.0101030957877829,
+        0.039056421216745,
+        0.000655160986203509,
+        0.09918914502701,
+        0.028624660176962,
+        0.0025387049540344,
+        0.0435755980077,
+        0.300879973362509,
+        0.0301148522456108,
+        0.0836123606824103,
+        0.00304842176399982,
+        0.0100863168900319,
+        0.102929030773273,
+        0.023420682839108,
+        0.186404243367393,
+        0.474617146114027,
+        0.0517342142993172,
+    ]
+)
+
 
 @pytest.mark.parametrize(
-    "deg, ord_d, n_int, sp, family, x, y, y_fit",
+    "deg, ord_d, n_int, sp, family, data_arrangement, x, y, y_fit",
     [
         (
             [3],
@@ -363,6 +569,7 @@ y_fit_5 = np.array(
             [5],
             [0.135],
             Gaussian(),
+            "gridded",
             [x_1],
             y_1,
             y_fit_1,
@@ -373,6 +580,7 @@ y_fit_5 = np.array(
             [5],
             [0.135],
             Poisson(),
+            "gridded",
             [x_1],
             y_1,
             y_fit_2,
@@ -383,6 +591,7 @@ y_fit_5 = np.array(
             [5, 4],
             [0.135, 12.87],
             Gaussian(),
+            "gridded",
             [x_2, x_3],
             y_2,
             y_fit_3,
@@ -393,6 +602,7 @@ y_fit_5 = np.array(
             [5, 4],
             [0.135, 12.87],
             Poisson(),
+            "gridded",
             [x_2, x_3],
             y_2,
             y_fit_4,
@@ -403,13 +613,36 @@ y_fit_5 = np.array(
             [8],
             [7.35],
             Binomial(),
+            "gridded",
             [x_4],
             y_3,
             y_fit_5,
         ),
+        (
+            [3, 3],
+            [2, 1],
+            [10, 8],
+            [1.23, 3.45],
+            Gaussian(),
+            "scattered",
+            [ethanol["C"].values, ethanol["E"].values],
+            ethanol["NOx"].values,
+            y_fit_6,
+        ),
+        (
+            [4, 3],
+            [3, 2],
+            [10, 11],
+            [9.56, 0.123],
+            Binomial(),
+            "scattered",
+            [kyphosis["Start"].values, kyphosis["Age"].values],
+            kyphosis["Kyphosis"].values,
+            y_fit_7,
+        ),
     ],
 )
-def test_gcv(deg, ord_d, n_int, sp, family, x, y, y_fit):
+def test_gcv(deg, ord_d, n_int, sp, family, data_arrangement, x, y, y_fit):
     bspline = [
         BsplineBasis(deg=d, xsample=xsam, n_int=n) for d, xsam, n in zip(deg, x, n_int)
     ]
@@ -426,7 +659,12 @@ def test_gcv(deg, ord_d, n_int, sp, family, x, y, y_fit):
     penalty_list = penalization_term(matrices=D_mul)
     penalty_term = np.add.reduce([np.multiply(s, P) for P, s in zip(penalty_list, sp)])
 
-    obj_matrices = {"B_w": B, "y": y}
+    obj_matrices = {"B": B, "y": y}
 
-    out = fit_irls(obj_matrices=obj_matrices, penalty_term=penalty_term, family=family)
+    out = fit_irls(
+        obj_matrices=obj_matrices,
+        penalty_term=penalty_term,
+        family=family,
+        data_arrangement=data_arrangement,
+    )
     np.testing.assert_allclose(out, y_fit, atol=1e-5, rtol=1e-5)

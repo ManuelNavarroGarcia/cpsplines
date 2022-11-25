@@ -4,8 +4,9 @@ from typing import Dict, Iterable, Tuple, Union
 import mosek.fusion
 import numpy as np
 import statsmodels.genmod.families.family
-from cpsplines.mosek_functions.utils_mosek import matrix_by_tensor_product_mosek
+
 from cpsplines.psplines.bspline_basis import BsplineBasis
+from cpsplines.utils.box_product import box_product
 from cpsplines.utils.cholesky_semidefinite import cholesky_semidef
 from cpsplines.utils.fast_kron import (
     fast_kronecker_product,
@@ -85,6 +86,7 @@ class ObjectiveFunction:
         obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
         sp: Iterable[Union[int, float]],
         family: statsmodels.genmod.families.family,
+        data_arrangement: str,
     ) -> Tuple[Union[None, mosek.fusion.ConicConstraint]]:
 
         """
@@ -111,6 +113,8 @@ class ObjectiveFunction:
         family : statsmodels.genmod.families.family
             The specific exponential family distribution where the response
             variable belongs to.
+        data_arrangement : str
+            The way the data is arranged.
 
         References
         ----------
@@ -129,7 +133,11 @@ class ObjectiveFunction:
         ValueError
             If lengths of the smoothing parameter vector and penalty matrix
             iterable differ.
+        ValueError
+            If `data_arrangement` is not "gridded" or "scattered".
         """
+        if data_arrangement not in ("gridded", "scattered"):
+            raise ValueError(f"Invalid `data_arrangement`: {data_arrangement}.")
 
         L_D = penalization_term(matrices=obj_matrices["D"])
 
@@ -179,16 +187,22 @@ class ObjectiveFunction:
                     "t_B", 1, mosek.fusion.Domain.greaterThan(0.0)
                 )
             }
-            # Compute the linear term coefficients of the objective function
-            lin_term = matrix_by_tensor_product(
-                [mat.T for mat in obj_matrices["B_w"]], obj_matrices["y"]
-            ).flatten()
+            if data_arrangement == "gridded":
+                # Compute the linear term coefficients of the objective function
+                lin_term = matrix_by_tensor_product(
+                    [mat.T for mat in obj_matrices["B"]], obj_matrices["y"]
+                ).flatten()
 
-            # Compute the Cholesky decompositions (A = L @ L.T)
-            L_B = reduce(
-                fast_kronecker_product,
-                list(map(cholesky_semidef, obj_matrices["B_mul"])),
-            )
+                # Compute the Cholesky decompositions (A = L @ L.T)
+                L_B = reduce(
+                    fast_kronecker_product,
+                    list(map(cholesky_semidef, obj_matrices["B_mul"])),
+                )
+            else:
+                B = reduce(box_product, obj_matrices["B"])
+                lin_term = np.dot(obj_matrices["y"], B)
+                L_B = cholesky_semidef(B.T @ B)
+
             # Create the rotated quadratic cone constraint of B^TB
             cons.append(
                 self.model.constraint(
@@ -220,16 +234,19 @@ class ObjectiveFunction:
                     mosek.fusion.Domain.greaterThan(0.0),
                 )
             }
-
-            lin_term = matrix_by_tensor_product(
-                [mat.T for mat in obj_matrices["B_w"]], obj_matrices["y"]
-            ).flatten()
-
-            coef = mosek.fusion.Expr.flatten(
-                matrix_by_tensor_product_mosek(
-                    matrices=obj_matrices["B_w"], mosek_var=self.var_dict["theta"]
+            if data_arrangement == "gridded":
+                lin_term = matrix_by_tensor_product(
+                    [mat.T for mat in obj_matrices["B"]], obj_matrices["y"]
+                ).flatten()
+                coef = mosek.fusion.Expr.mul(
+                    reduce(np.kron, obj_matrices["B"]),
+                    mosek.fusion.Expr.flatten(self.var_dict["theta"]),
                 )
-            )
+
+            else:
+                B = reduce(box_product, obj_matrices["B"])
+                lin_term = np.dot(obj_matrices["y"], B)
+                coef = mosek.fusion.Expr.mul(B, flatten_theta)
             cons.append(
                 self.model.constraint(
                     mosek.fusion.Expr.hstack(
@@ -269,11 +286,14 @@ class ObjectiveFunction:
                 ),
             }
 
-            coef = mosek.fusion.Expr.flatten(
-                matrix_by_tensor_product_mosek(
-                    matrices=obj_matrices["B_w"], mosek_var=self.var_dict["theta"]
+            if data_arrangement == "gridded":
+                coef = mosek.fusion.Expr.mul(
+                    reduce(np.kron, obj_matrices["B"]),
+                    mosek.fusion.Expr.flatten(self.var_dict["theta"]),
                 )
-            )
+            else:
+                B = reduce(box_product, obj_matrices["B"])
+                coef = mosek.fusion.Expr.mul(B, flatten_theta)
 
             cons.append(
                 self.model.constraint(
@@ -312,7 +332,7 @@ class ObjectiveFunction:
                     mosek.fusion.Expr.sum(self.var_dict["t"]),
                     obj,
                 ),
-                mosek.fusion.Expr.dot(obj_matrices["y"], coef),
+                mosek.fusion.Expr.dot(obj_matrices["y"].astype(float), coef),
             )
 
         # Generate the minimization objective function object

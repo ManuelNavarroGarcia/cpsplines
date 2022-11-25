@@ -5,29 +5,29 @@ constraints on the component functions of the dependent variable. It is assumed
 that the smooth hypersurface to be estimated is defined through a reduced-rank
 basis (B−splines) and fitted via a penalized splines approach (P−splines). To
 embed requirements about the sign of any order partial derivative (including the
-function itself), the constraints are included in the fitting process as hard
-constraints, yielding a semidefinite optimization model. In particular, the
+function itself), the constraints are included into the fitting procedure as
+hard constraints, yielding a semidefinite optimization model. In particular, the
 problem of estimating the component function using this approach is stated as a
-convex semidefinite optimization problem with a quadratic objective function,
-which can be easily reformulated as a conic optimization problem.
+convex conic optimization problem with a quadratic objective function.
 
 Sign related constraints are imposed using a well-known result carried out by
 Bertsimas and Popescu, 2002. This enables to enforce non-negativity of a
 univariate polynomial over a finite interval, which can be straightforwardly
 extended to the sign of any higher order derivative. When only one covariate is
 related to the response variable, these constraints are successfully fulfilled
-over the whole domain of the regressor sample. However, when facing multiple
-regression, this equivalence does not hold, so alternative approaches must be
-developed. The proposed framework in this repository uses the equivalence
-relation for univariate polynomials by imposing the constraints over a finite
-set of curves which belong to the hypersurface.
+over the whole domain of the regressor sample. However, when dealing with
+multiple regression, this equivalence does not hold, so alternative approaches
+must be developed. The proposed framework in this repository uses the
+equivalence relation for univariate polynomials by imposing the constraints over
+a finite set of curves which belong to the hypersurface.
 
-At present, `cpsplines` can handle constrained regression problems for data
-lying on grids. In this setting, the smooth hypersurface is constructed from the
-tensor products of B-splines basis along each axis, which allows to develop
-efficient algorithms accelerating the computations (Currie, Durban and Eilers,
+At present, `cpsplines` can handle constrained regression problems for an
+arbitrary number of variables, where all the interaction term are considered. In
+this setting, the smooth hypersurface is constructed from the tensor products of
+B-splines basis along each axis. When data is arranged in a grid, efficient
+algorithms accelerating the computations are used (Currie, Durban and  Eilers,
 2006). On this repository, the fitting procedure is performed using the method
-`GridCPsplines`, whose main features are the following:
+`CPsplines`, whose main features are the following:
 
 * Arbitrary number of variables.
 * Arbitrary knot sequence length to construct the B-spline basis.
@@ -50,6 +50,8 @@ efficient algorithms accelerating the computations (Currie, Durban and Eilers,
 * Choose among several distributions from the exponential family, currently
   implemented for Gaussian, Poisson and Binomial. For the last two distribution,
   only sign and monotonocity constraints can be enforced.
+* Internally decides whether the input data can be rearranged into a grid or
+  not, and exploits the array structure of the data when this is the case.
 
 Solving the optimization problems is done using [MOSEK](https://www.mosek.com)
 optimization software.
@@ -71,6 +73,7 @@ The current version of the project is structured as follows:
   experiments.
 * **examples**: a directory containing multiple numerical experiments, using
   both synthetic and real data sets.
+* **img**: contains some images used in this `README.md` file.
 * **tests**: a folder including tests for the main methods of the project.
 
 ## Package dependencies
@@ -84,6 +87,7 @@ The current version of the project is structured as follows:
 * [Pandas](https://pandas.pydata.org/).
 * [Scipy](https://www.scipy.org/).
 * [Tensorly](http://tensorly.org/).
+* [Statsmodels](https://www.statsmodels.org/).
 
 MOSEK requires a license to be used. For research or educational purposes, a
 free yearly and renewable [academic
@@ -130,13 +134,18 @@ pip install -e .[dev]
 pip-compile --extra dev > requirements.txt
 ```
 
-and update the environment with `pip-sync`.
+and update the environment with `pip-sync`. Afterwards, the command
+
+```{bash}
+pip install -e .[dev]
+```
+
+needs to be executed.
 
 ## Usage
 
-To illustrate the usage of the repository, let's see how `GridCPsplines` works
-with two examples, the first with only one regressor and the second two
-covariates.
+To illustrate the usage of the repository, let's see how `CPsplines` works with
+two examples, the first with only one regressor and the  second two covariates.
 
 For the univariate case, consider the function
 
@@ -163,10 +172,11 @@ second-order difference penalty. The smoothing parameter is selected using
 np.random.seed(6)
 x = np.linspace(0, 1, 51)
 y = (2 * x - 1) ** 3 + np.random.normal(0, 0.25, 51)
+data = pd.DataFrame({"x": x, "y": y})
 # Build and fit the two models: unconstrained and non-decreasing 
 # The constraints follows the syntax 
 # {variable index : {derivative order: {constraint sign: upper or lower bound}}}
-example1D_1 = GridCPsplines(
+example1D_1 = CPsplines(
     deg=(3,),
     ord_d=(2,),
     n_int=(10,),
@@ -174,9 +184,9 @@ example1D_1 = GridCPsplines(
     sp_method="optimizer",
     sp_args={"options": {"ftol": 1e-12}},
 )
-example1D_1.fit(x=(x,), y=y)
+example1D_1.fit(data=data, y_col="y")
 
-example1D_2 = GridCPsplines(
+example1D_2 = CPsplines(
     deg=(3,),
     ord_d=(2,),
     n_int=(10,),
@@ -185,19 +195,24 @@ example1D_2 = GridCPsplines(
     sp_args={"options": {"ftol": 1e-12}},
     int_constraints={0: {1: {"+": 0}}} 
 )
-example1D_2.fit(x=(x,), y=y)
+example1D_2.fit(data=data, y_col="y")
 # Plot the results
 # Dashed vertical lines are the limits of the fitting region and grey vertical lines corresponds to the position of the knots
-curves = plot_curves(
-    fittings=(example1D_1, example1D_2),
-    col_curve=("g", "k"),
-    knot_positions=True,
-    constant_constraints=True,
-    x=(x,), 
-    y=(y,),
-    col_pt=("b",),
-    alpha=0.25
-)
+ax = plt.gca()
+for estimator, c in zip((example1D_1, example1D_2), ("g", "k")):
+    _ = CurvesDisplay.from_estimator(estimator,
+                                     X=data["x"],
+                                     y=data["y"],
+                                     knot_positions=True, 
+                                     constant_constraints=True,
+                                     col_pt="b",
+                                     ax=ax,
+                                     **{"c": c}
+                                     )
+
+legend = ax.legend(('Unconstrained model','Non-decreasing model'), loc=8, prop={'size': 20})
+legend.legendHandles[0].set_color('g')
+legend.legendHandles[1].set_color('k')
 ```
 
 ![alt text](./img/example1D.jpg)
@@ -232,8 +247,9 @@ np.random.seed(5)
 x = np.linspace(0, 3 * np.pi, 301)
 y = np.linspace(0, 2 * np.pi, 201)
 z = np.outer(np.sin(x), np.sin(y)) + np.random.normal(0, 1, (301, 201))
+data = grid_to_scatter(x=[x, y], y=z, y_col="z")
 # Build and fit the non-negativity constrained model
-example2D = GridCPsplines(
+example2D = CPsplines(
     deg=(3, 3),
     ord_d=(2, 2),
     n_int=(30, 20),
@@ -241,14 +257,13 @@ example2D = GridCPsplines(
     sp_args={"grid": [(10, 100), (10, 50, 100)]},
     int_constraints={0: {0: {"+": 0}}, 1: {0: {"+": 0}}}
 )
-example2D.fit(x=(x, y), y=z)
+example2D.fit(data=data, y_col="z")
 #Plot the results
-surface = plot_surfaces(
-    fittings=(example2D,),
-    col_surface=("gist_earth",),
-    orientation=(45, 45),
-    figsize=(10, 6),
-)
+_ = SurfacesDisplay.from_estimator(example2D, 
+                                   orientation=(45,45), 
+                                   figsize=(10, 6), 
+                                   **{"cmap": "gist_earth"}
+                                   )
 ```
 
 ![alt text](./img/example2D.jpg)
@@ -292,8 +307,8 @@ There are many ways you can contribute on this repository:
   you feel I am missing an important feature, either in the code or in the
   documentation, I encourage you to start a pull request developing this idea.
   Nevertheless, before starting any major new feature work, I suggest you to
-  open an issue or start a discussion describing what you are planning to do. I
-  note that, before starting a pull request, all unit test must pass on your
+  open an issue or start a discussion describing what you are planning to do.
+  Recall that, before starting a pull request, all unit test must pass on your
   local repository.
 
 ## Contact Information and Citation
@@ -305,8 +320,9 @@ feel free to let me know by sending me an email:
 * Email: manuelnavarrogithub@gmail.com
 
 The formal background of the models used in this project are either published in
-research paper or under current research. If these techniques are helpful to
-your own research, consider citing the related papers of the project:
+research papers or under current research. If these techniques are helpful to
+your own research, consider citing the related papers of the project and/or this
+repository:
 
 ```{bash}
 @article{NAVARROGARCIA2023,
@@ -328,7 +344,7 @@ keywords = {Data science, Penalized splines, Conic optimization, Smoothing, Pred
 Throughout the developing of this project I have received strong support from
 various individuals.  
 
-I would first like to thank my supervisors, Professor [Vanesa
+I would first like to thank my PhD supervisors, Professor [Vanesa
 Guerrero](https://github.com/vanesaguerrero) and Professor [María
 Durbán](https://github.com/MariaDurban), whose insightful comments and
 invaluable expertise has given way to many of the current functionalities of the

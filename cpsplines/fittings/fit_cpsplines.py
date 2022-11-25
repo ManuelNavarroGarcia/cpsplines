@@ -1,34 +1,37 @@
 import itertools
 import logging
+from functools import reduce
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 
 import mosek.fusion
 import numpy as np
 import pandas as pd
 import scipy
+from joblib import Parallel, delayed
+from statsmodels.genmod.families.family import Binomial, Family, Gaussian, Poisson
+
 from cpsplines.mosek_functions.interval_constraints import IntConstraints
 from cpsplines.mosek_functions.obj_function import ObjectiveFunction
 from cpsplines.mosek_functions.pdf_constraints import PDFConstraint
 from cpsplines.mosek_functions.point_constraints import PointConstraints
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.psplines.penalty_matrix import PenaltyMatrix
-from cpsplines.utils.fast_kron import matrix_by_tensor_product, matrix_by_transpose
+from cpsplines.utils.box_product import box_product
+from cpsplines.utils.fast_kron import matrix_by_transpose
 from cpsplines.utils.gcv import GCV
 from cpsplines.utils.normalize_data import DataNormalizer
-from cpsplines.utils.rearrange_data import scatter_to_grid
+from cpsplines.utils.rearrange_data import RearrangingError, scatter_to_grid
 from cpsplines.utils.simulator_grid_search import print_grid_search_results
 from cpsplines.utils.simulator_optimize import Simulator
 from cpsplines.utils.timer import timer
-from cpsplines.utils.weighted_b import get_idx_fitting_region, get_weighted_B
-from joblib import Parallel, delayed
-from statsmodels.genmod.families.family import Binomial, Family, Gaussian, Poisson
+from cpsplines.utils.weighted_b import get_idx_fitting_region
 
 
 class NumericalError(Exception):
     pass
 
 
-class GridCPsplines:
+class CPsplines:
 
     """
     Create the constrained P-splines model when data are in array form. The
@@ -116,8 +119,8 @@ class GridCPsplines:
         `_get_bspline_bases`.
     sol : np.ndarray
         The fitted decision variables of the B-spline expansion.
-    y_fitted : np.ndarray
-        The fitted values for the response variable.
+    data_arrangement : str
+        The structure of the data. Must be either "gridded" or "scattered".
 
     References
     ----------
@@ -261,9 +264,7 @@ class GridCPsplines:
         """
         Gather all the arrays used to define the objective function of the
         optimization funcion. These are the design matrices of the B-spline
-        basis, the penalty matrices and the extended response variable sample
-        (which is equal to zero outside the fitting region and coincides with
-        the response variable sample inside it).
+        basis, the penalty matrices and the response variable sample.
 
         Parameters
         ----------
@@ -274,7 +275,7 @@ class GridCPsplines:
         -------
         Dict[str, np.ndarray]
             A dictionary containing design matrices of the B-spline basis, the
-            penalty matrices and the extended response variable sample.
+            penalty matrices and the response variable sample.
         """
 
         obj_matrices = {}
@@ -283,21 +284,16 @@ class GridCPsplines:
         obj_matrices["D_mul"] = []
         # The extended response variable sample dimensions can be obtained as
         # the number of rows of the design matrix B
-        y_ext_dim = []
-        for i, bsp in enumerate(self.bspline_bases):
+        indexes_fit = get_idx_fitting_region(self.bspline_bases)
+        for bsp, ord_d, idx in zip(self.bspline_bases, self.ord_d, indexes_fit):
             B = bsp.matrixB
-            y_ext_dim.append(B.shape[0])
-            obj_matrices["B"].append(B)
+            obj_matrices["B"].append(B[idx])
             penaltymat = PenaltyMatrix(bspline=bsp)
-            P = penaltymat.get_penalty_matrix(**{"ord_d": self.ord_d[i]})
+            P = penaltymat.get_penalty_matrix(**{"ord_d": ord_d})
             obj_matrices["D"].append(penaltymat.matrixD)
             obj_matrices["D_mul"].append(P)
 
-        # Reorder the response variable array so the covariate coordinates are
-        # non-decreasing
-        y_ext = np.zeros(tuple(y_ext_dim))
-        y_ext[get_idx_fitting_region(self.bspline_bases)] = y
-        obj_matrices["y"] = y_ext
+        obj_matrices["y"] = y.copy()
         return obj_matrices
 
     def _initialize_model(
@@ -333,7 +329,10 @@ class GridCPsplines:
         sp = [M.parameter(f"sp_{i}", 1) for i, _ in enumerate(self.deg)]
         # Build the objective function of the problem
         mos_obj_f.create_obj_function(
-            obj_matrices=obj_matrices, sp=sp, family=self.family
+            obj_matrices=obj_matrices,
+            sp=sp,
+            family=self.family,
+            data_arrangement=self.data_arrangement,
         )
 
         if self.pdf_constraint:
@@ -424,7 +423,6 @@ class GridCPsplines:
                     cons2.point_cons(
                         data=data,
                         y_col=y_col,
-                        data_arrangement=self.data_arrangement,
                         var_dict=mos_obj_f.var_dict,
                         model=M,
                     )
@@ -461,7 +459,8 @@ class GridCPsplines:
         # Run in parallel if the argument `parallel` is present
         if self.sp_args["parallel"] == True:
             gcv = Parallel(n_jobs=self.sp_args["n_jobs"])(
-                delayed(GCV)(sp, obj_matrices, self.family) for sp in iter_sp
+                delayed(GCV)(sp, obj_matrices, self.family, self.data_arrangement)
+                for sp in iter_sp
             )
         else:
             gcv = [
@@ -469,6 +468,7 @@ class GridCPsplines:
                     sp=sp,
                     obj_matrices=obj_matrices,
                     family=self.family,
+                    data_arrangement=self.data_arrangement,
                 )
                 for sp in iter_sp
             ]
@@ -515,7 +515,7 @@ class GridCPsplines:
         # Get the best set of smoothing parameters
         best_sp = scipy.optimize.minimize(
             gcv_sim.simulate if self.sp_args["verbose"] else GCV,
-            args=(obj_matrices, self.family),
+            args=(obj_matrices, self.family, self.data_arrangement),
             callback=gcv_sim.callback if self.sp_args["verbose"] else None,
             **scipy_optimize_params,
         ).x
@@ -542,15 +542,17 @@ class GridCPsplines:
             second to the response data.
         """
 
-        # Get the covariate column names
-        x, y = scatter_to_grid(data=data, y_col=y_col)
-        if len(data) == np.prod(y.shape) and np.isnan(y).sum() == 0:
-            self.data_arrangement = "gridded"
-            logging.info("Data is rearranged into a grid.")
-        else:
-            self.data_arrangement = "scattered"
-            x = [row for row in data[data.columns.drop(y_col).tolist()].values.T]
-            y = data[y_col].values
+        self.data_arrangement = "scattered"
+        x = [row for row in data[data.columns.drop(y_col).tolist()].values.T]
+        y = data[y_col].values
+        try:
+            z, t = scatter_to_grid(data=data, y_col=y_col)
+            if len(data) == np.prod(t.shape) and np.isnan(t).sum() == 0:
+                self.data_arrangement = "gridded"
+                x, y = z.copy(), t.copy()
+                logging.info("Data is rearranged into a grid.")
+        except RearrangingError:
+            pass
         return x, y
 
     def fit(
@@ -579,8 +581,7 @@ class GridCPsplines:
         Raises
         ------
         ValueError
-            If the degree, difference order, number of interval and coordinates
-            vectors length differs.
+            If the degree, difference order and number of intervals differ.
         ValueError
             If `sp_method` input is different from "grid_search" or "optimizer".
         NumericalError
@@ -618,8 +619,7 @@ class GridCPsplines:
         obj_matrices = self._get_obj_func_arrays(y=y)
 
         # Auxiliary matrices derived from `obj_matrices`
-        obj_matrices["B_w"] = get_weighted_B(bspline_bases=self.bspline_bases)
-        obj_matrices["B_mul"] = list(map(matrix_by_transpose, obj_matrices["B_w"]))
+        obj_matrices["B_mul"] = list(map(matrix_by_transpose, obj_matrices["B"]))
 
         # Initialize the model
         M = self._initialize_model(
@@ -652,10 +652,6 @@ class GridCPsplines:
             self.sol = model_params["theta"].level().reshape(theta_shape)
             if y_range is not None:
                 self.sol = data_normalizer.inverse_transform(y=self.sol)
-            # Compute the fitted values of the response variable
-            self.y_fitted = self.family.fitted(
-                matrix_by_tensor_product([mat for mat in obj_matrices["B"]], self.sol)
-            )
         except mosek.fusion.SolutionError as e:
             raise NumericalError(
                 f"The solution for the smoothing parameter {self.best_sp} "
@@ -693,11 +689,7 @@ class GridCPsplines:
         if isinstance(data, pd.Series):
             data = pd.DataFrame(data)
 
-        if self.data_arrangement == "gridded":
-            x = [np.unique(row) for row in data.values.T]
-        else:
-            x = [row for row in data.values.T]
-
+        x = [row for row in data.values.T]
         x_min = np.array([np.min(v) for v in x])
         x_max = np.array([np.max(v) for v in x])
         bsp_min = np.array([bsp.knots[bsp.deg] for bsp in self.bspline_bases])
@@ -718,10 +710,6 @@ class GridCPsplines:
         B_predict = [
             bsp.bspline_basis(x=x[i]) for i, bsp in enumerate(self.bspline_bases)
         ]
-        if self.data_arrangement == "gridded":
-            y_pred = self.family.fitted(
-                matrix_by_tensor_product([mat for mat in B_predict], self.sol)
-            )
-        else:
-            raise ValueError(f"Not implemented.")
-        return y_pred
+        return self.family.fitted(
+            np.dot(reduce(box_product, B_predict), self.sol.flatten())
+        )
