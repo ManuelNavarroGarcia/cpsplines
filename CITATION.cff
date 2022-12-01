@@ -1,0 +1,17 @@
+abstract: "Constrained non-parametric regression under shape constraints"
+authors:
+  - family-names: Navarro-García
+    given-names: Manuel
+    orcid: "https://orcid.org/0000-0003-1913-153X"
+cff-version: 1.2.0
+date-released: "2022-11-23"
+keywords:
+  - "P-splines"
+  - "MOSEK"
+  - "Python 3.9"
+  - "Constraints"
+  - "Optimization"
+license: MIT License
+repository-code: "https://github.com/ManuelNavarroGarcia/cpsplines"
+title: "cpsplines"
+version: 0.2.0
