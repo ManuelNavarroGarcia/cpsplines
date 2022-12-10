@@ -8,7 +8,8 @@ import numpy as np
 import pandas as pd
 import scipy
 from joblib import Parallel, delayed
-from statsmodels.genmod.families.family import Binomial, Family, Gaussian, Poisson
+from statsmodels.genmod.families.family import (Binomial, Family, Gaussian,
+                                                Poisson)
 
 from cpsplines.mosek_functions.interval_constraints import IntConstraints
 from cpsplines.mosek_functions.obj_function import ObjectiveFunction
@@ -121,6 +122,9 @@ class CPsplines:
         The fitted decision variables of the B-spline expansion.
     data_arrangement : str
         The structure of the data. Must be either "gridded" or "scattered".
+    cat : Dict[int, str]
+        The mapping of the label encoder when dealing with binary data. Hence,
+        it is accesible when the binomial family is considered. 
 
     References
     ----------
@@ -594,6 +598,13 @@ class CPsplines:
         if self.sp_method not in ["grid_search", "optimizer"]:
             raise ValueError(f"Invalid `sp_method`: {self.sp_method}.")
 
+        if self.family.name == "binomial":
+            self.cat = dict(enumerate(data[y_col].astype("category").cat.categories))
+            data = data.assign(
+                **{y_col: data[y_col].map({v: k for k, v in self.cat.items()})}
+            )
+            if self.cat[1] != 1:
+                logging.warning(f"{self.cat[1]} is considered as the positive class.")
         x, y = self._preprocessor(data=data, y_col=y_col)
 
         # Construct the B-spline bases
