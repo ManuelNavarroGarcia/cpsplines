@@ -215,7 +215,7 @@ def weighted_double_kronecker(
     -------
     np.ndarray
         The resulting m_1 · m_2 · ... · m_N ordered matrix.
-        
+
     Raises
     ------
     ValueError
@@ -223,8 +223,8 @@ def weighted_double_kronecker(
     """
     if data_arrangement not in ("gridded", "scattered"):
         raise ValueError(f"Invalid `data_arrangement`: {data_arrangement}.")
-    
-    if data_arrangement == "scattered": 
+
+    if data_arrangement == "scattered":
         W = np.diag(W)
     # Get the dimensions m_1, m_2, ..., m_N
     dim = [d.shape[1] for d in matrices]
