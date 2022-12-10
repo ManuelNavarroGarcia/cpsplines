@@ -8,11 +8,7 @@ import statsmodels.genmod.families.family
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.utils.box_product import box_product
 from cpsplines.utils.cholesky_semidefinite import cholesky_semidef
-from cpsplines.utils.fast_kron import (
-    fast_kronecker_product,
-    matrix_by_tensor_product,
-    penalization_term,
-)
+from cpsplines.utils.fast_kron import matrix_by_tensor_product, penalization_term
 
 
 class ObjectiveFunction:
@@ -195,8 +191,8 @@ class ObjectiveFunction:
 
                 # Compute the Cholesky decompositions (A = L @ L.T)
                 L_B = reduce(
-                    fast_kronecker_product,
-                    list(map(cholesky_semidef, obj_matrices["B_mul"])),
+                    np.kron,
+                    map(cholesky_semidef, obj_matrices["B_mul"]),
                 )
             else:
                 B = reduce(box_product, obj_matrices["B"])
