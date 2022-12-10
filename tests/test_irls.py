@@ -637,7 +637,7 @@ y_fit_7 = np.array(
             Binomial(),
             "scattered",
             [kyphosis["Start"].values, kyphosis["Age"].values],
-            kyphosis["Kyphosis"].values,
+            kyphosis["Kyphosis"].astype("category").cat.codes.values,
             y_fit_7,
         ),
     ],
