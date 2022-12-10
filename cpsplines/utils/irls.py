@@ -58,7 +58,7 @@ def fit_irls(
     Raises
     ------
     ValueError
-            If `data_arrangement` is not "gridded" or "scattered".
+        If `data_arrangement` is not "gridded" or "scattered".
     """
 
     if data_arrangement not in ("gridded", "scattered"):
@@ -77,28 +77,25 @@ def fit_irls(
 
         # With this modified dependent variable, update the coefficients
         bases_term = weighted_double_kronecker(
-            matrices=obj_matrices["B"],
-            W=W if data_arrangement == "gridded" else np.diag(W),
+            matrices=obj_matrices["B"], W=W, data_arrangement=data_arrangement
         )
 
         T = np.multiply(W, Z)
+        if data_arrangement == "gridded":
+            F = matrix_by_tensor_product([B.T for B in obj_matrices["B"]], T).flatten()
+        else:
+            F = np.dot(reduce(box_product, obj_matrices["B"]).T, T.flatten())
         theta = np.reshape(
             np.linalg.solve(
                 bases_term + penalty_term,
-                matrix_by_tensor_product(
-                    [B.T for B in obj_matrices["B"]],
-                    T if data_arrangement == "gridded" else np.diag(T),
-                ).flatten(),
+                F,
             ),
             tuple([mat.shape[1] for mat in obj_matrices["B"]]),
         )
 
         # Update `eta` and `mu`
         if data_arrangement == "gridded":
-            eta = matrix_by_tensor_product(
-                [mat for mat in obj_matrices["B"]],
-                theta,
-            )
+            eta = matrix_by_tensor_product([mat for mat in obj_matrices["B"]], theta)
         else:
             eta = np.dot(reduce(box_product, obj_matrices["B"]), theta.flatten())
         mu = family.fitted(eta)
