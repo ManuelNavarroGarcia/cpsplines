@@ -33,8 +33,8 @@ setup(
         "numpy",
         "pandas",
         "scipy",
-        "tensorly",
         "statsmodels",
+        "tensorly",
     ],
     extras_require={"dev": ["black", "ipykernel", "mypy", "pip-tools", "pytest"]},
 )
