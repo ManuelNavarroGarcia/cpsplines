@@ -2,13 +2,14 @@ from functools import reduce
 
 import numpy as np
 import pytest
+from scipy.linalg import block_diag
+
 from cpsplines.utils.fast_kron import (
     fast_kronecker_product,
     kronecker_matrix_by_identity,
     weighted_double_kronecker,
 )
 from cpsplines.utils.timer import timer
-from scipy.linalg import block_diag
 
 
 # Take the Kronecker product of a list of random matrices with different shapes
@@ -99,6 +100,8 @@ def test_weighted_double_kronecker(dim_mat, dim_W):
         )
 
     with timer(tag="Using reshaping and permuting"):
-        out = weighted_double_kronecker(matrices=matrices, W=W)
+        out = weighted_double_kronecker(
+            matrices=matrices, W=W, data_arrangement="gridded"
+        )
 
     np.testing.assert_allclose(exp_out, out)

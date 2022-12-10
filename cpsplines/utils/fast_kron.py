@@ -2,8 +2,9 @@ from typing import Iterable, List
 
 import numpy as np
 import tensorly as tl
-from cpsplines.utils.box_product import box_product
 from scipy.linalg import block_diag
+
+from cpsplines.utils.box_product import box_product
 
 
 def matrix_by_transpose(A: np.ndarray) -> np.ndarray:
@@ -181,7 +182,7 @@ def penalization_term(matrices: Iterable[np.ndarray]) -> List[np.ndarray]:
 
 
 def weighted_double_kronecker(
-    matrices: Iterable[np.ndarray], W: np.ndarray
+    matrices: Iterable[np.ndarray], W: np.ndarray, data_arrangement: str
 ) -> np.ndarray:
     """Computes np.kron(A_1, ..., A_N).T @ np.diag(W) @ np.kron(A_1, ..., A_N)
     efficiently, where A_i are matrices with dimensions m_i x n_i and W is a
@@ -201,6 +202,8 @@ def weighted_double_kronecker(
         An iterable containing matrices with dimensions m_i x n_i.
     W : np.ndarray
         The n_1 x n_2 x ... x n_N multidimensional array.
+    data_arrangement : str
+        The way the data is arranged.
 
     References
     ----------
@@ -212,7 +215,17 @@ def weighted_double_kronecker(
     -------
     np.ndarray
         The resulting m_1 · m_2 · ... · m_N ordered matrix.
+        
+    Raises
+    ------
+    ValueError
+        If `data_arrangement` is not "gridded" or "scattered".
     """
+    if data_arrangement not in ("gridded", "scattered"):
+        raise ValueError(f"Invalid `data_arrangement`: {data_arrangement}.")
+    
+    if data_arrangement == "scattered": 
+        W = np.diag(W)
     # Get the dimensions m_1, m_2, ..., m_N
     dim = [d.shape[1] for d in matrices]
     # Compute the box products for every matrices
