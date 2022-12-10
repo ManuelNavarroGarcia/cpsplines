@@ -4,8 +4,10 @@ import numpy as np
 import pytest
 from scipy.linalg import block_diag
 
-from cpsplines.utils.fast_kron import (kronecker_matrix_by_identity,
-                                       weighted_double_kronecker)
+from cpsplines.utils.fast_kron import (
+    kronecker_matrix_by_identity,
+    weighted_double_kronecker,
+)
 from cpsplines.utils.timer import timer
 
 
