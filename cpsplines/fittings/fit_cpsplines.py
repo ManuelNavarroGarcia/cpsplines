@@ -8,8 +8,7 @@ import numpy as np
 import pandas as pd
 import scipy
 from joblib import Parallel, delayed
-from statsmodels.genmod.families.family import (Binomial, Family, Gaussian,
-                                                Poisson)
+from statsmodels.genmod.families.family import Binomial, Family, Gaussian, Poisson
 
 from cpsplines.mosek_functions.interval_constraints import IntConstraints
 from cpsplines.mosek_functions.obj_function import ObjectiveFunction
@@ -124,7 +123,7 @@ class CPsplines:
         The structure of the data. Must be either "gridded" or "scattered".
     cat : Dict[int, str]
         The mapping of the label encoder when dealing with binary data. Hence,
-        it is accesible when the binomial family is considered. 
+        it is accesible when the binomial family is considered.
 
     References
     ----------
