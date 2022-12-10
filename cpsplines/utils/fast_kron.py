@@ -65,39 +65,6 @@ def kronecker_matrix_by_identity(A: np.ndarray, n: int) -> np.ndarray:
     return kron_prod.reshape(p * n, q * n)
 
 
-def fast_kronecker_product(A: np.ndarray, B: np.ndarray) -> np.ndarray:
-
-    """
-    Given a m x n matrix A and a p x q matrix B, computes the Kronecker
-    product np.kron(A, B) using the broadcasting operation. To compare
-    performances with NumPy method, check
-    https://stackoverflow.com/a/56067827/4983192
-
-    Parameters
-    ----------
-    A : np.ndarray with shape (m, n)
-        The m x n matrix A.
-    B : np.ndarray with shape (p, q)
-        The p x q matrix B.
-
-    Returns
-    -------
-    np.ndarray with shape (mp, nq)
-        The Kronecker product np.kron(A, B).
-
-    Raises
-    ------
-    ValueError
-        If any input array is not a matrix.
-    """
-
-    if A.ndim != 2 or B.ndim != 2:
-        raise ValueError("Only two-dimensional arrays are allowed.")
-    m, n = A.shape
-    p, q = B.shape
-    return (A[:, None, :, None] * B[None, :, None, :]).reshape(m * p, n * q)
-
-
 def matrix_by_tensor_product(
     matrices: Iterable[np.ndarray], T: np.ndarray
 ) -> np.ndarray:
