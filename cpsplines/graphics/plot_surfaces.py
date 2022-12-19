@@ -1,12 +1,10 @@
-from typing import Iterable, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
 from cpsplines.fittings.fit_cpsplines import CPsplines
-from cpsplines.graphics.plot_utils import granulate_prediction_range
-from cpsplines.utils.rearrange_data import scatter_to_grid
 
 
 class SurfacesDisplay:
