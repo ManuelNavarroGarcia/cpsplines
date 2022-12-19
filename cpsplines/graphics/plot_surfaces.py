@@ -161,35 +161,24 @@ class SurfacesDisplay:
         bsp1 = estimator.bspline_bases[0]
         bsp2 = estimator.bspline_bases[1]
 
-        # Generate extra points at the prediction regions with the
-        # `prediction_step` parameter so the surface is plotted smoother
-        x_left, x_right = granulate_prediction_range(
-            bspline_bases=estimator.bspline_bases, prediction_step=prediction_step
-        )
-        # Get the extended regressor samples. The fitting region is split in 200
-        # subintervals with equal length
-        ext_1 = np.concatenate(
-            [
-                x_left[0],
-                np.linspace(bsp1.xsample.min(), bsp1.xsample.max(), 200),
-                x_right[0],
-            ]
-        )
-        ext_2 = np.concatenate(
-            [
-                x_left[1],
-                np.linspace(bsp2.xsample.min(), bsp2.xsample.max(), 200),
-                x_right[1],
-            ]
+        ext_1 = np.linspace(
+            bsp1.knots[bsp1.deg],
+            bsp1.knots[-bsp1.deg - 1],
+            len(bsp1.knots[bsp1.deg : -bsp1.deg - 1]) * density + 1,
         )
 
-        # .predict() requires data in scatter format
+        ext_2 = np.linspace(
+            bsp2.knots[bsp2.deg],
+            bsp2.knots[-bsp2.deg - 1],
+            len(bsp2.knots[bsp2.deg : -bsp2.deg - 1]) * density + 1,
+        )
         X = pd.DataFrame(
             {
                 "x0": np.repeat(ext_1, len(ext_2)),
                 "x1": np.tile(ext_2, len(ext_1)),
             }
         )
+        X = X[estimator.data_hull.find_simplex(X) >= 0].reset_index(drop=True)
 
         # Generate the predictions
         y_pred = estimator.predict(X)
