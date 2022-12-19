@@ -9,6 +9,8 @@ import pandas as pd
 import scipy
 from joblib import Parallel, delayed
 from scipy.spatial import Delaunay
+from statsmodels.genmod.families.family import (Binomial, Family, Gaussian,
+                                                Poisson)
 
 from cpsplines.mosek_functions.interval_constraints import IntConstraints
 from cpsplines.mosek_functions.obj_function import ObjectiveFunction
@@ -124,6 +126,9 @@ class CPsplines:
     cat : Dict[int, str]
         The mapping of the label encoder when dealing with binary data. Hence,
         it is accesible when the binomial family is considered.
+    data_hull : scipy.spatial._qhull.Delaunay
+        Delaunay tessellation, which aims to compute the convex hull of the
+        regressors. 
 
     References
     ----------
@@ -611,7 +616,7 @@ class CPsplines:
 
         # Construct the B-spline bases
         self.bspline_bases = self._get_bspline_bases(x=x)
-
+        
         # Filling the arguments of the method used to determine the optimal set
         # of smoothing parameters
         _ = self._fill_sp_args()
