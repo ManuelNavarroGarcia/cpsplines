@@ -8,7 +8,7 @@ import numpy as np
 import pandas as pd
 import scipy
 from joblib import Parallel, delayed
-from statsmodels.genmod.families.family import Binomial, Family, Gaussian, Poisson
+from scipy.spatial import Delaunay
 
 from cpsplines.mosek_functions.interval_constraints import IntConstraints
 from cpsplines.mosek_functions.obj_function import ObjectiveFunction
@@ -596,6 +596,9 @@ class CPsplines:
 
         if self.sp_method not in ["grid_search", "optimizer"]:
             raise ValueError(f"Invalid `sp_method`: {self.sp_method}.")
+
+        if data.shape[1] > 2:
+            self.data_hull = Delaunay(data.drop(columns=y_col))
 
         if self.family.name == "binomial":
             self.cat = dict(enumerate(data[y_col].astype("category").cat.categories))
