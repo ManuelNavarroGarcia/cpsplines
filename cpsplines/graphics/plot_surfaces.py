@@ -101,10 +101,7 @@ class SurfacesDisplay:
         ax: Optional[plt.axes] = None,
         ax_contour: Optional[plt.axes] = None,
         knot_positions: bool = False,
-        prediction_step: Iterable[Iterable[Union[int, float]]] = (
-            (0.5, 0.5),
-            (0.5, 0.5),
-        ),
+        density: int = 5,
         zlim: Optional[Tuple[Union[int, float]]] = None,
         orientation: Optional[Tuple[Union[int, float]]] = None,
         figsize: Tuple[Union[int, float]] = (15, 10),
@@ -128,14 +125,9 @@ class SurfacesDisplay:
         knot_positions : bool, optional
            If True, the positions where the inner knots are located are marked
            as grey vertical lines. By default, False.
-        prediction_step : Iterable[Iterable[Union[int, float]]], optional
-            The step used to produce equidistant extra points at the prediction
-            regions so the graph of the surfaces seems smoother. The first
-            element of the iterable corresponds to the first direction while the
-            second element to the second direction. For each tuple, first
-            element is the step on the backwards prediction and the second
-            element corresponds to the step on the forward prediction. By
-            default, ((0.5, 0.5), (0.5, 0.5)).
+        density : int, optional
+            Number of points in which the interval between adjacent knots along
+            each dimension is splitted.
         zlim : Optional[Tuple[Union[int, float]]], optional
             An iterable with two elements used to restrict the range on the
             z-axis. First element is the lower bound and second element
