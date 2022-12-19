@@ -72,15 +72,13 @@ class SurfacesDisplay:
                 _, ax_contour = plt.subplots(figsize=ax.figure.get_size_inches())
 
         data = pd.concat((self.X, pd.Series(self.y_pred)), axis=1)
-        x, y = scatter_to_grid(data=data, y_col=data.columns[-1])
-        x0, x1 = np.meshgrid(x[0], x[1])
         # Plot the surface and include the colorbar
-        surf = ax.plot_surface(x0, x1, y.T, **kwargs)
+        surf = ax.plot_trisurf(*data.to_numpy().T, **kwargs)
         _ = ax.figure.colorbar(surf, ax=ax)
 
         # If required, plot the contour plot of the surface
         if contour_plot:
-            _ = ax_contour.contourf(x0, x1, y.T, 100, **kwargs)
+            _ = ax_contour.tricontourf(*data.to_numpy().T, 100, **kwargs)
             _ = ax_contour.figure.colorbar(surf, ax=ax_contour)
             # Establish the limits on the two axis (otherwise some extra knots
             # in the prediction regions may be further apart from extreme points
