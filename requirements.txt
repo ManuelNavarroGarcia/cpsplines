@@ -174,7 +174,7 @@ typing-extensions==4.3.0
     #   mypy
 wcwidth==0.2.5
     # via prompt-toolkit
-wheel==0.37.1
+wheel==0.38.1
     # via pip-tools
 
 # The following packages are considered to be unsafe in a requirements file:
