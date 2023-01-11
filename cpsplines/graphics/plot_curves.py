@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 
 from cpsplines.fittings.fit_cpsplines import CPsplines
-from cpsplines.graphics.plot_utils import granulate_prediction_range
 
 
 class CurvesDisplay:
@@ -74,7 +73,7 @@ class CurvesDisplay:
         y: pd.Series,
         knot_positions: bool = False,
         constant_constraints: bool = False,
-        prediction_step: Iterable[Union[int, float]] = (0.5, 0.5),
+        density: int = 5,
         ax: Optional[plt.axes] = None,
         col_pt: Optional[Iterable[str]] = None,
         alpha: Union[int, float] = 0.25,
@@ -99,13 +98,9 @@ class CurvesDisplay:
             If True, horizontal lines at the threshold of the zero-order
             derivative constraints are plotted with red dashed lines. By
             default, False.
-        prediction_step : Iterable[Union[int, float]], optional
-            The step used to produce equidistant extra points at the prediction
-            regions so the graph of the curves seems smoother (if this is not
-            applied, the only points at the prediction points are the knots).
-            The first element of the iterable is the step on the backwards
-            prediction and the second element corresponds to the step on the
-            forward prediction. By default, (0.5, 0.5).
+        density : int, optional
+            Number of points in which the interval between adjacent knots along
+            each dimension is splitted.
         ax : Optional[plt.axes], optional
            Axes object to plot on. If `None`, a new figure and axes is created.
            By default, None.
@@ -124,25 +119,15 @@ class CurvesDisplay:
         """
         bsp = estimator.bspline_bases[0]
 
-        # Generate extra points at the prediction regions with the
-        # `prediction_step` parameter so the curve is plotted smoother
-        x_left, x_right = granulate_prediction_range(
-            bspline_bases=[bsp], prediction_step=[prediction_step]
-        )
-        # Append NaNs at the prediction regions
-        y = pd.Series(
-            np.concatenate(
-                [
-                    [np.nan] * len(x_left[0]),
-                    y.values[np.argsort(X.values)],
-                    [np.nan] * len(x_right[0]),
-                ]
+        x_pred = pd.Series(
+            np.linspace(
+                bsp.knots[bsp.deg],
+                bsp.knots[-bsp.deg - 1],
+                len(bsp.knots[bsp.deg : -bsp.deg - 1]) * density + 1,
             )
-        )
-        # Append extra points at the prediction regions
-        X = pd.Series(np.concatenate([x_left[0], np.sort(X.values), x_right[0]]))
-        # Generate the predictions
-        y_pred = estimator.predict(X.sort_values())
+        ).sort_values()
+
+        y_pred = estimator.predict(x_pred)
 
         if ax is None:
             _, ax = plt.subplots(figsize=figsize)
@@ -175,6 +160,6 @@ class CurvesDisplay:
 
         _ = ax.scatter(x=X, y=y, c=col_pt, alpha=alpha)
 
-        viz = CurvesDisplay(X, y, y_pred)
+        viz = CurvesDisplay(x_pred, y, y_pred)
 
         return viz.plot(ax=ax, **kwargs)
