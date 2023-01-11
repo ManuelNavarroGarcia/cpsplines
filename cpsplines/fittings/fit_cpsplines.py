@@ -602,7 +602,16 @@ class CPsplines:
             raise ValueError(f"Invalid `sp_method`: {self.sp_method}.")
 
         if data.shape[1] > 2:
-            self.data_hull = Delaunay(data.drop(columns=y_col))
+            df_pred = [data.drop(columns=y_col)]
+            for key, value in self.x_range.items():
+                column_name = data.iloc[:, key].name
+                for v in value:
+                    df_pred.append(
+                        data.drop(columns=[y_col, column_name])
+                        .agg(["min", "max"])
+                        .assign(**{column_name: v})
+                    )
+            self.data_hull = Delaunay(pd.concat(df_pred))
 
         if self.family.name == "binomial":
             self.cat = dict(enumerate(data[y_col].astype("category").cat.categories))
