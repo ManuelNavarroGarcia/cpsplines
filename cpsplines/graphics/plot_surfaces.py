@@ -1,12 +1,10 @@
-from typing import Iterable, Optional, Tuple, Union
+from typing import Optional, Tuple, Union
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
 from cpsplines.fittings.fit_cpsplines import CPsplines
-from cpsplines.graphics.plot_utils import granulate_prediction_range
-from cpsplines.utils.rearrange_data import scatter_to_grid
 
 
 class SurfacesDisplay:
@@ -72,15 +70,13 @@ class SurfacesDisplay:
                 _, ax_contour = plt.subplots(figsize=ax.figure.get_size_inches())
 
         data = pd.concat((self.X, pd.Series(self.y_pred)), axis=1)
-        x, y = scatter_to_grid(data=data, y_col=data.columns[-1])
-        x0, x1 = np.meshgrid(x[0], x[1])
         # Plot the surface and include the colorbar
-        surf = ax.plot_surface(x0, x1, y.T, **kwargs)
+        surf = ax.plot_trisurf(*data.to_numpy().T, **kwargs)
         _ = ax.figure.colorbar(surf, ax=ax)
 
         # If required, plot the contour plot of the surface
         if contour_plot:
-            _ = ax_contour.contourf(x0, x1, y.T, 100, **kwargs)
+            _ = ax_contour.tricontourf(*data.to_numpy().T, 100, **kwargs)
             _ = ax_contour.figure.colorbar(surf, ax=ax_contour)
             # Establish the limits on the two axis (otherwise some extra knots
             # in the prediction regions may be further apart from extreme points
@@ -105,10 +101,7 @@ class SurfacesDisplay:
         ax: Optional[plt.axes] = None,
         ax_contour: Optional[plt.axes] = None,
         knot_positions: bool = False,
-        prediction_step: Iterable[Iterable[Union[int, float]]] = (
-            (0.5, 0.5),
-            (0.5, 0.5),
-        ),
+        density: int = 5,
         zlim: Optional[Tuple[Union[int, float]]] = None,
         orientation: Optional[Tuple[Union[int, float]]] = None,
         figsize: Tuple[Union[int, float]] = (15, 10),
@@ -132,14 +125,9 @@ class SurfacesDisplay:
         knot_positions : bool, optional
            If True, the positions where the inner knots are located are marked
            as grey vertical lines. By default, False.
-        prediction_step : Iterable[Iterable[Union[int, float]]], optional
-            The step used to produce equidistant extra points at the prediction
-            regions so the graph of the surfaces seems smoother. The first
-            element of the iterable corresponds to the first direction while the
-            second element to the second direction. For each tuple, first
-            element is the step on the backwards prediction and the second
-            element corresponds to the step on the forward prediction. By
-            default, ((0.5, 0.5), (0.5, 0.5)).
+        density : int, optional
+            Number of points in which the interval between adjacent knots along
+            each dimension is splitted.
         zlim : Optional[Tuple[Union[int, float]]], optional
             An iterable with two elements used to restrict the range on the
             z-axis. First element is the lower bound and second element
@@ -165,35 +153,24 @@ class SurfacesDisplay:
         bsp1 = estimator.bspline_bases[0]
         bsp2 = estimator.bspline_bases[1]
 
-        # Generate extra points at the prediction regions with the
-        # `prediction_step` parameter so the surface is plotted smoother
-        x_left, x_right = granulate_prediction_range(
-            bspline_bases=estimator.bspline_bases, prediction_step=prediction_step
-        )
-        # Get the extended regressor samples. The fitting region is split in 200
-        # subintervals with equal length
-        ext_1 = np.concatenate(
-            [
-                x_left[0],
-                np.linspace(bsp1.xsample.min(), bsp1.xsample.max(), 200),
-                x_right[0],
-            ]
-        )
-        ext_2 = np.concatenate(
-            [
-                x_left[1],
-                np.linspace(bsp2.xsample.min(), bsp2.xsample.max(), 200),
-                x_right[1],
-            ]
+        ext_1 = np.linspace(
+            bsp1.knots[bsp1.deg],
+            bsp1.knots[-bsp1.deg - 1],
+            len(bsp1.knots[bsp1.deg : -bsp1.deg - 1]) * density + 1,
         )
 
-        # .predict() requires data in scatter format
+        ext_2 = np.linspace(
+            bsp2.knots[bsp2.deg],
+            bsp2.knots[-bsp2.deg - 1],
+            len(bsp2.knots[bsp2.deg : -bsp2.deg - 1]) * density + 1,
+        )
         X = pd.DataFrame(
             {
                 "x0": np.repeat(ext_1, len(ext_2)),
                 "x1": np.tile(ext_2, len(ext_1)),
             }
         )
+        X = X[estimator.data_hull.find_simplex(X) >= 0].reset_index(drop=True)
 
         # Generate the predictions
         y_pred = estimator.predict(X)

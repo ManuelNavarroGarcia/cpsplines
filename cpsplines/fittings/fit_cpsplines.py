@@ -8,6 +8,7 @@ import numpy as np
 import pandas as pd
 import scipy
 from joblib import Parallel, delayed
+from scipy.spatial import Delaunay
 from statsmodels.genmod.families.family import Binomial, Family, Gaussian, Poisson
 
 from cpsplines.mosek_functions.interval_constraints import IntConstraints
@@ -124,6 +125,9 @@ class CPsplines:
     cat : Dict[int, str]
         The mapping of the label encoder when dealing with binary data. Hence,
         it is accesible when the binomial family is considered.
+    data_hull : scipy.spatial._qhull.Delaunay
+        Delaunay tessellation, which aims to compute the convex hull of the
+        regressors.
 
     References
     ----------
@@ -596,6 +600,22 @@ class CPsplines:
 
         if self.sp_method not in ["grid_search", "optimizer"]:
             raise ValueError(f"Invalid `sp_method`: {self.sp_method}.")
+
+        if data.shape[1] > 2:
+            df_pred = [data.drop(columns=y_col)]
+            # When out-of-sample prediction is considered, the convex hull must
+            # be extended till the prediction horizon for the whole range of the
+            # remaining variables
+            if self.x_range:
+                for key, value in self.x_range.items():
+                    column_name = data.iloc[:, key].name
+                    for v in value:
+                        df_pred.append(
+                            data.drop(columns=[y_col, column_name])
+                            .agg(["min", "max"])
+                            .assign(**{column_name: v})
+                        )
+            self.data_hull = Delaunay(pd.concat(df_pred))
 
         if self.family.name == "binomial":
             self.cat = dict(enumerate(data[y_col].astype("category").cat.categories))
