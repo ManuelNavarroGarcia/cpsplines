@@ -9,7 +9,8 @@ import pandas as pd
 import scipy
 from joblib import Parallel, delayed
 from scipy.spatial import Delaunay
-from statsmodels.genmod.families.family import Binomial, Family, Gaussian, Poisson
+from statsmodels.genmod.families.family import (Binomial, Family, Gaussian,
+                                                Poisson)
 
 from cpsplines.mosek_functions.interval_constraints import IntConstraints
 from cpsplines.mosek_functions.obj_function import ObjectiveFunction
@@ -606,14 +607,15 @@ class CPsplines:
             # When out-of-sample prediction is considered, the convex hull must
             # be extended until the prediction horizon for all the values of the
             # remaining variables
-            for key, value in self.x_range.items():
-                column_name = data.iloc[:, key].name
-                for v in value:
-                    df_pred.append(
-                        data.drop(columns=[y_col, column_name])
-                        .agg(["min", "max"])
-                        .assign(**{column_name: v})
-                    )
+            if self.x_range:
+                for key, value in self.x_range.items():
+                    column_name = data.iloc[:, key].name
+                    for v in value:
+                        df_pred.append(
+                            data.drop(columns=[y_col, column_name])
+                            .agg(["min", "max"])
+                            .assign(**{column_name: v})
+                        )
             self.data_hull = Delaunay(pd.concat(df_pred))
 
         if self.family.name == "binomial":
