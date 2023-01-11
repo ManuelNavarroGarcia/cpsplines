@@ -9,8 +9,7 @@ import pandas as pd
 import scipy
 from joblib import Parallel, delayed
 from scipy.spatial import Delaunay
-from statsmodels.genmod.families.family import (Binomial, Family, Gaussian,
-                                                Poisson)
+from statsmodels.genmod.families.family import Binomial, Family, Gaussian, Poisson
 
 from cpsplines.mosek_functions.interval_constraints import IntConstraints
 from cpsplines.mosek_functions.obj_function import ObjectiveFunction
