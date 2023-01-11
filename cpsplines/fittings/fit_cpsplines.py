@@ -9,8 +9,7 @@ import pandas as pd
 import scipy
 from joblib import Parallel, delayed
 from scipy.spatial import Delaunay
-from statsmodels.genmod.families.family import (Binomial, Family, Gaussian,
-                                                Poisson)
+from statsmodels.genmod.families.family import Binomial, Family, Gaussian, Poisson
 
 from cpsplines.mosek_functions.interval_constraints import IntConstraints
 from cpsplines.mosek_functions.obj_function import ObjectiveFunction
@@ -606,7 +605,7 @@ class CPsplines:
             df_pred = [data.drop(columns=y_col)]
             # When out-of-sample prediction is considered, the convex hull must
             # be extended until the prediction horizon for all the values of the
-            # remaining variables 
+            # remaining variables
             for key, value in self.x_range.items():
                 column_name = data.iloc[:, key].name
                 for v in value:
