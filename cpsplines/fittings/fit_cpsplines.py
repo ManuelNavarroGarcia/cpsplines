@@ -604,7 +604,7 @@ class CPsplines:
         if data.shape[1] > 2:
             df_pred = [data.drop(columns=y_col)]
             # When out-of-sample prediction is considered, the convex hull must
-            # be extended until the prediction horizon for all the values of the
+            # be extended till the prediction horizon for the whole range of the
             # remaining variables
             if self.x_range:
                 for key, value in self.x_range.items():
