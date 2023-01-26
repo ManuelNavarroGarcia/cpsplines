@@ -192,14 +192,19 @@ def weighted_double_kronecker(
         raise ValueError(f"Invalid `data_arrangement`: {data_arrangement}.")
 
     if data_arrangement == "scattered":
-        W = np.diag(W)
+        # Fill the diagonal of a multidimensional array
+        W_c = np.zeros(*[np.repeat(W.shape[0], len(matrices))])
+        W_c[np.diag_indices(W.shape[0], ndim=len(matrices))] = W
+    else:
+        W_c = W.copy()
+
     # Get the dimensions m_1, m_2, ..., m_N
     dim = [d.shape[1] for d in matrices]
     # Compute the box products for every matrices
     box_prod = [box_product(M, M).T for M in matrices]
     # Compute the matrix by tensor product and reshape into m_1 x m_1 x ... x
     # m_N x m_N
-    out = matrix_by_tensor_product(box_prod, W).reshape(np.repeat(dim, 2))
+    out = matrix_by_tensor_product(box_prod, W_c).reshape(np.repeat(dim, 2))
     # np.transpose is used here to permute. To get (0, 2, 4, ..., 1, 3, 5, ...),
     # we use np.arange, reshape the values in a matrix with two columns and then
     # flatten the array
