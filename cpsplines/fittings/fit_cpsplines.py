@@ -53,9 +53,9 @@ class CPsplines:
         The vector of number of equal intervals which the fitting region along
         each dimension is split. All the elements must be non-negative integers.
         By default, (40,).
-    x_range : Optional[Dict[int, Tuple[Union[int, float]]]], optional
+    x_range : Optional[Dict[str, Tuple[Union[int, float]]]], optional
         A dictionary containing the most extreme values that the extended
-        B-spline basis needs to capture along each dimension. The keys are index
+        B-spline basis needs to capture along each dimension. The keys are name
         of the regressor and the values are tuples containing the most extreme
         values. These values will only be considered when they are located
         outside the fitting region. One or two may be passed by variable. If
@@ -142,7 +142,7 @@ class CPsplines:
         deg: Iterable[int] = (3,),
         ord_d: Iterable[int] = (2,),
         n_int: Iterable[int] = (40,),
-        x_range: Optional[Dict[int, Tuple[Union[int, float]]]] = None,
+        x_range: Optional[Dict[str, Tuple[Union[int, float]]]] = None,
         sp_method: str = "optimizer",
         sp_args: Optional[Dict[str, Any]] = None,
         family: str = "gaussian",
@@ -216,23 +216,22 @@ class CPsplines:
         bspline_bases = []
         if self.x_range is None:
             self.x_range = {}
-        for i in range(len(self.deg)):
+        for deg, xsample, n_int, name in zip(
+            self.deg, x, self.n_int, self.feature_names
+        ):
             # Get the maximum and minimum of the fitting regions
-            x_min, x_max = np.min(x[i]), np.max(x[i])
+            x_min, x_max = np.min(xsample), np.max(xsample)
             prediction_dict = {}
-            if i in self.x_range.keys():
+            if name in self.x_range:
                 # If the values in `x_range` are outside the fitting region,
                 # include them in the `prediction` argument of the BsplineBasis
-                pred_min, pred_max = min(self.x_range[i]), max(self.x_range[i])
+                pred_min, pred_max = min(self.x_range[name]), max(self.x_range[name])
                 if pred_max > x_max:
                     prediction_dict["forward"] = pred_max
                 if pred_min < x_min:
                     prediction_dict["backwards"] = pred_min
             bsp = BsplineBasis(
-                deg=self.deg[i],
-                xsample=x[i],
-                n_int=self.n_int[i],
-                prediction=prediction_dict,
+                deg=deg, xsample=xsample, n_int=n_int, prediction=prediction_dict
             )
             # Generate the design matrix of the B-spline basis
             bsp.get_matrix_B()
@@ -601,6 +600,8 @@ class CPsplines:
         if self.sp_method not in ["grid_search", "optimizer"]:
             raise ValueError(f"Invalid `sp_method`: {self.sp_method}.")
 
+        self.feature_names = data.drop(columns=y_col).columns
+
         if data.shape[1] > 2:
             df_pred = [data.drop(columns=y_col)]
             # When out-of-sample prediction is considered, the convex hull must
@@ -608,7 +609,7 @@ class CPsplines:
             # remaining variables
             if self.x_range:
                 for key, value in self.x_range.items():
-                    column_name = data.iloc[:, key].name
+                    column_name = data.loc[:, key].name
                     for v in value:
                         df_pred.append(
                             data.drop(columns=[y_col, column_name])
