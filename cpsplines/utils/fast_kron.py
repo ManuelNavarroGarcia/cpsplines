@@ -8,7 +8,6 @@ from cpsplines.utils.box_product import box_product
 
 
 def matrix_by_transpose(A: np.ndarray) -> np.ndarray:
-
     """
     Compute the product of a matrix by its transpose.
 
@@ -27,7 +26,6 @@ def matrix_by_transpose(A: np.ndarray) -> np.ndarray:
 
 
 def kronecker_matrix_by_identity(A: np.ndarray, n: int) -> np.ndarray:
-
     """
     Given a p x q matrix A and the identity matrix I_n, computes the
     Kronecker product np.kron(A, I_n). To compare performances with NumPy
@@ -68,7 +66,6 @@ def kronecker_matrix_by_identity(A: np.ndarray, n: int) -> np.ndarray:
 def matrix_by_tensor_product(
     matrices: Iterable[np.ndarray], T: np.ndarray
 ) -> np.ndarray:
-
     """
     Given a n_1 x n_2 x ... x n_N multidimensional array T, computes efficiently
     the product T x_N A_N x_{N-1} ... x_1 A_1, where A_i are the elements of
@@ -107,7 +104,6 @@ def matrix_by_tensor_product(
 
 
 def penalization_term(matrices: Iterable[np.ndarray]) -> List[np.ndarray]:
-
     """
     Given the penalty matrices defined over every axis, computes the
     penalization term of the objective function.

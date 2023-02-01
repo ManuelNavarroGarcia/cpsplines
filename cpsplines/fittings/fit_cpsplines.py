@@ -53,14 +53,14 @@ class CPsplines:
         The vector of number of equal intervals which the fitting region along
         each dimension is split. All the elements must be non-negative integers.
         By default, (40,).
-    x_range : Optional[Dict[int, Tuple[Union[int, float]]]], optional
+    x_range : Optional[Dict[str, Tuple[Union[int, float]]]], optional
         A dictionary containing the most extreme values that the extended
-        B-spline basis needs to capture along each dimension. The keys are index
-        of the regressor and the values are tuples containing the most extreme
-        values. These values will only be considered when they are located
-        outside the fitting region. One or two may be passed by variable. If
-        None, it is intended that no extra range is needed in any of the axes.
-        By default, None.
+        B-spline basis needs to capture along each dimension. The keys are the
+        names of the regressors to be extended and the values are tuples
+        containing the most extreme values. These values will only be considered
+        when they are located outside the fitting region. One or two may be
+        passed by variable. If None, it is intended that no extra range is
+        needed in any of the axes. By default, None.
     sp_method : str, optional
         The method used to estimate the smoothing parameter as the minimizer of
         the Generalized Cross Validation criterium. It may be either `optimizer`
@@ -90,10 +90,10 @@ class CPsplines:
     family : str, optional
         The specific exponential family distribution where the response variable
         belongs to. By default, "gaussian" (normal distribution).
-    int_constraints : Dict[int, Dict[int, Dict[str, Union[int, float]]]]],
+    int_constraints : Dict[str, Dict[int, Dict[str, Union[int, float]]]]],
     optional
         A nested dictionary containing the interval constraints to be enforced.
-        The keys of the dictionary are the indexes of the variables. The values
+        The keys of the dictionary are the names of the variables. The values
         are dictionaries, whose keys are the order of the derivative. The values
         are dictionareis, whose keys are the signs of the constraints (either
         "+" or "-") and the values are numbers denoting the upper or lower
@@ -128,6 +128,8 @@ class CPsplines:
     data_hull : scipy.spatial._qhull.Delaunay
         Delaunay tessellation, which aims to compute the convex hull of the
         regressors.
+    feature_names : Iterable[str]
+        The name of the variables.
 
     References
     ----------
@@ -142,12 +144,12 @@ class CPsplines:
         deg: Iterable[int] = (3,),
         ord_d: Iterable[int] = (2,),
         n_int: Iterable[int] = (40,),
-        x_range: Optional[Dict[int, Tuple[Union[int, float]]]] = None,
+        x_range: Optional[Dict[str, Tuple[Union[int, float]]]] = None,
         sp_method: str = "optimizer",
         sp_args: Optional[Dict[str, Any]] = None,
         family: str = "gaussian",
         int_constraints: Optional[
-            Dict[int, Dict[int, Dict[str, Union[int, float]]]]
+            Dict[str, Dict[int, Dict[str, Union[int, float]]]]
         ] = None,
         pt_constraints: Optional[Dict[Tuple[int], Dict[str, pd.DataFrame]]] = None,
         pdf_constraint: bool = False,
@@ -198,7 +200,6 @@ class CPsplines:
         return family_statsmodels
 
     def _get_bspline_bases(self, x: Iterable[np.ndarray]) -> List[BsplineBasis]:
-
         """
         Construct the B-spline bases on each axis.
 
@@ -216,23 +217,22 @@ class CPsplines:
         bspline_bases = []
         if self.x_range is None:
             self.x_range = {}
-        for i in range(len(self.deg)):
+        for deg, xsample, n_int, name in zip(
+            self.deg, x, self.n_int, self.feature_names
+        ):
             # Get the maximum and minimum of the fitting regions
-            x_min, x_max = np.min(x[i]), np.max(x[i])
+            x_min, x_max = np.min(xsample), np.max(xsample)
             prediction_dict = {}
-            if i in self.x_range.keys():
+            if name in self.x_range:
                 # If the values in `x_range` are outside the fitting region,
                 # include them in the `prediction` argument of the BsplineBasis
-                pred_min, pred_max = min(self.x_range[i]), max(self.x_range[i])
+                pred_min, pred_max = min(self.x_range[name]), max(self.x_range[name])
                 if pred_max > x_max:
                     prediction_dict["forward"] = pred_max
                 if pred_min < x_min:
                     prediction_dict["backwards"] = pred_min
             bsp = BsplineBasis(
-                deg=self.deg[i],
-                xsample=x[i],
-                n_int=self.n_int[i],
-                prediction=prediction_dict,
+                deg=deg, xsample=xsample, n_int=n_int, prediction=prediction_dict
             )
             # Generate the design matrix of the B-spline basis
             bsp.get_matrix_B()
@@ -242,7 +242,6 @@ class CPsplines:
         return bspline_bases
 
     def _fill_sp_args(self):
-
         """
         Fill the `sp_args` dictionary by default parameters on the case they are
         not provided.
@@ -267,7 +266,6 @@ class CPsplines:
         return None
 
     def _get_obj_func_arrays(self, y: np.ndarray) -> Dict[str, np.ndarray]:
-
         """
         Gather all the arrays used to define the objective function of the
         optimization funcion. These are the design matrices of the B-spline
@@ -309,7 +307,6 @@ class CPsplines:
         y_col: str,
         data_normalizer: Optional[DataNormalizer] = None,
     ) -> mosek.fusion.Model:
-
         """
         Construct the optimization model.
 
@@ -353,7 +350,9 @@ class CPsplines:
             pdf_cons.integrate_to_one(var_dict=mos_obj_f.var_dict, model=M)
             # Enforce the non-negativity constraint if it is not imposed
             # explicitly
-            self.int_constraints = pdf_cons.nonneg_cons(self.int_constraints)
+            self.int_constraints = pdf_cons.nonneg_cons(
+                self.int_constraints, self.feature_names
+            )
 
         if self.int_constraints is not None:
             max_deriv = max([max(v.keys()) for v in self.int_constraints.values()])
@@ -362,12 +361,14 @@ class CPsplines:
                     "Interval constraints are only implemented for non Gaussian data up to the first derivative "
                     f"Higher order derivative introduced in the constraints: {max_deriv})."
                 )
-            matrices_S = {i: bsp.matrices_S for i, bsp in enumerate(self.bspline_bases)}
+            matrices_S = {
+                name: bsp.matrices_S
+                for name, bsp in zip(self.feature_names, self.bspline_bases)
+            }
             # Iterate for every variable with constraints and for every
             # derivative order
             for var_name in self.int_constraints.keys():
-                for deriv in self.int_constraints[var_name].keys():
-                    constraints = self.int_constraints[var_name][deriv]
+                for deriv, constraints in self.int_constraints[var_name].items():
                     if (
                         list(constraints.values())[0] != 0
                         and self.family.name != "gaussian"
@@ -386,7 +387,10 @@ class CPsplines:
                     matrices_S_copy = matrices_S.copy()
                     # Build the interval constraints
                     cons = IntConstraints(
-                        bspline=self.bspline_bases,
+                        bspline={
+                            name: bsp
+                            for name, bsp in zip(self.feature_names, self.bspline_bases)
+                        },
                         var_name=var_name,
                         derivative=deriv,
                         constraints=constraints,
@@ -441,7 +445,6 @@ class CPsplines:
         self,
         obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
     ) -> Tuple[Union[int, float]]:
-
         """
         Get the best smoothing parameter vector with the GCV minimizer criteria
         using grid search selection.
@@ -491,7 +494,6 @@ class CPsplines:
         self,
         obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
     ) -> Tuple[Union[int, float]]:
-
         """
         Get the best smoothing parameter vector with the GCV minimizer criteria
         using an optimizer from scipy.optimize.minimize.
@@ -568,7 +570,6 @@ class CPsplines:
         y_col: str,
         y_range: Optional[Iterable[Union[int, float]]] = None,
     ):
-
         """
         Compute the fitted decision variables of the B-spline expansion and the
         fitted values for the response variable.
@@ -601,6 +602,8 @@ class CPsplines:
         if self.sp_method not in ["grid_search", "optimizer"]:
             raise ValueError(f"Invalid `sp_method`: {self.sp_method}.")
 
+        self.feature_names = data.drop(columns=y_col).columns
+
         if data.shape[1] > 2:
             df_pred = [data.drop(columns=y_col)]
             # When out-of-sample prediction is considered, the convex hull must
@@ -608,7 +611,7 @@ class CPsplines:
             # remaining variables
             if self.x_range:
                 for key, value in self.x_range.items():
-                    column_name = data.iloc[:, key].name
+                    column_name = data.loc[:, key].name
                     for v in value:
                         df_pred.append(
                             data.drop(columns=[y_col, column_name])

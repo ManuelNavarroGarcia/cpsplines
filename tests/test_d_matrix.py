@@ -51,6 +51,7 @@ P3 = np.array(
     ]
 )
 
+
 # Test the computation of the penalty matrices, for a variety of parameters on
 # the B-spline basis construction and the arguments of the penalty (such as the
 # penalty order for discrete difference matrices)
@@ -63,7 +64,6 @@ P3 = np.array(
     ],
 )
 def test_D_matrix(x_sam, deg, n_int, prediction, ord_d, P):
-
     bsp = BsplineBasis(deg=deg, xsample=x_sam, n_int=n_int, prediction=prediction)
     bsp.get_matrix_B()
     P_out = PenaltyMatrix(bspline=bsp).get_penalty_matrix(**{"ord_d": ord_d})

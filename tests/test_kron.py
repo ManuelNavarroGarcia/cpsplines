@@ -21,7 +21,6 @@ from cpsplines.utils.timer import timer
     ],
 )
 def test_mat_kron_identity(A, n):
-
     with timer(tag="Using fast kronecker product by identity"):
         out = kronecker_matrix_by_identity(A, n)
 
@@ -41,7 +40,6 @@ def test_mat_kron_identity(A, n):
     ],
 )
 def test_identity_kron_mat(n, A):
-
     with timer(tag="Using fast kronecker product identity times matrix"):
         out = block_diag(*[A] * n)
 

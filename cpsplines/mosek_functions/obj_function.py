@@ -37,7 +37,6 @@ class ObjectiveFunction:
         self.model = model
 
     def _create_var_dict(self, n: int) -> Dict[str, mosek.fusion.LinearVariable]:
-
         """
         Creates the variables of the optimization problem. These variables are:
 
@@ -84,7 +83,6 @@ class ObjectiveFunction:
         family: statsmodels.genmod.families.family,
         data_arrangement: str,
     ) -> Tuple[Union[None, mosek.fusion.ConicConstraint]]:
-
         """
         Creates the objective function to be minimized. Although the penalized
         sum of squares is directly stated as a quadratic optimization function,

@@ -956,7 +956,7 @@ sol33 = np.array(
             "grid_search",
             {"grid": ((0.1,),), "verbose": False, "parallel": False},
             "gaussian",
-            {0: {0: {"+": 0.0}}},
+            {"x": {0: {"+": 0.0}}},
             None,
             False,
             pd.DataFrame(
@@ -997,7 +997,7 @@ sol33 = np.array(
             "grid_search",
             {"grid": ((0.73,),), "verbose": False, "parallel": False},
             "gaussian",
-            {0: {0: {"+": 10.0, "-": 40.0}}},
+            {"x": {0: {"+": 10.0, "-": 40.0}}},
             None,
             False,
             pd.DataFrame(
@@ -1050,7 +1050,7 @@ sol33 = np.array(
                 "bounds": ((1e-10, 1e16),),
             },
             "gaussian",
-            {0: {1: {"+": 0.0}, 2: {"-": 0.0}}},
+            {"x": {1: {"+": 0.0}, 2: {"-": 0.0}}},
             None,
             False,
             pd.DataFrame(
@@ -1099,7 +1099,7 @@ sol33 = np.array(
                 "parallel": False,
             },
             "gaussian",
-            {0: {0: {"+": 0}}, 1: {0: {"+": 0}}},
+            {"x0": {0: {"+": 0}}, "x1": {0: {"+": 0}}},
             None,
             False,
             grid_to_scatter(
@@ -1153,7 +1153,7 @@ sol33 = np.array(
                 "bounds": ((1e-10, 1e16), (1e-10, 1e16)),
             },
             "gaussian",
-            {0: {0: {"+": 0}}, 1: {0: {"+": 0}, 1: {"+": 0}}},
+            {"x0": {0: {"+": 0}}, "x1": {0: {"+": 0}, 1: {"+": 0}}},
             None,
             False,
             grid_to_scatter(
@@ -1197,7 +1197,7 @@ sol33 = np.array(
             "grid_search",
             {"verbose": False, "parallel": False, "grid": ((0.1,), (0.2,), (0.3,))},
             "gaussian",
-            {0: {0: {"+": 0}}, 1: {0: {"+": 0}}, 2: {0: {"+": 0}}},
+            {"x0": {0: {"+": 0}}, "x1": {0: {"+": 0}}, "x2": {0: {"+": 0}}},
             None,
             False,
             grid_to_scatter(
@@ -1216,7 +1216,7 @@ sol33 = np.array(
             (5,),
             (1,),
             (8,),
-            {0: (-2, 5)},
+            {"x": (-2, 5)},
             "optimizer",
             {
                 "verbose": False,
@@ -1242,7 +1242,7 @@ sol33 = np.array(
             (5,),
             (1,),
             (8,),
-            {0: (2.5,)},
+            {"x": (2.5,)},
             "optimizer",
             {
                 "verbose": False,
@@ -1252,7 +1252,7 @@ sol33 = np.array(
                 "bounds": ((1e-4, 1e6),),
             },
             "gaussian",
-            {0: {0: {"+": 0}}},
+            {"x": {0: {"+": 0}}},
             None,
             False,
             pd.DataFrame(
@@ -1268,11 +1268,11 @@ sol33 = np.array(
             (2, 2),
             (1, 1),
             (4, 3),
-            {0: (1.1,), 1: (-0.1,)},
+            {"x0": (1.1,), "x1": (-0.1,)},
             "grid_search",
             {"verbose": False, "parallel": False, "grid": ((2,), (2,))},
             "gaussian",
-            {1: {1: {"+": 0}}},
+            {"x1": {1: {"+": 0}}},
             None,
             False,
             grid_to_scatter(
@@ -1428,20 +1428,18 @@ sol33 = np.array(
                 "parallel": False,
             },
             "gaussian",
-            {0: {0: {"+": 0}}, 1: {0: {"+": 0}}},
+            {"x0": {0: {"+": 0}}, "x1": {0: {"+": 0}}},
             None,
             True,
             grid_to_scatter(
                 x=(np.linspace(-3, 3, 50), np.linspace(-4, 4, 60)),
-                y=multivariate_normal.pdf(
-                    x=list(
-                        itertools.product(
-                            np.linspace(-3, 3, 50), np.linspace(-4, 4, 60)
-                        )
-                    ),
-                    mean=[0, 0],
-                    cov=[[2, 0.5], [0.5, 1]],
-                ).reshape((len(np.linspace(-3, 3, 50)), len(np.linspace(-4, 4, 60)))),
+                y=multivariate_normal(mean=[0, 0], cov=[[2, 0.5], [0.5, 1]])
+                .pdf(
+                    x=np.dstack(
+                        np.meshgrid(np.linspace(-3, 3, 50), np.linspace(-4, 4, 60))
+                    )
+                )
+                .T,
             ),
             None,
             sol19,
@@ -1454,7 +1452,7 @@ sol33 = np.array(
             "grid_search",
             {"grid": ((0.73,),), "verbose": False, "parallel": False},
             "gaussian",
-            {0: {0: {"+": 10.0, "-": 40.0}}},
+            {"x": {0: {"+": 10.0, "-": 40.0}}},
             None,
             False,
             pd.DataFrame(
@@ -1505,7 +1503,7 @@ sol33 = np.array(
                 "parallel": False,
             },
             "gaussian",
-            {0: {0: {"+": 0}}, 1: {0: {"+": 0}}},
+            {"x0": {0: {"+": 0}}, "x1": {0: {"+": 0}}},
             None,
             False,
             grid_to_scatter(
@@ -1546,7 +1544,7 @@ sol33 = np.array(
             (4,),
             (1,),
             (10,),
-            {0: (-0.7, 10.3)},
+            {"x": (-0.7, 10.3)},
             "grid_search",
             {
                 "grid": ((1.234,),),
@@ -1610,7 +1608,7 @@ sol33 = np.array(
                 "parallel": False,
             },
             "poisson",
-            {0: {1: {"+": 0}}},
+            {"x": {1: {"+": 0}}},
             None,
             False,
             pd.DataFrame(
@@ -1662,7 +1660,7 @@ sol33 = np.array(
                 "bounds": ((1e-10, 1e16),),
             },
             "binomial",
-            {0: {1: {"+": 0.0}}},
+            {"x": {1: {"+": 0.0}}},
             None,
             False,
             pd.DataFrame(
@@ -1717,7 +1715,7 @@ sol33 = np.array(
                 "parallel": False,
             },
             "gaussian",
-            {0: {1: {"+": 0}, 2: {"-": 0}}},
+            {"x": {1: {"+": 0}, 2: {"-": 0}}},
             {
                 (0,): {
                     "greaterThan": pd.DataFrame(
@@ -1764,7 +1762,7 @@ sol33 = np.array(
             "grid_search",
             {"grid": ((1.234,),)},
             "gaussian",
-            {0: {0: {"+": 0}}, 1: {0: {"+": 0}}},
+            {"x0": {0: {"+": 0}}, "x1": {0: {"+": 0}}},
             None,
             False,
             grid_to_scatter(
@@ -1781,11 +1779,11 @@ sol33 = np.array(
             (3, 2),
             (2, 1),
             (5, 4),
-            {1: (1.2,)},
+            {"x1": (1.2,)},
             "grid_search",
             {"grid": ((1.234,),)},
             "gaussian",
-            {1: {1: {"+": 0}}},
+            {"x1": {1: {"+": 0}}},
             None,
             False,
             grid_to_scatter(

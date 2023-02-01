@@ -34,7 +34,6 @@ class DataNormalizer:
         self.feature_range = feature_range
 
     def fit(self, y: np.ndarray) -> object:
-
         """
         Compute the minimum and the range of the numeric array which is to be
         scaled.
@@ -72,7 +71,6 @@ class DataNormalizer:
     def transform(
         self, y: Union[int, float, np.ndarray], derivative: bool = False
     ) -> np.ndarray:
-
         """
         Transform the numeric array according to the desired range.
 
@@ -104,7 +102,6 @@ class DataNormalizer:
     def inverse_transform(
         self, y: Union[int, float, np.ndarray], derivative: bool = False
     ) -> np.ndarray:
-
         """
         Transform the scaled numeric array into the original scale.
 

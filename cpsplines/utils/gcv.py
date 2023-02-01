@@ -13,7 +13,6 @@ def quadratic_term(
     family: statsmodels.genmod.families.family,
     data_arrangement: str,
 ) -> Tuple[np.ndarray, np.ndarray]:
-
     """
     Computes the quadratic terms involved in the objective function, i.e., the
     bases related term and the penalty term.
@@ -63,7 +62,6 @@ def GCV(
     family: statsmodels.genmod.families.family,
     data_arrangement: str,
 ) -> float:
-
     """
     Computes the Generalized Cross Validation (Golub et al., 1979).
 
