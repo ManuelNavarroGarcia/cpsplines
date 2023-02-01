@@ -3,7 +3,6 @@ from scipy.linalg import ldl
 
 
 def cholesky_semidef(A: np.ndarray) -> np.ndarray:
-
     """Computes a Cholesky decomposition of a positive semidefinite symmetric
     matrix. This is done by applying a LDL decomposition implementation in
     scipy.linalg, which admits any symmetric matrix independent of his

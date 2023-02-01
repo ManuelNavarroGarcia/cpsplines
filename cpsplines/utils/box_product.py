@@ -2,7 +2,6 @@ import numpy as np
 
 
 def box_product(A: np.ndarray, B: np.ndarray) -> np.ndarray:
-
     """
     Given a m x n matrix A and a m x p matrix B, computes the face-splitting
     product or box product using that

@@ -31,7 +31,6 @@ class Simulator:
         self.func_eval = []
 
     def simulate(self, x_k: Iterable[Union[int, float]], *args) -> Union[int, float]:
-
         """
         Executes the actual simulation and returns the result, while updating
         the attributes `sol_eval` and `func_eval`. This must be passed to the

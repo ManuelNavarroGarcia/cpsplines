@@ -69,7 +69,6 @@ class IntConstraints:
         self.constraints = constraints
 
     def _get_matrices_W(self) -> List[np.ndarray]:
-
         """
         Generates matrices W containing the weights that have to be multiplied
         by the coefficients of the polynomials from the B-spline basis to employ
@@ -136,7 +135,6 @@ class IntConstraints:
         return W
 
     def _get_matrices_H(self) -> List[mosek.fusion.SparseMatrix]:
-
         """
         Generates matrices H used to extract the right coefficients from the
         positive semidefinite matrix variables to fulfill the equations of
@@ -178,7 +176,6 @@ class IntConstraints:
         return H
 
     def _create_PSD_var(self, model: mosek.fusion.Model) -> mosek.fusion.PSDVariable:
-
         """
         Create the positive semidefinite matrix variables used to formulate the
         constraints. They have shape (`deg_w` + 1, `deg_w` + 1) and one by
@@ -214,7 +211,6 @@ class IntConstraints:
         model: mosek.fusion.Model,
         matrices_S: Dict[int, Iterable[np.ndarray]],
     ) -> Tuple[mosek.fusion.LinearConstraint]:
-
         """
         Defines the non-negative related constraints over a finite interval. For
         each interval and each sign constraint, 2 * `deg_w` - 1 equations are

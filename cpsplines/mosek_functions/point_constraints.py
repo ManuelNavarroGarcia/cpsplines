@@ -45,7 +45,6 @@ class PointConstraints:
         var_dict: Dict[str, mosek.fusion.LinearVariable],
         model: mosek.fusion.Model,
     ) -> Tuple[mosek.fusion.LinearConstraint]:
-
         """
         Constructs the point constraints for the fixed combination of
         derivative orders. These linear constraints are obtained evaluating the

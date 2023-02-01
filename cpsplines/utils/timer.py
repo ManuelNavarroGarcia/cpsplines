@@ -5,7 +5,6 @@ from typing import Optional
 
 @contextmanager
 def timer(tag: Optional[str] = None) -> None:
-
     """
     Computes the elapsed time that a task last.
 

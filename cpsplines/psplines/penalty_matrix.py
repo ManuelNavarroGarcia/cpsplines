@@ -31,7 +31,6 @@ class PenaltyMatrix:
         self.variation = variation
 
     def get_diff_matrix(self, ord_d: int = 2) -> np.ndarray:
-
         """
         Generate the penalty matrix based on finite differences of the
         coefficients of adjacent B-splines
@@ -77,7 +76,6 @@ class PenaltyMatrix:
         return np.diff(np.eye(dim, dtype=np.int32), n=ord_d)[ord_d:-ord_d, :]
 
     def get_penalty_matrix(self, **kwargs) -> np.ndarray:
-
         """Generates the penalty matrix associated with the B-spline basis
         `bspline` and the variation `variation`. If the chosen variation needs
         some parameters to be defined, they must be included on the kwargs.

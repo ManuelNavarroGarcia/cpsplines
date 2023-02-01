@@ -9,7 +9,6 @@ from cpsplines.utils.timer import timer
 def penalty_brute_force(
     D_mul: Iterable[np.ndarray], sp: Iterable[Union[int, float]]
 ) -> np.ndarray:
-
     """
     Computes the penalization term using the exact definition including all
     the matrices involved. It only supports three or less dimensions.

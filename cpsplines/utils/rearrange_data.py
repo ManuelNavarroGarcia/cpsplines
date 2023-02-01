@@ -15,7 +15,6 @@ def grid_to_scatter(
     x_cols: Optional[List[str]] = None,
     y_col: str = "y",
 ) -> pd.DataFrame:
-
     """
     Given a list of arrays containing the value of the covariates and a grid
     of target values with these coordinates, generates a DataFrame with the same
@@ -68,7 +67,6 @@ def grid_to_scatter(
 def scatter_to_grid(
     data: pd.DataFrame, y_col: str
 ) -> Tuple[List[np.ndarray], np.ndarray]:
-
     """
     Given a DataFrame containing the value of the covariates and the target
     variable, generates a list of arrays containing the value of the covariates

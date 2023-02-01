@@ -71,7 +71,6 @@ class BsplineBasis:
         self.prediction = prediction
 
     def get_matrix_B(self) -> None:
-
         """
         Defines the design matrix of the B-spline basis, consisting on the
         evaluation of the B-spline basis polynomials at `xsample`. This is
@@ -183,7 +182,6 @@ class BsplineBasis:
         return None
 
     def get_matrices_S(self):
-
         """
         Generate a list of matrices (one by interval) containing the polynomial
         coefficients from the non-zero B-spline basis elements . For the j-th

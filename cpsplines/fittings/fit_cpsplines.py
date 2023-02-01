@@ -200,7 +200,6 @@ class CPsplines:
         return family_statsmodels
 
     def _get_bspline_bases(self, x: Iterable[np.ndarray]) -> List[BsplineBasis]:
-
         """
         Construct the B-spline bases on each axis.
 
@@ -243,7 +242,6 @@ class CPsplines:
         return bspline_bases
 
     def _fill_sp_args(self):
-
         """
         Fill the `sp_args` dictionary by default parameters on the case they are
         not provided.
@@ -268,7 +266,6 @@ class CPsplines:
         return None
 
     def _get_obj_func_arrays(self, y: np.ndarray) -> Dict[str, np.ndarray]:
-
         """
         Gather all the arrays used to define the objective function of the
         optimization funcion. These are the design matrices of the B-spline
@@ -310,7 +307,6 @@ class CPsplines:
         y_col: str,
         data_normalizer: Optional[DataNormalizer] = None,
     ) -> mosek.fusion.Model:
-
         """
         Construct the optimization model.
 
@@ -449,7 +445,6 @@ class CPsplines:
         self,
         obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
     ) -> Tuple[Union[int, float]]:
-
         """
         Get the best smoothing parameter vector with the GCV minimizer criteria
         using grid search selection.
@@ -499,7 +494,6 @@ class CPsplines:
         self,
         obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
     ) -> Tuple[Union[int, float]]:
-
         """
         Get the best smoothing parameter vector with the GCV minimizer criteria
         using an optimizer from scipy.optimize.minimize.
@@ -576,7 +570,6 @@ class CPsplines:
         y_col: str,
         y_range: Optional[Iterable[Union[int, float]]] = None,
     ):
-
         """
         Compute the fitted decision variables of the B-spline expansion and the
         fitted values for the response variable.

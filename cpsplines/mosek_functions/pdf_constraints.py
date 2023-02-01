@@ -33,7 +33,6 @@ class PDFConstraint:
         var_dict: Dict[str, mosek.fusion.LinearVariable],
         model: mosek.fusion.Model,
     ) -> mosek.fusion.LinearConstraint:
-
         """
         Defines the constraint that the integral of the fitted hypersurface
         over the fitting and the prediction regions must be equal to one.
@@ -93,7 +92,6 @@ class PDFConstraint:
         int_constraints: Optional[Dict[str, Dict[int, Dict[str, Union[int, float]]]]],
         feature_names: Iterable[str],
     ) -> Dict[int, Dict[int, Dict[str, Union[int, float]]]]:
-
         """
         Includes non-negativity constraints to the problem if they were
         already not included.
@@ -104,7 +102,7 @@ class PDFConstraint:
             The nested dictionary containing the interval constraints to be
             enforced.
         feature_names : Iterable[str]
-            The name of the variables. 
+            The name of the variables.
 
         Returns
         -------
