@@ -55,12 +55,12 @@ class CPsplines:
         By default, (40,).
     x_range : Optional[Dict[str, Tuple[Union[int, float]]]], optional
         A dictionary containing the most extreme values that the extended
-        B-spline basis needs to capture along each dimension. The keys are name
-        of the regressor and the values are tuples containing the most extreme
-        values. These values will only be considered when they are located
-        outside the fitting region. One or two may be passed by variable. If
-        None, it is intended that no extra range is needed in any of the axes.
-        By default, None.
+        B-spline basis needs to capture along each dimension. The keys are the
+        names of the regressors to be extended and the values are tuples
+        containing the most extreme values. These values will only be considered
+        when they are located outside the fitting region. One or two may be
+        passed by variable. If None, it is intended that no extra range is
+        needed in any of the axes. By default, None.
     sp_method : str, optional
         The method used to estimate the smoothing parameter as the minimizer of
         the Generalized Cross Validation criterium. It may be either `optimizer`
