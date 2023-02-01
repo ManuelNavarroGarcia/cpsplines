@@ -128,6 +128,8 @@ class CPsplines:
     data_hull : scipy.spatial._qhull.Delaunay
         Delaunay tessellation, which aims to compute the convex hull of the
         regressors.
+    feature_names : Iterable[str]
+        The name of the variables.
 
     References
     ----------
@@ -147,7 +149,7 @@ class CPsplines:
         sp_args: Optional[Dict[str, Any]] = None,
         family: str = "gaussian",
         int_constraints: Optional[
-            Dict[int, Dict[int, Dict[str, Union[int, float]]]]
+            Dict[str, Dict[int, Dict[str, Union[int, float]]]]
         ] = None,
         pt_constraints: Optional[Dict[Tuple[int], Dict[str, pd.DataFrame]]] = None,
         pdf_constraint: bool = False,
@@ -352,7 +354,9 @@ class CPsplines:
             pdf_cons.integrate_to_one(var_dict=mos_obj_f.var_dict, model=M)
             # Enforce the non-negativity constraint if it is not imposed
             # explicitly
-            self.int_constraints = pdf_cons.nonneg_cons(self.int_constraints)
+            self.int_constraints = pdf_cons.nonneg_cons(
+                self.int_constraints, self.feature_names
+            )
 
         if self.int_constraints is not None:
             max_deriv = max([max(v.keys()) for v in self.int_constraints.values()])
@@ -361,12 +365,14 @@ class CPsplines:
                     "Interval constraints are only implemented for non Gaussian data up to the first derivative "
                     f"Higher order derivative introduced in the constraints: {max_deriv})."
                 )
-            matrices_S = {i: bsp.matrices_S for i, bsp in enumerate(self.bspline_bases)}
+            matrices_S = {
+                name: bsp.matrices_S
+                for name, bsp in zip(self.feature_names, self.bspline_bases)
+            }
             # Iterate for every variable with constraints and for every
             # derivative order
             for var_name in self.int_constraints.keys():
-                for deriv in self.int_constraints[var_name].keys():
-                    constraints = self.int_constraints[var_name][deriv]
+                for deriv, constraints in self.int_constraints[var_name].items():
                     if (
                         list(constraints.values())[0] != 0
                         and self.family.name != "gaussian"
@@ -385,7 +391,10 @@ class CPsplines:
                     matrices_S_copy = matrices_S.copy()
                     # Build the interval constraints
                     cons = IntConstraints(
-                        bspline=self.bspline_bases,
+                        bspline={
+                            name: bsp
+                            for name, bsp in zip(self.feature_names, self.bspline_bases)
+                        },
                         var_name=var_name,
                         derivative=deriv,
                         constraints=constraints,
