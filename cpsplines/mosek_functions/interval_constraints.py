@@ -4,8 +4,9 @@ from typing import Dict, Iterable, List, Tuple, Union
 
 import mosek.fusion
 import numpy as np
-from cpsplines.psplines.bspline_basis import BsplineBasis
 from scipy.special import comb, factorial
+
+from cpsplines.psplines.bspline_basis import BsplineBasis
 
 
 class IntConstraints:
@@ -23,11 +24,10 @@ class IntConstraints:
     Parameters
     ----------
     bspline : Dict[str, BsplineBasis]
-        An dictionary containing the B-spline bases objects used to approximate
+        A dictionary containing the B-spline bases objects used to approximate
         the function to estimate as values, and as key the feature names.
-    var_name : int
-        The name of the variable along the constraints are imposed. Must be a
-        non-negative integer.
+    var_name : str
+        The name of the variable along the constraints are imposed.
     derivative : int
         The derivative order of the function that needs to be constrained. Must
         be a non-negative integer.
