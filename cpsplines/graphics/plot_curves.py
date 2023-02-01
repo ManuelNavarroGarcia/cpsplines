@@ -142,8 +142,9 @@ class CurvesDisplay:
         # If it is required, threshold of the zero-order derivative constraints
         if constant_constraints:
             if estimator.int_constraints:
-                if 0 in estimator.int_constraints[0].keys():
-                    for value in estimator.int_constraints[0][0].values():
+                d = estimator.int_constraints[next(iter(estimator.int_constraints))]
+                if 0 in d:
+                    for value in d[0].values():
                         _ = ax.axhline(
                             value,
                             color="red",
