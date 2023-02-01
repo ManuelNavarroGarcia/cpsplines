@@ -90,10 +90,10 @@ class CPsplines:
     family : str, optional
         The specific exponential family distribution where the response variable
         belongs to. By default, "gaussian" (normal distribution).
-    int_constraints : Dict[int, Dict[int, Dict[str, Union[int, float]]]]],
+    int_constraints : Dict[str, Dict[int, Dict[str, Union[int, float]]]]],
     optional
         A nested dictionary containing the interval constraints to be enforced.
-        The keys of the dictionary are the indexes of the variables. The values
+        The keys of the dictionary are the names of the variables. The values
         are dictionaries, whose keys are the order of the derivative. The values
         are dictionareis, whose keys are the signs of the constraints (either
         "+" or "-") and the values are numbers denoting the upper or lower
