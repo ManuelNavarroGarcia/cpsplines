@@ -569,10 +569,12 @@ class CPsplines:
         data: pd.DataFrame,
         y_col: str,
         y_range: Optional[Iterable[Union[int, float]]] = None,
+        **kwargs,
     ):
         """
         Compute the fitted decision variables of the B-spline expansion and the
-        fitted values for the response variable.
+        fitted values for the response variable. The kwargs are referred to
+        MOSEK parameters.
 
         Parameters
         ----------
@@ -675,6 +677,8 @@ class CPsplines:
         # unconstrained setting
         for i, sp in enumerate(self.best_sp):
             model_params[f"sp_{i}"].setValue(sp)
+        for key, v in kwargs.items():
+            _ = M.setSolverParam(key, v)
         try:
             # Solve the problem
             with timer(
