@@ -90,7 +90,8 @@ class PDFConstraint:
 
     def nonneg_cons(
         self,
-        int_constraints: Optional[Dict[int, Dict[int, Dict[str, Union[int, float]]]]],
+        int_constraints: Optional[Dict[str, Dict[int, Dict[str, Union[int, float]]]]],
+        feature_names: Iterable[str],
     ) -> Dict[int, Dict[int, Dict[str, Union[int, float]]]]:
 
         """
@@ -99,9 +100,11 @@ class PDFConstraint:
 
         Parameters
         ----------
-        int_constraints : Optional[Dict[int, Dict[int, Dict[str, Union[int, float]]]]]
+        int_constraints : Optional[Dict[str, Dict[int, Dict[str, Union[int, float]]]]]
             The nested dictionary containing the interval constraints to be
             enforced.
+        feature_names : Iterable[str]
+            The name of the variables. 
 
         Returns
         -------
@@ -113,17 +116,17 @@ class PDFConstraint:
         # Create a dictionary if no interval constraints already exist
         if int_constraints is None:
             int_constraints = {}
-        for i in range(len(self.bspline)):
+        for col in feature_names:
             # Check if any interval constraints exist along each axis
-            if int_constraints.get(i, None) is not None:
+            if int_constraints.get(col, None) is not None:
                 # Check if sign constraints exist for this axis
-                if int_constraints[i].get(0, None) is None:
+                if int_constraints[col].get(0, None) is None:
                     # Update the constraint dictionary if non-negativity is
                     # missing
-                    int_constraints[i].update({0: {"+": 0}})
+                    int_constraints[col].update({0: {"+": 0}})
                 else:
-                    int_constraints[i][0].update({"+": 0})
+                    int_constraints[col][0].update({"+": 0})
             # If no constraints are imposed on any axis, include non-negativity
             else:
-                int_constraints.update({i: {0: {"+": 0}}})
+                int_constraints.update({col: {0: {"+": 0}}})
         return int_constraints
