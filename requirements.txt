@@ -36,7 +36,7 @@ iniconfig==1.1.1
     # via pytest
 ipykernel==6.15.1
     # via cpsplines (setup.py)
-ipython==8.4.0
+ipython==8.10.0
     # via ipykernel
 jedi==0.18.1
     # via ipython
