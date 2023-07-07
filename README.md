@@ -339,6 +339,16 @@ keywords = {Data science, Penalized splines, Conic optimization, Smoothing, Pred
 }
 ```
 
+```{bash}
+@article{NAVARROGARCIA2023_2,
+title = {On mathematical optimization for shape-constrained non-parametric multiple regression using P−splines},
+year = {2023},
+url = {https://www.researchgate.net/publication/370492139},
+author = {Navarro-García, Manuel and Guerrero, Vanesa and Durbán, María},
+keywords = {Shape-constrained regression, Penalized splines, Conic optimization},
+}
+```
+
 ## Acknowledgements
 
 Throughout the developing of this project I have received strong support from
