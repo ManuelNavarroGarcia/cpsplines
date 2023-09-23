@@ -180,7 +180,7 @@ example1D_1 = CPsplines(
     deg=(3,),
     ord_d=(2,),
     n_int=(10,),
-    x_range={0: (-0.15, 1.12)}, # variable index : range
+    x_range={"x": (-0.15, 1.12)}, # variable index : range
     sp_method="optimizer",
     sp_args={"options": {"ftol": 1e-12}},
 )
@@ -190,10 +190,10 @@ example1D_2 = CPsplines(
     deg=(3,),
     ord_d=(2,),
     n_int=(10,),
-    x_range={0: (-0.15, 1.12)},
+    x_range={"x": (-0.15, 1.12)},
     sp_method="optimizer",
     sp_args={"options": {"ftol": 1e-12}},
-    int_constraints={0: {1: {"+": 0}}} 
+    int_constraints={"x": {1: {"+": 0}}} 
 )
 example1D_2.fit(data=data, y_col="y")
 # Plot the results
@@ -255,7 +255,7 @@ example2D = CPsplines(
     n_int=(30, 20),
     sp_method="grid_search",
     sp_args={"grid": [(10, 100), (10, 50, 100)]},
-    int_constraints={0: {0: {"+": 0}}, 1: {0: {"+": 0}}}
+    int_constraints={"x0": {0: {"+": 0}}, "x1": {0: {"+": 0}}}
 )
 example2D.fit(data=data, y_col="z")
 #Plot the results
