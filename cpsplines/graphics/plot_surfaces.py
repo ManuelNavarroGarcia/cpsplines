@@ -178,7 +178,7 @@ class SurfacesDisplay:
         if ax is None:
             fig = plt.figure(figsize=figsize)
             ax = fig.add_subplot(111, projection="3d")
-        _ = fig.set_size_inches(*figsize)
+        _ = ax.figure.set_size_inches(*figsize)
 
         if contour_plot:
             if ax_contour is None:
