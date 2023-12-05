@@ -1,6 +1,5 @@
-from typing import Iterable, List, Tuple
+from typing import Iterable, Tuple
 
-import numpy as np
 
 from cpsplines.psplines.bspline_basis import BsplineBasis
 

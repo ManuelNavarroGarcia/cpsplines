@@ -142,6 +142,8 @@ pyzmq==25.1.2
     # via
     #   ipykernel
     #   jupyter-client
+ruff==0.1.7
+    # via cpsplines (setup.py)
 scipy==1.11.4
     # via
     #   cpsplines (setup.py)

@@ -9,7 +9,8 @@ import pandas as pd
 import scipy
 from joblib import Parallel, delayed
 from scipy.spatial import Delaunay
-from statsmodels.genmod.families.family import Binomial, Family, Gaussian, Poisson
+from statsmodels.genmod.families.family import (Binomial, Family, Gaussian,
+                                                Poisson)
 
 from cpsplines.mosek_functions.interval_constraints import IntConstraints
 from cpsplines.mosek_functions.obj_function import ObjectiveFunction
@@ -467,7 +468,7 @@ class CPsplines:
         # Computes all the possible combinations for the smoothing parameters
         iter_sp = list(itertools.product(*self.sp_args["grid"]))
         # Run in parallel if the argument `parallel` is present
-        if self.sp_args["parallel"] == True:
+        if self.sp_args["parallel"]:
             gcv = Parallel(n_jobs=self.sp_args["n_jobs"])(
                 delayed(GCV)(sp, obj_matrices, self.family, self.data_arrangement)
                 for sp in iter_sp
@@ -735,13 +736,13 @@ class CPsplines:
         # were defined, the problem must be fitted again
         if (x_min < bsp_min).sum() > 0:
             raise ValueError(
-                f"Some of the coordinates are outside the definition range of "
-                f"the B-spline bases."
+                "Some of the coordinates are outside the definition range of "
+                "the B-spline bases."
             )
         if (x_max > bsp_max).sum() > 0:
             raise ValueError(
-                f"Some of the coordinates are outside the definition range of "
-                f"the B-spline bases."
+                "Some of the coordinates are outside the definition range of "
+                "the B-spline bases."
             )
         # Compute the basis matrix at the coordinates to be predicted
         B_predict = [

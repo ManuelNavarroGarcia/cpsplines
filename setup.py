@@ -37,6 +37,6 @@ setup(
         "tensorly",
     ],
     extras_require={
-        "dev": ["black[jupyter]", "ipykernel", "mypy", "pip-tools>=7.0.0", "pytest"]
+        "dev": ["black[jupyter]", "ipykernel", "mypy", "pip-tools>=7.0.0", "pytest", "ruff"]
     },
 )
