@@ -1,0 +1,21 @@
+# GitHub Action that uses Ruff to reformat the Python code in an incoming pull request.
+# If all Python code in the pull request is compliant with Ruff then this Action does nothing.
+# Othewrwise, Ruff is run and its changes are committed back to the incoming pull request.
+# https://github.com/cclauss/autoblack
+
+
+name: Ruff
+on: [ push, pull_request ]
+jobs:
+  lint:
+    runs-on: ubuntu-latest 
+    steps:
+    - uses: actions/checkout@v3
+    - uses: actions/setup-python@v2
+    - uses: chartboost/ruff-action@v1
+      with:
+        args: --check .
+        fix_args: --fix .
+    - uses: stefanzweifel/git-auto-commit-action@v4
+      with:
+        commit_message: 'style fixes by ruff'
