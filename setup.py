@@ -36,5 +36,7 @@ setup(
         "statsmodels",
         "tensorly",
     ],
-    extras_require={"dev": ["black", "ipykernel", "mypy", "pip-tools", "pytest"]},
+    extras_require={
+        "dev": ["black[jupyter]", "ipykernel", "mypy", "pip-tools>=7.0.0", "pytest"]
+    },
 )
