@@ -76,9 +76,9 @@ def filter_covid_df(
             raise ValueError("Provide suitable region codes.")
         df = df.loc[df["provincia_iso"].isin(region)]
     # Aggregate the response variable
-    df = df.groupby(["grupo_edad", "fecha"]).agg({response_var: np.sum}).reset_index()
+    df = df.groupby(["grupo_edad", "fecha"])[response_var].sum().reset_index()
     # Convert fecha to datetime
-    df["fecha"] = pd.to_datetime(df["fecha"], infer_datetime_format=True)
+    df["fecha"] = pd.to_datetime(df["fecha"])
     # Make the group ages a categorical variable
     df["grupo_edad"] = df["grupo_edad"].astype("category")
     # If no minimum date is provided, take first non-zero response variable date
@@ -94,69 +94,6 @@ def filter_covid_df(
     df = df[mask_max_date & mask_min_date]
     # Sort the dataframe by date and age group
     df = df.sort_values(by=["fecha", "grupo_edad"], ascending=[True, True])
-    return df
-
-
-def agg_covid_by_age(
-    df: pd.DataFrame,
-    response_var: str,
-    agg_method: Union[Callable, str] = np.sum,
-) -> pd.DataFrame:
-    """Aggregates the filtered COVID-19 DataFrame by age.
-
-    Parameters
-    ----------
-    df : pd.DataFrame
-        The filtered COVID-19 DataFrame.
-    response_var : str
-        The response variable chosen to filter the DataFrame.
-    agg_method : Union[Callable, str], optional
-        The aggregation method used. By default, np.sum.
-
-    Returns
-    -------
-    pd.DataFrame
-        The aggregated by age DataFrame.
-
-    Raises
-    ------
-    ValueError
-        If `response_var` is not an allowed response variable.
-    """
-
-    if response_var not in ["num_casos", "num_hosp", "num_uci", "num_def"]:
-        raise ValueError("Provide a suitable response variable name.")
-    df = df.groupby(["fecha"]).agg({response_var: agg_method})
-    return df
-
-
-def pivot_covid_df(df: pd.DataFrame, response_var: str) -> pd.DataFrame:
-    """
-    Pivot the filtered COVID-19 DataFrame. The index of the final Dataframe are
-    the dates and the columns correspond to the age group.
-
-    df : pd.DataFrame
-        The filtered COVID-19 DataFrame.
-    response_var : str
-        The response variable chosen to filter the DataFrame.
-
-    Returns
-    -------
-    pd.DataFrame
-        The pivoted COVID-19 DataFrame.
-
-    Raises
-    ------
-    ValueError
-        If `response_var` is not an allowed response variable.
-    """
-
-    if response_var not in ["num_casos", "num_hosp", "num_uci", "num_def"]:
-        raise ValueError("Provide a suitable response variable name.")
-
-    df = df.query("grupo_edad != 'NC'").pivot(
-        index="fecha", columns="grupo_edad", values=response_var
-    )
     return df
 
 
