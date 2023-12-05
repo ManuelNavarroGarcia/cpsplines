@@ -1,8 +1,7 @@
 # GitHub Action that uses Ruff to reformat the Python code in an incoming pull request.
 # If all Python code in the pull request is compliant with Ruff then this Action does nothing.
 # Othewrwise, Ruff is run and its changes are committed back to the incoming pull request.
-# https://github.com/cclauss/autoblack
-
+# https://dev.to/ken_mwaura1/automate-python-linting-and-code-style-enforcement-with-ruff-and-github-actions-2kk1
 
 name: Ruff
 on: [ push, pull_request ]
