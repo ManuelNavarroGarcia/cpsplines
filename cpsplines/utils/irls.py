@@ -2,7 +2,7 @@ from functools import reduce
 from typing import Dict, Iterable, Union
 
 import numpy as np
-import statsmodels.genmod.families.family
+from statsmodels.genmod.families.family import Family
 
 from cpsplines.utils.box_product import box_product
 from cpsplines.utils.fast_kron import (
@@ -14,7 +14,7 @@ from cpsplines.utils.fast_kron import (
 def fit_irls(
     obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
     penalty_term: np.ndarray,
-    family: statsmodels.genmod.families.family,
+    family: Family,
     data_arrangement: str,
     threshold: Union[int, float] = 1e-8,
     maxiter: int = 100,
@@ -31,7 +31,7 @@ def fit_irls(
         the response variable sample) used in the algorithm.
     penalty_term : np.ndarray
         The penalty term of the model.
-    family : statsmodels.genmod.families.family
+    family : Family
         The specific exponential family distribution where the response variable
         belongs to.
     data_arrangement : str
