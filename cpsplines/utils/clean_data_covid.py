@@ -1,4 +1,4 @@
-from typing import Callable, Dict, Iterable, Optional, Union
+from typing import Dict, Iterable, Optional, Union
 
 import numpy as np
 import pandas as pd

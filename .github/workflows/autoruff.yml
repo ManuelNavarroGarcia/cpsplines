@@ -1,0 +1,26 @@
+# GitHub Action that uses Ruff to reformat the Python code in an incoming pull request.
+# If all Python code in the pull request is compliant with Ruff then this Action does nothing.
+# Othewrwise, Ruff is run and its changes are committed back to the incoming pull request.
+# https://dev.to/ken_mwaura1/automate-python-linting-and-code-style-enforcement-with-ruff-and-github-actions-2kk1
+
+name: autoruff
+on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:  # https://github.com/stefanzweifel/git-auto-commit-action#checkout-the-correct-branch
+            ref: ${{ github.head_ref }}
+      - uses: actions/setup-python@v4
+      - run: pip install ruff
+      - run: ruff check .
+      - name: If needed, commit ruff changes to a new pull request
+        if: failure()
+        run: |
+          ruff --fix
+          git config --global user.name github-actions
+          git config --global user.email '${GITHUB_ACTOR}@users.noreply.github.com'          
+          # git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
+          git commit -am "fixup! Format Python code with astral-sh/ruff push"
+          git push  # --force origin HEAD:$GITHUB_REF
