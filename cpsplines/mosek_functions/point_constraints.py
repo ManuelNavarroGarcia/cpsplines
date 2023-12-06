@@ -2,10 +2,10 @@ from functools import reduce
 from typing import Dict, Iterable, Tuple
 
 import mosek.fusion
-import numpy as np
 import pandas as pd
 
 from cpsplines.psplines.bspline_basis import BsplineBasis
+from cpsplines.utils.box_product import box_product
 
 
 class PointConstraints:
@@ -95,7 +95,7 @@ class PointConstraints:
         # corresponding coordinates and multiply them by the multidimensional
         # array of the expansion coefficients
         coef = mosek.fusion.Expr.mul(
-            reduce(np.kron, bsp_eval), mosek.fusion.Expr.flatten(var_dict["theta"])
+            reduce(box_product, bsp_eval), mosek.fusion.Expr.flatten(var_dict["theta"])
         )
         y = data.loc[:, y_col].values.astype(float)
 
