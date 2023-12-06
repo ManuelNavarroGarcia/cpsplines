@@ -4,17 +4,10 @@
 # https://dev.to/ken_mwaura1/automate-python-linting-and-code-style-enforcement-with-ruff-and-github-actions-2kk1
 
 name: Ruff
-on: [ push, pull_request ]
+on: [push, pull_request]
 jobs:
-  lint:
-    runs-on: ubuntu-latest 
+  ruff:
+    runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-python@v2
-    - uses: chartboost/ruff-action@v1
-      with:
-        args: --check .
-        fix_args: --fix .
-    - uses: stefanzweifel/git-auto-commit-action@v4
-      with:
-        commit_message: 'style fixes by ruff'
+      - uses: actions/checkout@v3
+      - uses: chartboost/ruff-action@v1
