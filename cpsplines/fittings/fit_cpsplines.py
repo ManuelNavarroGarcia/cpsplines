@@ -735,7 +735,7 @@ class CPsplines:
         # were defined, the problem must be fitted again
         if (x_min < bsp_min).sum() > 0:
             raise ValueError(
-                f"Some of the coordinates are outside the definition range of "
+                "Some of the coordinates are outside the definition range of "
                 "the B-spline bases."
             )
         if (x_max > bsp_max).sum() > 0:
