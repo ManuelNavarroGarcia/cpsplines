@@ -153,8 +153,7 @@ $$f(x) = (2x-1)^3,$$
 
 which is a non-decreasing function. We simulated noisy data following the scheme
 
-$$y_l= f(x_l)+\varepsilon_l, \quad \varepsilon_l\sim \text{N}(0,0.25),$$
-where $x_l=0, 0.02, 0.04,\ldots, 1.$
+$$y_l= f(x_l)+\varepsilon_l, \quad \varepsilon_l\sim \text{N}(0,0.25), \quad x_l=0, 0.02, 0.04,\ldots, 1.$$
 
 We fit an unconstrained and a constrained model imposing non-decreasing
 constraints over the interval $[-0.15, 1.12]$ (forward and backwards prediction).
@@ -216,15 +215,16 @@ For the bivariate case, consider the function
 $$f(x, y) = \sin(x)\sin(y).$$
 
 We simulated noisy data following the scheme
-$$z_{lm} = f(x_l, y_m) + \varepsilon_{lm}, \quad \varepsilon_{lm} \sim \text{N}(0, 1),$$
-where $x_l=\{\frac{l\pi}{100}\}_{l=0}^{300}$ and $y_m=\{\frac{m\pi}{100}\}_{m=0}^{200}$.
+$$z_{lm} = f(x_l, y_m) + \varepsilon_{lm}, \quad \varepsilon_{lm} \sim \text{N}(0, 1),
+\quad x_l=\left\{\frac{l\pi}{100}\right\}_{l=0}^{300}, \quad
+y_m=\left\{\frac{m\pi}{100}\right\}_{m=0}^{200}.$$
 
-We fit an unconstrained and a constrained model imposing non-negativity
-constraints over the interval $[0, 3\pi] \times [0, 2\pi]$ (i.e. no prediction). For the bases, cubic B-splines with $30$ and $20$ interior knots
-are taken, respectively, with a second-order difference penalty. The smoothing
-parameter is selected as the best candidates out of the sets $\{10, 100\}$ (for the
-first smoothing parameter) and $\{10, 50, 100\}$ (for the second smoothing
-parameter).
+We fit an unconstrained and a constrained model imposing non-negativity constraints over
+the interval $[0, 3\pi] \times [0, 2\pi]$ (i.e. no prediction). For the bases, cubic
+B-splines with $30$ and $20$ interior knots are taken, respectively, with a second-order
+difference penalty. The smoothing parameter is selected as the best candidates out of
+the sets $\{10, 100\}$ (for the first smoothing parameter) and $\{10, 50, 100\}$ (for
+the second smoothing parameter).
 
 ```python
 # Generate the data 
