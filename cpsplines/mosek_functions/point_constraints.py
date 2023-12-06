@@ -2,6 +2,7 @@ from functools import reduce
 from typing import Dict, Iterable, Tuple
 
 import mosek.fusion
+import numpy as np
 import pandas as pd
 
 from cpsplines.psplines.bspline_basis import BsplineBasis
