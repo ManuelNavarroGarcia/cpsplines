@@ -149,21 +149,16 @@ two examples, the first with only one regressor and the  second two covariates.
 
 For the univariate case, consider the function
 
-<p align="center">
-  <img src="https://latex.codecogs.com/svg.image?f(x)&space;=&space;(2x-1)&space;^3,">
-</p>
+$$f(x) = (2x-1)^3,$$
 
 which is a non-decreasing function. We simulated noisy data following the scheme
 
-<p align="center">
-  <img src="https://render.githubusercontent.com/render/math?math=y_l=%20f(x_l)%20%2B%20\varepsilon_l,\quad\varepsilon_l\sim\text{N}(0,0.25),">
-</p>
-
-![formula](https://render.githubusercontent.com/render/math?math=$\text{where%20}\:x_l=0,%200.02,%200.04,\ldots,%201.)
+$$y_l= f(x_l)+\varepsilon_l, \quad \varepsilon_l\sim \text{N}(0,0.25),$$
+where $x_l=0, 0.02, 0.04,\ldots, 1.$
 
 We fit an unconstrained and a constrained model imposing non-decreasing
-constraints over the interval [-0.15, 1.12] (forward and backwards prediction).
-For the basis, cubic B-splines with 10 interior knots are taken with a
+constraints over the interval $[-0.15, 1.12]$ (forward and backwards prediction).
+For the basis, cubic B-splines with $10$ interior knots are taken with a
 second-order difference penalty. The smoothing parameter is selected using
 `scipy.optimize.minimize` with the `"SLSQP"` method.
 
@@ -218,27 +213,17 @@ legend.legendHandles[1].set_color('k')
 ![alt text](./img/example1D.jpg)
 
 For the bivariate case, consider the function
-<p align="center">
-  <img src="https://latex.codecogs.com/svg.image?f(x,&space;y)&space;=&space;\sin(x)\sin(y)." title="f(x, y) = \sin(x)\sin(y)." />
-</p>
+$$f(x, y) = \sin(x)\sin(y).$$
 
 We simulated noisy data following the scheme
-
-<p align="center">
-<img src="https://latex.codecogs.com/svg.image?z_{lm}=&space;f(x_l,&space;y_m)&plus;\varepsilon_{lm},&space;\quad&space;\varepsilon_{lm}\sim&space;\text{N}(0,1)" title="z_{lm}= f(x_l, y_m)+\varepsilon_{lm}, \quad \varepsilon_{lm}\sim \text{N}(0,1)." />
-</p>
+$$z_{lm} = f(x_l, y_m) + \varepsilon_{lm}, \quad \varepsilon_{lm} \sim \text{N}(0, 1),$$
+where $x_l=\{\frac{l\pi}{100}\}_{l=0}^{300}$ and $y_m=\{\frac{m\pi}{100}\}_{m=0}^{200}$.
 
 We fit an unconstrained and a constrained model imposing non-negativity
-constraints over the interval
-
-<p align="center">
-<img src="https://latex.codecogs.com/svg.image?[0,3\pi]\times&space;[0,2\pi]" title="[0,3\pi]\times [0,2\pi]" />
-</p>
-
-(no prediction). For the bases, cubic B-splines with 30 and 20 interior knots
+constraints over the interval $[0, 3\pi] \times [0, 2\pi]$ (i.e. no prediction). For the bases, cubic B-splines with $30$ and $20$ interior knots
 are taken, respectively, with a second-order difference penalty. The smoothing
-parameter is selected as the best candidates out of the sets {10, 100} (for the
-first smoothing parameter) and {10, 50, 100} (for the second smoothing
+parameter is selected as the best candidates out of the sets $\{10, 100\}$ (for the
+first smoothing parameter) and $\{10, 50, 100\}$ (for the second smoothing
 parameter).
 
 ```python
@@ -317,7 +302,7 @@ If you have encountered any problem or doubt while using `cpsplines`, please
 feel free to let me know by sending me an email:
 
 * Name: Manuel Navarro García (he/his)
-* Email: manuelnavarrogithub@gmail.com
+* Email: <manuelnavarrogithub@gmail.com>
 
 The formal background of the models used in this project are either published in
 research papers or under current research. If these techniques are helpful to
