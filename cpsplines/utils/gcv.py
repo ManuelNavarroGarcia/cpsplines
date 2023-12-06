@@ -103,13 +103,11 @@ def GCV(
         penalty_term=penalty_term,
         data_arrangement=data_arrangement,
     )
-    # Return the GCV value, which is n * RSS / (n - tr(H))**2, where RSS is the
-    # residual sum of squares, n is the product of the dimensions of y and H is
-    # the hat matrix of the unconstrained problem
-    return (
-        np.prod(obj_matrices["y"].shape)
-        * np.square(np.linalg.norm((obj_matrices["y"] - y_hat)))
-    ) / np.square(
-        np.prod(obj_matrices["y"].shape)
-        - np.trace(np.linalg.solve(bases_term + penalty_term, bases_term))
+
+    n = np.prod(obj_matrices["y"].shape)
+    # Return the GCV value, which is n * Dev / (n - tr(H))**2, where Dev is the
+    # deviance, `n` is the product of the dimensions of `y` and `H` is the hat matrix of
+    # the unconstrained problem
+    return (n * family.deviance(obj_matrices["y"], y_hat)) / np.square(
+        n - np.trace(np.linalg.solve(bases_term + penalty_term, bases_term))
     )
