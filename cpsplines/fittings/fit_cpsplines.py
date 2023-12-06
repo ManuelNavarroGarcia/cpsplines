@@ -620,13 +620,13 @@ class CPsplines:
                         )
             self.data_hull = Delaunay(pd.concat(df_pred))
 
-        if self.family.name == "binomial":
-            self.cat = dict(enumerate(data[y_col].astype("category").cat.categories))
-            data = data.assign(
-                **{y_col: data[y_col].map({v: k for k, v in self.cat.items()})}
-            )
-            if self.cat[1] != 1:
-                logging.warning(f"{self.cat[1]} is considered as the positive class.")
+        if isinstance(self.family, Binomial):
+            encoded_y = pd.get_dummies(data[y_col]).iloc[:, -1].astype(int)
+            data = data.assign(**{y_col: encoded_y})
+            if encoded_y.name != 1:
+                logging.warning(
+                    f" {encoded_y.name} is considered as the positive class."
+                )
         x, y = self._preprocessor(data=data, y_col=y_col)
 
         # Construct the B-spline bases
