@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-from statsmodels.genmod.families.family import Gaussian
+from statsmodels.genmod.families.family import Binomial, Gaussian, Poisson
 
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.psplines.penalty_matrix import PenaltyMatrix
@@ -66,11 +66,15 @@ y_3 = np.array(
 )
 
 ethanol = pd.read_csv("./data/ethanol.csv")
+faithful = pd.read_csv("./data/faithful.csv")
+kyphosis = pd.read_csv("./data/kyphosis.csv")
 
 out1 = 0.06655360566286558
 out2 = 0.8886437800778839
 out3 = 0.11298981533051085
 out4 = 0.8648914644625973
+out5 = 0.47471342844068937
+out6 = 0.9991894426009834
 
 
 @pytest.mark.parametrize(
@@ -123,6 +127,28 @@ out4 = 0.8648914644625973
             [ethanol["C"].values, ethanol["E"].values],
             ethanol["NOx"].values,
             out4,
+        ),
+        (
+            [3],
+            [2],
+            [5],
+            [0.123],
+            Poisson(),
+            "gridded",
+            [faithful["eruptions"].values],
+            faithful["waiting"].values,
+            out5,
+        ),
+        (
+            [3],
+            [2],
+            [5],
+            [0.123],
+            Binomial(),
+            "gridded",
+            [kyphosis["Age"].values],
+            pd.get_dummies(kyphosis["Kyphosis"])["Present"].astype(int).values,
+            out6,
         ),
     ],
 )
