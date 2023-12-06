@@ -1,7 +1,7 @@
 from typing import Dict, Iterable, Tuple, Union
 
 import numpy as np
-import statsmodels.genmod.families.family
+from statsmodels.genmod.families.family import Family
 
 from cpsplines.utils.fast_kron import penalization_term, weighted_double_kronecker
 from cpsplines.utils.irls import fit_irls
@@ -10,7 +10,7 @@ from cpsplines.utils.irls import fit_irls
 def quadratic_term(
     sp: Iterable[Union[int, float]],
     obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
-    family: statsmodels.genmod.families.family,
+    family: Family,
     data_arrangement: str,
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
@@ -25,9 +25,9 @@ def quadratic_term(
         A dictionary containing the necessary arrays (the basis matrices, the
         penalty matrices and the response variable sample) used to compute the
         quadratic terms in the objective function.
-    family : statsmodels.genmod.families.family, optional
+    family : Family
         The specific exponential family distribution where the response variable
-        belongs to, by default "gaussian".
+        belongs to.
     data_arrangement : str
             The way the data is arranged.
 
@@ -59,7 +59,7 @@ def quadratic_term(
 def GCV(
     sp: Iterable[Union[int, float]],
     obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
-    family: statsmodels.genmod.families.family,
+    family: Family,
     data_arrangement: str,
 ) -> float:
     """
@@ -73,7 +73,7 @@ def GCV(
         A dictionary containing the necessary arrays (the basis matrices, the
         penalty matrices and the response variable sample) used to compute the
         quadratic terms in the objective function.
-    family : statsmodels.genmod.families.family
+    family : Family
         The specific exponential family distribution where the response variable
         belongs to.
     data_arrangement : str
@@ -103,13 +103,11 @@ def GCV(
         penalty_term=penalty_term,
         data_arrangement=data_arrangement,
     )
-    # Return the GCV value, which is n * RSS / (n - tr(H))**2, where RSS is the
-    # residual sum of squares, n is the product of the dimensions of y and H is
-    # the hat matrix of the unconstrained problem
-    return (
-        np.prod(obj_matrices["y"].shape)
-        * np.square(np.linalg.norm((obj_matrices["y"] - y_hat)))
-    ) / np.square(
-        np.prod(obj_matrices["y"].shape)
-        - np.trace(np.linalg.solve(bases_term + penalty_term, bases_term))
+
+    n = np.prod(obj_matrices["y"].shape)
+    # Return the GCV value, which is n * Dev / (n - tr(H))**2, where Dev is the
+    # deviance, `n` is the product of the dimensions of `y` and `H` is the hat matrix of
+    # the unconstrained problem
+    return (n * family.deviance(obj_matrices["y"], y_hat)) / np.square(
+        n - np.trace(np.linalg.solve(bases_term + penalty_term, bases_term))
     )

@@ -3,7 +3,7 @@ from typing import Dict, Iterable, Tuple, Union
 
 import mosek.fusion
 import numpy as np
-import statsmodels.genmod.families.family
+from statsmodels.genmod.families.family import Binomial, Family, Gaussian, Poisson
 
 from cpsplines.psplines.bspline_basis import BsplineBasis
 from cpsplines.utils.box_product import box_product
@@ -80,7 +80,7 @@ class ObjectiveFunction:
         self,
         obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
         sp: Iterable[Union[int, float]],
-        family: statsmodels.genmod.families.family,
+        family: Family,
         data_arrangement: str,
     ) -> Tuple[Union[None, mosek.fusion.ConicConstraint]]:
         """
@@ -104,7 +104,7 @@ class ObjectiveFunction:
             construct the objective function.
         sp : Iterable[Union[int, float]]
             An iterable containing the smoothing parameters.
-        family : statsmodels.genmod.families.family
+        family : Family
             The specific exponential family distribution where the response
             variable belongs to.
         data_arrangement : str
@@ -175,7 +175,7 @@ class ObjectiveFunction:
             ]
         )
 
-        if family.name == "gaussian":
+        if isinstance(family, Gaussian):
             self.var_dict |= {
                 "t_B": self.model.variable(
                     "t_B", 1, mosek.fusion.Domain.greaterThan(0.0)
@@ -220,7 +220,7 @@ class ObjectiveFunction:
                 ),
                 obj,
             )
-        elif family.name == "poisson":
+        elif isinstance(family, Poisson):
             self.var_dict |= {
                 "t": self.model.variable(
                     "t",
@@ -261,7 +261,7 @@ class ObjectiveFunction:
                 ),
                 mosek.fusion.Expr.dot(lin_term, flatten_theta),
             )
-        elif family.name == "binomial":
+        elif isinstance(family, Binomial):
             self.var_dict |= {
                 "t": self.model.variable(
                     "t",

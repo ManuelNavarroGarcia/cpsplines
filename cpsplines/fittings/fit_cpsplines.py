@@ -196,7 +196,6 @@ class CPsplines:
             family_statsmodels = Binomial()
         else:
             raise ValueError(f"Family {family} is not implemented.")
-        family_statsmodels.name = family
         return family_statsmodels
 
     def _get_bspline_bases(self, x: Iterable[np.ndarray]) -> List[BsplineBasis]:
@@ -340,7 +339,7 @@ class CPsplines:
         )
 
         if self.pdf_constraint:
-            if self.family.name != "gaussian":
+            if not isinstance(self.family, Gaussian):
                 raise ValueError(
                     "Probability density function constraints are only implemented for Gaussian data."
                 )
@@ -356,7 +355,7 @@ class CPsplines:
 
         if self.int_constraints is not None:
             max_deriv = max([max(v.keys()) for v in self.int_constraints.values()])
-            if max_deriv > 1 and self.family.name != "gaussian":
+            if max_deriv > 1 and not isinstance(self.family, Gaussian):
                 raise ValueError(
                     "Interval constraints are only implemented for non Gaussian data up to the first derivative "
                     f"Higher order derivative introduced in the constraints: {max_deriv})."
@@ -369,9 +368,8 @@ class CPsplines:
             # derivative order
             for var_name in self.int_constraints.keys():
                 for deriv, constraints in self.int_constraints[var_name].items():
-                    if (
-                        list(constraints.values())[0] != 0
-                        and self.family.name != "gaussian"
+                    if list(constraints.values())[0] != 0 and not isinstance(
+                        self.family, Gaussian
                     ):
                         raise ValueError(
                             "No threshold is allowed in the shape constraints for non Gaussian data."
@@ -402,7 +400,7 @@ class CPsplines:
             self.int_constraints = {}
 
         if self.pt_constraints is not None:
-            if self.family.name != "gaussian":
+            if not isinstance(self.family, Gaussian):
                 raise ValueError(
                     "Point constraints are only implemented for Gaussian data."
                 )
@@ -622,13 +620,13 @@ class CPsplines:
                         )
             self.data_hull = Delaunay(pd.concat(df_pred))
 
-        if self.family.name == "binomial":
-            self.cat = dict(enumerate(data[y_col].astype("category").cat.categories))
-            data = data.assign(
-                **{y_col: data[y_col].map({v: k for k, v in self.cat.items()})}
-            )
-            if self.cat[1] != 1:
-                logging.warning(f"{self.cat[1]} is considered as the positive class.")
+        if isinstance(self.family, Binomial):
+            encoded_y = pd.get_dummies(data[y_col]).iloc[:, -1].astype(int)
+            data = data.assign(**{y_col: encoded_y})
+            if encoded_y.name != 1:
+                logging.warning(
+                    f" {encoded_y.name} is considered as the positive class."
+                )
         x, y = self._preprocessor(data=data, y_col=y_col)
 
         # Construct the B-spline bases
@@ -638,7 +636,7 @@ class CPsplines:
         # of smoothing parameters
         _ = self._fill_sp_args()
         if y_range is not None:
-            if self.family.name != "gaussian":
+            if not isinstance(self.family, Gaussian):
                 raise ValueError(
                     "The argument `y_range` is only available for Gaussian data."
                 )
