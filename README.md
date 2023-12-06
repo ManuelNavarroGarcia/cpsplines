@@ -215,11 +215,9 @@ For the bivariate case, consider the function
 $$f(x, y) = \sin(x)\sin(y).$$
 
 We simulated noisy data following the scheme
-$$z_{lm} = f(x_l, y_m) + \varepsilon_{lm}, \quad \varepsilon_{lm} \sim \text{N}(0, 1),
-\quad x_l=\left\{\frac{l\pi}{100}\right\}_{l=0}^{300}, \quad
-y_m=\left\{\frac{m\pi}{100}\right\}_{m=0}^{200}.$$
-
-We fit an unconstrained and a constrained model imposing non-negativity constraints over
+$$z_{lm} = f(x_l, y_m) + \varepsilon_{lm}, \quad \varepsilon_{lm} \sim \text{N}(0, 1),$$
+with $300$ equidistant points in $[0, 3\pi]$ in the x-axis and $200$ in the y-axis. We
+fit an unconstrained and a constrained model imposing non-negativity constraints over
 the interval $[0, 3\pi] \times [0, 2\pi]$ (i.e. no prediction). For the bases, cubic
 B-splines with $30$ and $20$ interior knots are taken, respectively, with a second-order
 difference penalty. The smoothing parameter is selected as the best candidates out of
