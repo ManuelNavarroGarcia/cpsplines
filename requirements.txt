@@ -105,7 +105,7 @@ patsy==0.5.4
     # via statsmodels
 pexpect==4.9.0
     # via ipython
-pillow==10.1.0
+pillow==10.2.0
     # via matplotlib
 pip-tools==7.3.0
     # via cpsplines (setup.py)
