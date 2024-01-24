@@ -98,7 +98,7 @@ def fit_irls(
             eta = matrix_by_tensor_product([mat for mat in obj_matrices["B"]], theta)
         else:
             eta = np.dot(reduce(box_product, obj_matrices["B"]), theta.flatten())
-        mu = family.fitted(eta)
+        mu = family.fitted(np.clip(eta, a_min=-500, a_max=500))
         # Check convergence
         if np.linalg.norm(theta - theta_old) < threshold:
             if verbose:
