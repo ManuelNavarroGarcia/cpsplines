@@ -6,7 +6,6 @@ from scipy.interpolate import BSpline
 
 
 class BsplineBasis:
-
     """
     Generate a univariate uniform B-spline basis from a regressor vector. The
     knot sequence is defined using `n_int + 2 * deg + 1` evenly spaced knots so

@@ -3,7 +3,6 @@ from cpsplines.psplines.bspline_basis import BsplineBasis
 
 
 class PenaltyMatrix:
-
     """
     Constructs the penalty matrix of the P-splines (Eilers, P. H., Marx, B. D.
     (1996)) given a B-spline basis. Standard P-splines use a penalty that is

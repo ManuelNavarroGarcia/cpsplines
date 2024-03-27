@@ -9,7 +9,6 @@ from cpsplines.utils.box_product import box_product
 
 
 class PointConstraints:
-
     """
     Define the constraints that the smoothing (or a derivative in a particular
     direction) at a certain point must be equal, above or below a target value.

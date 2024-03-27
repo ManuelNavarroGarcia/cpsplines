@@ -4,7 +4,6 @@ import numpy as np
 
 
 class DataNormalizer:
-
     """
     Transform a numeric array by scaling it to a given range. To scale the array
     between an arbitrary set of values [a, b], the transformation used is

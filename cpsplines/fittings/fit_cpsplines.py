@@ -33,7 +33,6 @@ class NumericalError(Exception):
 
 
 class CPsplines:
-
     """
     Create the constrained P-splines model when data are in array form. The
     objective function of the optimization problem is defined using the approach
