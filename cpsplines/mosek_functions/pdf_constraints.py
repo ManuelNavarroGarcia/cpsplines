@@ -8,7 +8,6 @@ from scipy.sparse import diags
 
 
 class PDFConstraint:
-
     """
     Define the constraints that characterize a Probability Density Function,
     i.e., it must be non-negative and must integrate to one. For the first, only

@@ -3,7 +3,6 @@ from typing import Callable, Iterable, Union
 
 
 class Simulator:
-
     """
     A callback function to display the current value of the arguments and the
     value of the objective function at each iteration. Based on the class

@@ -12,7 +12,6 @@ from cpsplines.utils.fast_kron import matrix_by_tensor_product, penalization_ter
 
 
 class ObjectiveFunction:
-
     """
     Define the objective function of the optimization problem. The initial
     convex quadratically optimization problem is reformulated as an equivalent

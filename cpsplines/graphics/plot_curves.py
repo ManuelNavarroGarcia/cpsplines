@@ -8,7 +8,6 @@ from cpsplines.fittings.fit_cpsplines import CPsplines
 
 
 class CurvesDisplay:
-
     """Fitted curve visualization.
 
     Parameters

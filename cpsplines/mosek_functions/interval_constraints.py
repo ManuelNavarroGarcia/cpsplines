@@ -10,7 +10,6 @@ from cpsplines.psplines.bspline_basis import BsplineBasis
 
 
 class IntConstraints:
-
     """
     Define the set of constraints that ensures the non-negativity (or
     non-positivity) for the derivative order `derivative` along the respective
