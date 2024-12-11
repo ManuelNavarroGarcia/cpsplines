@@ -3,8 +3,9 @@ from typing import Dict, Iterable, Optional, Union
 
 import mosek.fusion
 import numpy as np
-from cpsplines.psplines.bspline_basis import BsplineBasis
 from scipy.sparse import diags
+
+from cpsplines.psplines.bspline_basis import BsplineBasis
 
 
 class PDFConstraint:
@@ -88,7 +89,7 @@ class PDFConstraint:
 
     def nonneg_cons(
         self,
-        int_constraints: Optional[Dict[str, Dict[int, Dict[str, Union[int, float]]]]],
+        shape_constraints: Optional[Dict[str, Dict[int, Dict[str, Union[int, float]]]]],
         feature_names: Iterable[str],
     ) -> Dict[int, Dict[int, Dict[str, Union[int, float]]]]:
         """
@@ -97,7 +98,7 @@ class PDFConstraint:
 
         Parameters
         ----------
-        int_constraints : Optional[Dict[str, Dict[int, Dict[str, Union[int, float]]]]]
+        shape_constraints : Optional[Dict[str, Dict[int, Dict[str, Union[int, float]]]]]
             The nested dictionary containing the interval constraints to be
             enforced.
         feature_names : Iterable[str]
@@ -111,19 +112,19 @@ class PDFConstraint:
         """
 
         # Create a dictionary if no interval constraints already exist
-        if int_constraints is None:
-            int_constraints = {}
+        if shape_constraints is None:
+            shape_constraints = {}
         for col in feature_names:
             # Check if any interval constraints exist along each axis
-            if int_constraints.get(col, None) is not None:
+            if shape_constraints.get(col, None) is not None:
                 # Check if sign constraints exist for this axis
-                if int_constraints[col].get(0, None) is None:
+                if shape_constraints[col].get(0, None) is None:
                     # Update the constraint dictionary if non-negativity is
                     # missing
-                    int_constraints[col].update({0: {"+": 0}})
+                    shape_constraints[col].update({0: {"+": 0}})
                 else:
-                    int_constraints[col][0].update({"+": 0})
+                    shape_constraints[col][0].update({"+": 0})
             # If no constraints are imposed on any axis, include non-negativity
             else:
-                int_constraints.update({col: {0: {"+": 0}}})
-        return int_constraints
+                shape_constraints.update({col: {0: {"+": 0}}})
+        return shape_constraints

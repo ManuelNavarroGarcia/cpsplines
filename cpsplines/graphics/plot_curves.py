@@ -140,8 +140,8 @@ class CurvesDisplay:
 
         # If it is required, threshold of the zero-order derivative constraints
         if constant_constraints:
-            if estimator.int_constraints:
-                d = estimator.int_constraints[next(iter(estimator.int_constraints))]
+            if estimator.shape_constraints:
+                d = estimator.shape_constraints[next(iter(estimator.shape_constraints))]
                 if 0 in d:
                     for value in d[0].values():
                         _ = ax.axhline(
@@ -154,9 +154,9 @@ class CurvesDisplay:
         # If the prediction region is not empty, plot vertical dashed lines at
         # the extremes of the fitting region
         if bsp.int_back > 0:
-            _ = ax.axvline(bsp.xsample.min(), linewidth=1.0, linestyle="--", **kwargs)
+            _ = ax.axvline(bsp.x.min(), linewidth=1.0, linestyle="--", **kwargs)
         if bsp.int_forw > 0:
-            _ = ax.axvline(bsp.xsample.max(), linewidth=1.0, linestyle="--", **kwargs)
+            _ = ax.axvline(bsp.x.max(), linewidth=1.0, linestyle="--", **kwargs)
 
         _ = ax.scatter(x=X, y=y, c=col_pt, alpha=alpha)
 

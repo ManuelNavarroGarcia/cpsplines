@@ -922,7 +922,7 @@ sol33 = np.array(
 
 
 @pytest.mark.parametrize(
-    "deg, ord_d, n_int, x_range, sp_method, sp_args, family, int_constraints, pt_constraints, pdf_constraint, data, y_range, sol",
+    "deg, ord_d, k, x_range, sp_method, sp_args, family, shape_constraints, pt_constraints, pdf_constraint, data, y_range, sol",
     [
         (
             (3,),
@@ -1801,13 +1801,13 @@ sol33 = np.array(
 def test_sol(
     deg,
     ord_d,
-    n_int,
+    k,
     data,
     x_range,
     sp_method,
     sp_args,
     family,
-    int_constraints,
+    shape_constraints,
     pt_constraints,
     pdf_constraint,
     y_range,
@@ -1816,12 +1816,12 @@ def test_sol(
     out = CPsplines(
         deg=deg,
         ord_d=ord_d,
-        n_int=n_int,
+        k=k,
         sp_method=sp_method,
         sp_args=sp_args,
         x_range=x_range,
         family=family,
-        int_constraints=int_constraints,
+        shape_constraints=shape_constraints,
         pt_constraints=pt_constraints,
         pdf_constraint=pdf_constraint,
     )

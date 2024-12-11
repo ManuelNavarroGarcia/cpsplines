@@ -1,6 +1,5 @@
 from typing import Iterable, Tuple
 
-
 from cpsplines.psplines.bspline_basis import BsplineBasis
 
 
@@ -23,6 +22,5 @@ def get_idx_fitting_region(bspline_bases: Iterable[BsplineBasis]) -> Tuple[slice
     """
 
     return tuple(
-        slice(bsp.int_back, bsp.int_back + len(bsp.xsample), None)
-        for bsp in bspline_bases
+        slice(bsp.int_back, bsp.int_back + len(bsp.x), None) for bsp in bspline_bases
     )

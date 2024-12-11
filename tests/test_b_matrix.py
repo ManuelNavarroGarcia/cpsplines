@@ -100,7 +100,7 @@ BV3 = (1 / 98) * np.array(
 
 
 @pytest.mark.parametrize(
-    "x_sam, deg, n_int, prediction, B",
+    "x_sam, deg, k, prediction, B",
     [
         ([np.linspace(0, 10, 11)], [2], [5], [{}], [B1]),
         ([np.linspace(0, 10, 11)], [3], [6], [{}], [B2]),
@@ -115,11 +115,10 @@ BV3 = (1 / 98) * np.array(
         ),
     ],
 )
-def test_B_matrix(x_sam, deg, n_int, prediction, B):
+def test_B_matrix(x_sam, deg, k, prediction, B):
     bspline = []
-    for x, d, n, pred in zip(x_sam, deg, n_int, prediction):
-        bsp = BsplineBasis(deg=d, xsample=x, n_int=n, prediction=pred)
-        bsp.get_matrix_B()
+    for x, d, n, pred in zip(x_sam, deg, k, prediction):
+        bsp = BsplineBasis(deg=d, x=x, k=n, prediction=pred)
         bspline.append(bsp)
 
     for bsp, Q in zip(bspline, B):
@@ -128,7 +127,7 @@ def test_B_matrix(x_sam, deg, n_int, prediction, B):
 
 # Test correct ranges of the fitting region given a regressor sample
 @pytest.mark.parametrize(
-    "x_sam, deg, n_int, prediction, x_range",
+    "x_sam, deg, k, prediction, x_range",
     [
         (
             [np.linspace(0, 5, 6)],
@@ -153,11 +152,10 @@ def test_B_matrix(x_sam, deg, n_int, prediction, B):
         ),
     ],
 )
-def test_get_idx_fit(x_sam, deg, n_int, prediction, x_range):
+def test_get_idx_fit(x_sam, deg, k, prediction, x_range):
     bspline = []
-    for x, d, n, pred in zip(x_sam, deg, n_int, prediction):
-        bsp = BsplineBasis(deg=d, xsample=x, n_int=n, prediction=pred)
-        bsp.get_matrix_B()
+    for x, d, n, pred in zip(x_sam, deg, k, prediction):
+        bsp = BsplineBasis(deg=d, x=x, k=n, prediction=pred)
         bspline.append(bsp)
 
     range_out = get_idx_fitting_region(bspline_bases=bspline)
