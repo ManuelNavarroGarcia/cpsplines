@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+
 from cpsplines.mosek_functions.interval_constraints import IntConstraints
 from cpsplines.psplines.bspline_basis import BsplineBasis
 
@@ -59,16 +60,15 @@ W3 = [
 # Test the creation of the weigth matrices W in the Proposition 1 of Bertsimas
 # and Popescu (2002)
 @pytest.mark.parametrize(
-    "x_sam, deg, n_int, prediction, deriv, W",
+    "x, deg, k, prediction, deriv, W",
     [
         (np.linspace(0, 10, 11), 3, 4, {}, 0, W1),
         (np.linspace(0, 7, 8), 2, 3, {"backwards": -1.5, "forward": 10}, 1, W2),
         (np.linspace(-2, 3, 18), 4, 5, {}, 2, W3),
     ],
 )
-def test_W_matrices(x_sam, deg, n_int, prediction, deriv, W):
-    bsp = BsplineBasis(deg=deg, xsample=x_sam, n_int=n_int, prediction=prediction)
-    bsp.get_matrix_B()
+def test_W_matrices(x, deg, k, prediction, deriv, W):
+    bsp = BsplineBasis(deg=deg, x=x, k=k, prediction=prediction)
     W_out = IntConstraints(
         bspline=[bsp], var_name=0, derivative=deriv, constraints={}
     )._get_matrices_W()

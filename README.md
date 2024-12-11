@@ -25,32 +25,32 @@ At present, `cpsplines` can handle constrained regression problems for an
 arbitrary number of variables, where all the interaction term are considered. In
 this setting, the smooth hypersurface is constructed from the tensor products of
 B-splines basis along each axis. When data is arranged in a grid, efficient
-algorithms accelerating the computations are used (Currie, Durban and  Eilers,
+algorithms accelerating the computations are used (Currie, Durban and Eilers,
 2006). On this repository, the fitting procedure is performed using the method
 `CPsplines`, whose main features are the following:
 
-* Arbitrary number of variables.
-* Arbitrary knot sequence length to construct the B-spline basis.
-* Arbitrary B-spline basis degrees.
-* Arbitrary difference orders on the penalty term.
-* Out-of-range prediction (backwards and forward) along every dimension (Currie
+- Arbitrary number of variables.
+- Arbitrary knot sequence length to construct the B-spline basis.
+- Arbitrary B-spline basis degrees.
+- Arbitrary difference orders on the penalty term.
+- Out-of-range prediction (backwards and forward) along every dimension (Currie
   and Durban, 2004), and the constraints are enforced both on the fitting and
   the prediction region.
-* The smoothing parameters are selected as the minimizer of the Generalized
+- The smoothing parameters are selected as the minimizer of the Generalized
   Cross Validation criteria, but this routine can be done either by choosing the
   best parameters out of a set of candidates or by finding them using numerical
   methods.
-* Enforcing sign related constraints over the fitting and prediction range (if
+- Enforcing sign related constraints over the fitting and prediction range (if
   prediction is required). Arbitrary number of sign constraints can be imposed
   along each regressor.
-* Enforcing the hypersurface (or any partial derivative) attains a certain value
+- Enforcing the hypersurface (or any partial derivative) attains a certain value
   at a certain point.
-* Enforcing the hypersurface is a probability density function, i.e., it is
-  non-negative and it integrates to one.  
-* Choose among several distributions from the exponential family, currently
+- Enforcing the hypersurface is a probability density function, i.e., it is
+  non-negative and it integrates to one.
+- Choose among several distributions from the exponential family, currently
   implemented for Gaussian, Poisson and Binomial. For the last two distribution,
   only sign and monotonocity constraints can be enforced.
-* Internally decides whether the input data can be rearranged into a grid or
+- Internally decides whether the input data can be rearranged into a grid or
   not, and exploits the array structure of the data when this is the case.
 
 Solving the optimization problems is done using [MOSEK](https://www.mosek.com)
@@ -60,34 +60,34 @@ optimization software.
 
 The current version of the project is structured as follows:
 
-* **cpsplines**: the main directory of the project, which consist of:
-  * **fittings**: contains the smoothing algorithms.
-  * **graphics**: constituted by graphic methods to visualize the results.
-  * **mosek_functions**: contains the functions used to define the optimization
+- **cpsplines**: the main directory of the project, which consist of:
+  - **fittings**: contains the smoothing algorithms.
+  - **graphics**: constituted by graphic methods to visualize the results.
+  - **mosek_functions**: contains the functions used to define the optimization
     problems.
-  * **psplines**: composed by several methods that build the main objects of
+  - **psplines**: composed by several methods that build the main objects of
     P-splines.
-  * **utils**: integrated by a miscellanea of files used for a variety of
+  - **utils**: integrated by a miscellanea of files used for a variety of
     purposes (numerical computations, data processing, ...).
-* **data**: a folder containing CSV files used in the real data numerical
+- **data**: a folder containing CSV files used in the real data numerical
   experiments.
-* **examples**: a directory containing multiple numerical experiments, using
+- **examples**: a directory containing multiple numerical experiments, using
   both synthetic and real data sets.
-* **img**: contains some images used in this `README.md` file.
-* **tests**: a folder including tests for the main methods of the project.
+- **img**: contains some images used in this `README.md` file.
+- **tests**: a folder including tests for the main methods of the project.
 
 ## Package dependencies
 
 `cpsplines` mainly depends on the following packages:
 
-* [Joblib](https://joblib.readthedocs.io/).
-* [Matplotlib](https://matplotlib.org/).
-* [MOSEK](https://www.mosek.com). **License Required**
-* [Numpy](https://numpy.org/).
-* [Pandas](https://pandas.pydata.org/).
-* [Scipy](https://www.scipy.org/).
-* [Tensorly](http://tensorly.org/).
-* [Statsmodels](https://www.statsmodels.org/).
+- [Joblib](https://joblib.readthedocs.io/).
+- [Matplotlib](https://matplotlib.org/).
+- [MOSEK](https://www.mosek.com). **License Required**
+- [Numpy](https://numpy.org/).
+- [Pandas](https://pandas.pydata.org/).
+- [Scipy](https://www.scipy.org/).
+- [Tensorly](http://tensorly.org/).
+- [Statsmodels](https://www.statsmodels.org/).
 
 MOSEK requires a license to be used. For research or educational purposes, a
 free yearly and renewable [academic
@@ -113,14 +113,14 @@ cd cpsplines
 2. To install the dependencies, there are two options according to your
    installation preferences:
 
-* Create and activate a virtual environment with `conda` (recommended)
+- Create and activate a virtual environment with `conda` (recommended)
 
 ```{bash}
 conda env create -f env.yml
 conda activate cpsplines
 ```
 
-* Install the setuptools dependencies via `pip`
+- Install the setuptools dependencies via `pip`
 
 ```{bash}
 pip install -r requirements.txt
@@ -145,7 +145,7 @@ needs to be executed.
 ## Usage
 
 To illustrate the usage of the repository, let's see how `CPsplines` works with
-two examples, the first with only one regressor and the  second two covariates.
+two examples, the first with only one regressor and the second two covariates.
 
 For the univariate case, consider the function
 
@@ -162,18 +162,18 @@ second-order difference penalty. The smoothing parameter is selected using
 `scipy.optimize.minimize` with the `"SLSQP"` method.
 
 ```python
-# Generate the data 
+# Generate the data
 np.random.seed(6)
 x = np.linspace(0, 1, 51)
 y = (2 * x - 1) ** 3 + np.random.normal(0, 0.25, 51)
 data = pd.DataFrame({"x": x, "y": y})
-# Build and fit the two models: unconstrained and non-decreasing 
-# The constraints follows the syntax 
+# Build and fit the two models: unconstrained and non-decreasing
+# The constraints follows the syntax
 # {variable index : {derivative order: {constraint sign: upper or lower bound}}}
 example1D_1 = CPsplines(
     deg=(3,),
     ord_d=(2,),
-    n_int=(10,),
+    k=(10,),
     x_range={"x": (-0.15, 1.12)}, # variable index : range
     sp_method="optimizer",
     sp_args={"options": {"ftol": 1e-12}},
@@ -183,11 +183,11 @@ example1D_1.fit(data=data, y_col="y")
 example1D_2 = CPsplines(
     deg=(3,),
     ord_d=(2,),
-    n_int=(10,),
+    k=(10,),
     x_range={"x": (-0.15, 1.12)},
     sp_method="optimizer",
     sp_args={"options": {"ftol": 1e-12}},
-    int_constraints={"x": {1: {"+": 0}}} 
+    shape_constraints={"x": {1: {"+": 0}}}
 )
 example1D_2.fit(data=data, y_col="y")
 # Plot the results
@@ -197,7 +197,7 @@ for estimator, c in zip((example1D_1, example1D_2), ("g", "k")):
     _ = CurvesDisplay.from_estimator(estimator,
                                      X=data["x"],
                                      y=data["y"],
-                                     knot_positions=True, 
+                                     knot_positions=True,
                                      constant_constraints=True,
                                      col_pt="b",
                                      ax=ax,
@@ -225,7 +225,7 @@ candidates out of the sets $\{10, 100\}$ (for the first smoothing parameter) and
 50, 100\}$ (for the second smoothing parameter).
 
 ```python
-# Generate the data 
+# Generate the data
 np.random.seed(5)
 x = np.linspace(0, 3 * np.pi, 301)
 y = np.linspace(0, 2 * np.pi, 201)
@@ -235,16 +235,16 @@ data = grid_to_scatter(x=[x, y], y=z, y_col="z")
 example2D = CPsplines(
     deg=(3, 3),
     ord_d=(2, 2),
-    n_int=(30, 20),
+    k=(30, 20),
     sp_method="grid_search",
     sp_args={"grid": [(10, 100), (10, 50, 100)]},
-    int_constraints={"x0": {0: {"+": 0}}, "x1": {0: {"+": 0}}}
+    shape_constraints={"x0": {0: {"+": 0}}, "x1": {0: {"+": 0}}}
 )
 example2D.fit(data=data, y_col="z")
 #Plot the results
-_ = SurfacesDisplay.from_estimator(example2D, 
-                                   orientation=(45,45), 
-                                   figsize=(10, 6), 
+_ = SurfacesDisplay.from_estimator(example2D,
+                                   orientation=(45,45),
+                                   figsize=(10, 6),
                                    **{"cmap": "gist_earth"}
                                    )
 ```
@@ -277,16 +277,16 @@ repository.
 
 There are many ways you can contribute on this repository:
 
-* [Discussions](https://github.com/ManuelNavarroGarcia/cpsplines/discussions).
+- [Discussions](https://github.com/ManuelNavarroGarcia/cpsplines/discussions).
   To ask questions you are wondering about or share ideas, you can enter an
   existing discussion or open a new one.
 
-* [Issues](https://github.com/ManuelNavarroGarcia/cpsplines/issues). If you
+- [Issues](https://github.com/ManuelNavarroGarcia/cpsplines/issues). If you
   detect a bug or you want to propose an enhancement of the current version of
   the code, a issue with reproducible code and/or a detailed description is
   highly appreciated.
 
-* [Pull Requests](https://github.com/ManuelNavarroGarcia/cpsplines/pulls). If
+- [Pull Requests](https://github.com/ManuelNavarroGarcia/cpsplines/pulls). If
   you feel I am missing an important feature, either in the code or in the
   documentation, I encourage you to start a pull request developing this idea.
   Nevertheless, before starting any major new feature work, I suggest you to
@@ -299,8 +299,8 @@ There are many ways you can contribute on this repository:
 If you have encountered any problem or doubt while using `cpsplines`, please
 feel free to let me know by sending me an email:
 
-* Name: Manuel Navarro García (he/his)
-* Email: <manuelnavarrogithub@gmail.com>
+- Name: Manuel Navarro García (he/his)
+- Email: <manuelnavarrogithub@gmail.com>
 
 The formal background of the models used in this project are either published in
 research papers or under current research. If these techniques are helpful to
@@ -335,7 +335,7 @@ keywords = {Shape-constrained regression, Penalized splines, Conic optimization}
 ## Acknowledgements
 
 Throughout the developing of this project I have received strong support from
-various individuals.  
+various individuals.
 
 I would first like to thank my PhD supervisors, Professor [Vanesa
 Guerrero](https://github.com/vanesaguerrero) and Professor [María

@@ -1,7 +1,7 @@
 import itertools
 import logging
 from functools import reduce
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Iterable
 
 import mosek.fusion
 import numpy as np
@@ -48,7 +48,7 @@ class CPsplines:
     ord_d : Iterable[int], optional
         The difference order vector of the penalty matrices. All the elements
         must be non-negative integers. By default, (2,).
-    n_int : int, optional
+    k : int, optional
         The vector of number of equal intervals which the fitting region along
         each dimension is split. All the elements must be non-negative integers.
         By default, (40,).
@@ -89,7 +89,7 @@ class CPsplines:
     family : str, optional
         The specific exponential family distribution where the response variable
         belongs to. By default, "gaussian" (normal distribution).
-    int_constraints : Dict[str, Dict[int, Dict[str, Union[int, float]]]]],
+    shape_constraints : Dict[str, Dict[int, Dict[str, Union[int, float]]]]],
     optional
         A nested dictionary containing the interval constraints to be enforced.
         The keys of the dictionary are the names of the variables. The values
@@ -142,25 +142,23 @@ class CPsplines:
         self,
         deg: Iterable[int] = (3,),
         ord_d: Iterable[int] = (2,),
-        n_int: Iterable[int] = (40,),
-        x_range: Optional[Dict[str, Tuple[Union[int, float]]]] = None,
+        k: Iterable[int] = (40,),
+        x_range: dict[str, tuple[int | float]] | None = None,
         sp_method: str = "optimizer",
-        sp_args: Optional[Dict[str, Any]] = None,
+        sp_args: dict[str, Any] | None = None,
         family: str = "gaussian",
-        int_constraints: Optional[
-            Dict[str, Dict[int, Dict[str, Union[int, float]]]]
-        ] = None,
-        pt_constraints: Optional[Dict[Tuple[int], Dict[str, pd.DataFrame]]] = None,
+        shape_constraints: dict[str, dict[int, dict[str, int | float]]] | None = None,
+        pt_constraints: dict[tuple[int], dict[str, pd.DataFrame]] | None = None,
         pdf_constraint: bool = False,
     ):
         self.deg = deg
         self.ord_d = ord_d
-        self.n_int = n_int
+        self.k = k
         self.x_range = x_range
         self.sp_method = sp_method
         self.sp_args = sp_args
         self.family = self._get_family(family)
-        self.int_constraints = int_constraints
+        self.shape_constraints = shape_constraints
         self.pt_constraints = pt_constraints
         self.pdf_constraint = pdf_constraint
 
@@ -197,7 +195,7 @@ class CPsplines:
             raise ValueError(f"Family {family} is not implemented.")
         return family_statsmodels
 
-    def _get_bspline_bases(self, x: Iterable[np.ndarray]) -> List[BsplineBasis]:
+    def _get_bspline_bases(self, x: Iterable[np.ndarray]) -> list[BsplineBasis]:
         """
         Construct the B-spline bases on each axis.
 
@@ -215,9 +213,7 @@ class CPsplines:
         bspline_bases = []
         if self.x_range is None:
             self.x_range = {}
-        for deg, xsample, n_int, name in zip(
-            self.deg, x, self.n_int, self.feature_names
-        ):
+        for deg, xsample, k, name in zip(self.deg, x, self.k, self.feature_names):
             # Get the maximum and minimum of the fitting regions
             x_min, x_max = np.min(xsample), np.max(xsample)
             prediction_dict = {}
@@ -229,12 +225,8 @@ class CPsplines:
                     prediction_dict["forward"] = pred_max
                 if pred_min < x_min:
                     prediction_dict["backwards"] = pred_min
-            bsp = BsplineBasis(
-                deg=deg, xsample=xsample, n_int=n_int, prediction=prediction_dict
-            )
-            # Generate the design matrix of the B-spline basis
-            bsp.get_matrix_B()
-            if self.int_constraints is not None or self.pdf_constraint:
+            bsp = BsplineBasis(deg=deg, x=xsample, k=k, prediction=prediction_dict)
+            if self.shape_constraints is not None or self.pdf_constraint:
                 bsp.get_matrices_S()
             bspline_bases.append(bsp)
         return bspline_bases
@@ -263,7 +255,7 @@ class CPsplines:
             )
         return None
 
-    def _get_obj_func_arrays(self, y: np.ndarray) -> Dict[str, np.ndarray]:
+    def _get_obj_func_arrays(self, y: np.ndarray) -> dict[str, np.ndarray]:
         """
         Gather all the arrays used to define the objective function of the
         optimization funcion. These are the design matrices of the B-spline
@@ -301,9 +293,9 @@ class CPsplines:
 
     def _initialize_model(
         self,
-        obj_matrices: Union[np.ndarray, Iterable[np.ndarray]],
+        obj_matrices: np.ndarray | Iterable[np.ndarray],
         y_col: str,
-        data_normalizer: Optional[DataNormalizer] = None,
+        data_normalizer: DataNormalizer | None = None,
     ) -> mosek.fusion.Model:
         """
         Construct the optimization model.
@@ -348,12 +340,12 @@ class CPsplines:
             pdf_cons.integrate_to_one(var_dict=mos_obj_f.var_dict, model=M)
             # Enforce the non-negativity constraint if it is not imposed
             # explicitly
-            self.int_constraints = pdf_cons.nonneg_cons(
-                self.int_constraints, self.feature_names
+            self.shape_constraints = pdf_cons.nonneg_cons(
+                self.shape_constraints, self.feature_names
             )
 
-        if self.int_constraints is not None:
-            max_deriv = max([max(v.keys()) for v in self.int_constraints.values()])
+        if self.shape_constraints is not None:
+            max_deriv = max([max(v.keys()) for v in self.shape_constraints.values()])
             if max_deriv > 1 and not isinstance(self.family, Gaussian):
                 raise ValueError(
                     "Interval constraints are only implemented for non Gaussian data up to the first derivative "
@@ -365,8 +357,8 @@ class CPsplines:
             }
             # Iterate for every variable with constraints and for every
             # derivative order
-            for var_name in self.int_constraints.keys():
-                for deriv, constraints in self.int_constraints[var_name].items():
+            for var_name in self.shape_constraints.keys():
+                for deriv, constraints in self.shape_constraints[var_name].items():
                     if list(constraints.values())[0] != 0 and not isinstance(
                         self.family, Gaussian
                     ):
@@ -396,7 +388,7 @@ class CPsplines:
                         var_dict=mos_obj_f.var_dict, model=M, matrices_S=matrices_S_copy
                     )
         else:
-            self.int_constraints = {}
+            self.shape_constraints = {}
 
         if self.pt_constraints is not None:
             if not isinstance(self.family, Gaussian):
@@ -440,8 +432,8 @@ class CPsplines:
 
     def _get_sp_grid_search(
         self,
-        obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
-    ) -> Tuple[Union[int, float]]:
+        obj_matrices: dict[str, np.ndarray | Iterable[np.ndarray]],
+    ) -> tuple[int | float]:
         """
         Get the best smoothing parameter vector with the GCV minimizer criteria
         using grid search selection.
@@ -489,8 +481,8 @@ class CPsplines:
 
     def _get_sp_optimizer(
         self,
-        obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
-    ) -> Tuple[Union[int, float]]:
+        obj_matrices: dict[str, np.ndarray | Iterable[np.ndarray]],
+    ) -> tuple[int | float]:
         """
         Get the best smoothing parameter vector with the GCV minimizer criteria
         using an optimizer from scipy.optimize.minimize.
@@ -529,7 +521,7 @@ class CPsplines:
 
     def _preprocessor(
         self, data: pd.DataFrame, y_col: str
-    ) -> Tuple[List[np.ndarray], np.ndarray]:
+    ) -> tuple[list[np.ndarray], np.ndarray]:
         """Preprocesses the input data, checking if it can be rearranged into a
         grid. If this is the case, the data is arranged accordingly.
 
@@ -565,7 +557,7 @@ class CPsplines:
         self,
         data: pd.DataFrame,
         y_col: str,
-        y_range: Optional[Iterable[Union[int, float]]] = None,
+        y_range: Iterable[int | float] | None = None,
         **kwargs,
     ):
         """
@@ -595,8 +587,8 @@ class CPsplines:
             If MOSEK could not arrive to a feasible solution.
         """
 
-        if len({len(i) for i in [self.deg, self.ord_d, self.n_int]}) != 1:
-            raise ValueError("The lengths of `deg`, `ord_d`, `n_int` must agree.")
+        if len({len(i) for i in [self.deg, self.ord_d, self.k]}) != 1:
+            raise ValueError("The lengths of `deg`, `ord_d`, `k` must agree.")
 
         if self.sp_method not in ["grid_search", "optimizer"]:
             raise ValueError(f"Invalid `sp_method`: {self.sp_method}.")
@@ -695,7 +687,7 @@ class CPsplines:
 
         return None
 
-    def predict(self, data: Union[pd.Series, pd.DataFrame]) -> np.ndarray:
+    def predict(self, data: pd.Series | pd.DataFrame) -> np.ndarray:
         """Generates output predictions for the input samples.
 
         Parameters

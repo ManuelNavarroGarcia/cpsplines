@@ -1,5 +1,4 @@
 import math
-from typing import Dict, Union
 
 import numpy as np
 from scipy.interpolate import BSpline
@@ -7,31 +6,24 @@ from scipy.interpolate import BSpline
 
 class BsplineBasis:
     """
-    Generate a univariate uniform B-spline basis from a regressor vector. The
-    knot sequence is defined using `n_int + 2 * deg + 1` evenly spaced knots so
-    that the (`deg` + 1)-th knot coincides with the minimum value of `xsample` and
-    the (`n_int` + `deg` + 1) matches the maximum value of `xsample`. The B-spline
-    basis may be extended outwards the range defined by `xsample` adding extra
-    knots (preserving the same step length) to the knot sequence as it is done
-    in Currie I., Durban M. and Eilers P. (2004).
+    Generate a univariate uniform B-spline basis from a regressor vector (`x`). The knot sequence is defined using `k + 2 * deg + 1` evenly spaced knots such that
+    the (`deg` + 1)-th knot coincides with the minimum value of `x` and the (`k` +
+    `deg` + 1) matches the maximum value of `x`. The B-spline basis may be extended
+    beyond the range defined by `x` by adding extra knots, as described in Currie et al.
+    (2004).
 
     Parameters
     ----------
-    xsample : np.ndarray
+    x : np.ndarray
         The regressor vector. Must be a unidimensional array.
     deg : int, optional
-        The polynomial degree of the B-spline basis. Must be a non-negative
-        integer. By default, 3.
-    n_int : int, optional
-        The number of equal intervals which [min(`xsample`), max(`xsample`)] is
-        split. Must be greater or equal than 2. By default, 40.
+        The polynomial degree of the B-spline basis. Must be a non-negative integer. Default is 3.
+    k : int, optional
+        The number of equal intervals into which [min(`x`), max(`x`)] is divided. Must be greater than or equal to 2. Default is 20.
     prediction : Dict[str, Union[int, float]], optional
-        A dictionary containing the most extreme values that the extended
-        basis needs to capture. The keys are 'backwards' and 'forward',
-        depending on the direction which the basis must be extended, and the
-        values are the points on the basis axis. If 'backwards' ('forward') keys
-        is not empty, the value must be at the left (right) of the minimum
-        (maximum) value of 'xsample'. By default, {}.
+        A dictionary containing the extreme values that the extended basis needs to
+        capture. The keys are 'backwards' and 'forward', specifying the direction in
+        which the basis should be extended. The values must be outside the range of `x`. Default is an empty dictionary.
 
     Attributes
     ----------
@@ -39,71 +31,67 @@ class BsplineBasis:
         The number of extra knots used to extend the B-spline basis to the left.
     int_forw : int
         The number of extra knots used to extend the B-spline basis to the right.
-    knots : np.ndarray of shape (`n_int` + 2 * `deg` + 1, )
+    knots : np.ndarray
         The knot sequence of the B-spline basis.
-    bspline_basis : scipy.interpolate.Bspline
-        The `n_int` + `int_back` + `int_forw` + `deg` elements of the B-spline basis.
-    matrixB : np.ndarray of shape (`int_back` + len(`xsample`) + `int_forw`,
-        `n_int` + `deg`)
-        The design matrix of the B-spline basis. The ij-th element of the matrix
-        contains the evaluation of the j-th B-spline from the basis at the i-th
-        element of the vector `xsample`.
+    bspline_basis : scipy.interpolate.BSpline
+        The B-spline basis object.
+    matrixB : np.ndarray
+        The design matrix of the B-spline basis. The element at position (i, j) contains the evaluation of the j-th B-spline at the i-th element of `x`.
 
     References
     ----------
-    - Currie, I. D., Durban, M., & Eilers, P. H. (2004). Smoothing and
-      forecasting mortality rates. Statistical modelling, 4(4), 279-298.
-    - De Boor, C., & De Boor, C. (1978). A practical guide to splines (Vol. 27).
-      New York: Springer-Verlag.
+    Currie, I. D., Durban, M., & Eilers, P. H. (2004). Smoothing and forecasting
+    mortality rates. Statistical modelling, 4(4), 279-298.
+
+    De Boor, C. (1978). A practical guide to splines (Vol. 27). New York: Springer-Verlag.
     """
 
     def __init__(
         self,
-        xsample: np.ndarray,
+        x: np.ndarray,
         deg: int = 3,
-        n_int: int = 40,
-        prediction: Dict[str, Union[int, float]] = {},
+        k: int = 20,
+        prediction: dict[str, int | float] = {},
     ):
-        self.xsample = xsample
+        self.x = x
         self.deg = deg
-        self.n_int = n_int
+        self.k = k
         self.prediction = prediction
+
+        # Initialize internal variables
+        self.int_back = 0
+        self.int_forw = 0
+        self.knots = None
+        self.bspline_basis = None
+        self.matrixB = None
+
+        # It is advisable to generate the matrix B immediately during initialization
+        self.get_matrix_B()
 
     def get_matrix_B(self) -> None:
         """
-        Defines the design matrix of the B-spline basis, consisting on the
-        evaluation of the B-spline basis polynomials at `xsample`. This is
-        achieved determining how many extra knots are needed to extend the basis
-        on the desired range, defining the knot sequence of the basis, which is
-        constructed using `construct_fast` from scipy.interpolate.Bspline, and
-        finally evaluating this basis at `xsample`. Hence, the shape of the
-        matrix is  (`int_back` + len(`xsample`) + `int_forw`, `n_int` + `deg`)
+        Defines the design matrix of the B-spline basis, consisting of the evaluation of the B-spline basis polynomials at `x`.
+
+        This method calculates how many extra knots are needed to extend the basis defines the knot sequence of the basis, constructs the B-spline basis using
+        `scipy.interpolate.BSpline.construct_fast`, and evaluates the basis at `x`.
 
         Raises
         ------
         ValueError
-            If `deg` is a negative integer.
-        ValueError
-            If `xsample` is not a unidimensional array.
-        ValueError
-            If `n_int` is less than 2.
-        ValueError
-            If any key in `prediction` is different from 'forward' or
-            'backwards'.
-        ValueError
-            If the bound given in 'backwards' is inside the convex hull of
-            `xsample`.
-        ValueError
-            If the bound given in 'forward' is inside the convex hull of
-            `xsample`.
+            If any of the following conditions are met:
+            - `deg` is negative.
+            - `x` is not a unidimensional array.
+            - `k` is less than 2.
+            - `prediction` contains keys other than 'forward' or 'backwards'.
+            - The 'backwards' bound is not to the left of the minimum value of `x`.
+            - The 'forward' bound is not to the right of the maximum value of `x`.
         """
-        min_x = self.xsample.min()
-        max_x = self.xsample.max()
+        min_x, max_x = self.x.min(), self.x.max()
         if self.deg < 0:
             raise ValueError("The degree of the B-spline basis must be at least 0.")
-        if self.xsample.ndim != 1:
+        if self.x.ndim != 1:
             raise ValueError("Regressor vector must be one-dimensional.")
-        if self.n_int < 2:
+        if self.k < 2:
             raise ValueError(
                 "The fitting regions must be split in at least 2 intervals."
             )
@@ -130,11 +118,11 @@ class BsplineBasis:
                 )
 
         # Compute the distance between adjacent knots
-        step_length = (max_x - min_x) / self.n_int
+        step_length = (max_x - min_x) / self.k
 
-        # Determine how many knots at the left (right) of min(`xsample`)
-        # (max(`xsample`)) are needed to extend the basis backwards (forward).
-        # The step length between these new knots must be the same
+        # Determine how many knots at the left (right) of min(`x`) (max(`x`)) are needed
+        # to extend the basis backwards (forward). The step length between these new
+        # knots must be the same
         self.int_back = (
             math.ceil((min_x - self.prediction["backwards"]) / step_length)
             if "backwards" in self.prediction
@@ -146,39 +134,34 @@ class BsplineBasis:
             if "forward" in self.prediction
             else 0
         )
-        # Construct the knot sequence of the B-spline basis, consisting on
-        # `n_int` + 2 * `deg` + 1 equally spaced knots
+        # Construct the knot sequence of the B-spline basis, consisting on `k` + 2 * `deg` + 1 equally spaced knots
         knots = np.linspace(
             min_x - (self.int_back + self.deg) * step_length,
             max_x + (self.int_forw + self.deg) * step_length,
-            self.n_int + self.int_back + self.int_forw + 2 * self.deg + 1,
+            self.k + self.int_back + self.int_forw + 2 * self.deg + 1,
         )
-        # To avoid floating point error, force that the (`deg` + 1)-th knot
-        # coincides with the minimum value of `xsample` and the
-        # (`n_int` + `deg` + 1) matches the maximum value of `xsample`
+        # To avoid floating point error, force that the (`deg` + 1)-th knot coincides
+        # with the minimum value of `x` and the (`k` + `deg` + 1) matches the
+        # maximum value of `x`
         knots[self.int_back + self.deg] = min_x
         knots[-(self.int_forw + self.deg + 1)] = max_x
         self.knots = knots
 
-        # Construct the B-spline basis, consisting on
-        # (`n_int` + `int_back` + `int_forw` + `deg`) elements
+        # Construct the B-spline basis, consisting on (`k` + `int_back` + `int_forw` + `deg`) elements
         self.bspline_basis = BSpline.construct_fast(
             t=self.knots,
-            c=np.eye(
-                self.n_int + self.deg + self.int_forw + self.int_back, dtype=float
-            ),
+            c=np.eye(self.k + self.deg + self.int_forw + self.int_back, dtype=float),
             k=self.deg,
         )
         # Return the design matrix of the B-spline basis
         x_eval = np.concatenate(
             [
                 self.knots[self.deg : self.deg + self.int_back],
-                self.xsample,
-                self.knots[self.int_back + self.n_int + self.deg + 1 : -self.deg],
+                self.x,
+                self.knots[self.int_back + self.k + self.deg + 1 : -self.deg],
             ]
         )
         self.matrixB = self.bspline_basis(x=x_eval)
-        return None
 
     def get_matrices_S(self):
         """
@@ -218,7 +201,7 @@ class BsplineBasis:
         # where T_k has as columns the array (1, x, x**2, ... x**`deg`)
         # evaluated at the points
         #     linspace(knots[k + `deg`], knots[k + `deg` + 1], `deg` + 1)
-        for k in range(self.n_int + self.int_back + self.int_forw):
+        for k in range(self.k + self.int_back + self.int_forw):
             T_k = np.vander(
                 np.linspace(
                     self.knots[k + self.deg], self.knots[k + self.deg + 1], self.deg + 1
@@ -228,4 +211,3 @@ class BsplineBasis:
             S_k = np.linalg.solve(T_k, C)
             S.append(S_k)
         self.matrices_S = S
-        return None

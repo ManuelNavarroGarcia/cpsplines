@@ -1,5 +1,4 @@
 import logging
-from typing import List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -10,9 +9,9 @@ class RearrangingError(Exception):
 
 
 def grid_to_scatter(
-    x: List[np.ndarray],
+    x: list[np.ndarray],
     y: np.ndarray,
-    x_cols: Optional[List[str]] = None,
+    x_cols: list[str] | None = None,
     y_col: str = "y",
 ) -> pd.DataFrame:
     """
@@ -66,7 +65,7 @@ def grid_to_scatter(
 
 def scatter_to_grid(
     data: pd.DataFrame, y_col: str
-) -> Tuple[List[np.ndarray], np.ndarray]:
+) -> tuple[list[np.ndarray], np.ndarray]:
     """
     Given a DataFrame containing the value of the covariates and the target
     variable, generates a list of arrays containing the value of the covariates

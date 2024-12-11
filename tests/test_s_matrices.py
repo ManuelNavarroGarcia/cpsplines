@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+
 from cpsplines.psplines.bspline_basis import BsplineBasis
 
 S1 = [
@@ -87,15 +88,14 @@ S2 = [
 
 
 @pytest.mark.parametrize(
-    "x_sam, deg, n_int, prediction, S",
+    "x, deg, k, prediction, S",
     [
         (np.linspace(0, 10, 11), 3, 4, {}, S1),
         (np.linspace(0, 7, 8), 2, 3, {"backwards": -1.5, "forward": 10}, S2),
     ],
 )
-def test_S_matrices(x_sam, deg, n_int, prediction, S):
-    bsp = BsplineBasis(deg=deg, xsample=x_sam, n_int=n_int, prediction=prediction)
-    bsp.get_matrix_B()
+def test_S_matrices(x, deg, k, prediction, S):
+    bsp = BsplineBasis(deg=deg, x=x, k=k, prediction=prediction)
     bsp.get_matrices_S()
     for mat, mat_out in zip(S, bsp.matrices_S):
         np.testing.assert_allclose(mat, mat_out, atol=1e-12)

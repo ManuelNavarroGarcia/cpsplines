@@ -1,6 +1,6 @@
 import itertools
 from functools import reduce
-from typing import Dict, Iterable, List, Tuple, Union
+from typing import Iterable
 
 import mosek.fusion
 import numpy as np
@@ -57,17 +57,17 @@ class IntConstraints:
 
     def __init__(
         self,
-        bspline: Dict[str, BsplineBasis],
+        bspline: dict[str, BsplineBasis],
         var_name: str,
         derivative: int,
-        constraints: Dict[str, Union[int, float]],
+        constraints: dict[str, int | float],
     ):
         self.bspline = bspline
         self.var_name = var_name
         self.derivative = derivative
         self.constraints = constraints
 
-    def _get_matrices_W(self) -> List[np.ndarray]:
+    def _get_matrices_W(self) -> list[np.ndarray]:
         """
         Generates matrices W containing the weights that have to be multiplied
         by the coefficients of the polynomials from the B-spline basis to employ
@@ -133,7 +133,7 @@ class IntConstraints:
             W.append(pascal_coef * W_i)
         return W
 
-    def _get_matrices_H(self) -> List[mosek.fusion.SparseMatrix]:
+    def _get_matrices_H(self) -> list[mosek.fusion.SparseMatrix]:
         """
         Generates matrices H used to extract the right coefficients from the
         positive semidefinite matrix variables to fulfill the equations of
@@ -206,10 +206,10 @@ class IntConstraints:
 
     def interval_cons(
         self,
-        var_dict: Dict[str, mosek.fusion.LinearVariable],
+        var_dict: dict[str, mosek.fusion.LinearVariable],
         model: mosek.fusion.Model,
-        matrices_S: Dict[int, Iterable[np.ndarray]],
-    ) -> Tuple[mosek.fusion.LinearConstraint]:
+        matrices_S: dict[int, Iterable[np.ndarray]],
+    ) -> tuple[mosek.fusion.LinearConstraint]:
         """
         Defines the non-negative related constraints over a finite interval. For
         each interval and each sign constraint, 2 * `deg_w` - 1 equations are

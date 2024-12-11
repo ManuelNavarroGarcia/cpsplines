@@ -1,4 +1,4 @@
-from typing import Iterable, Optional, Tuple, Union
+from typing import Iterable
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -28,7 +28,7 @@ class CurvesDisplay:
     """
 
     def __init__(
-        self, X: Union[pd.Series, pd.DataFrame], y_true: pd.Series, y_pred: np.ndarray
+        self, X: pd.Series | pd.DataFrame, y_true: pd.Series, y_pred: np.ndarray
     ):
         self.X = X
         self.y_true = y_true
@@ -36,7 +36,7 @@ class CurvesDisplay:
 
     def plot(
         self,
-        ax: Optional[plt.axes] = None,
+        ax: plt.Axes | None = None,
         **kwargs,
     ):
         """Plot visualization. Extra keyword arguments will be passed to
@@ -68,15 +68,15 @@ class CurvesDisplay:
     def from_estimator(
         cls,
         estimator: CPsplines,
-        X: Union[pd.Series, pd.DataFrame],
+        X: pd.Series | pd.DataFrame,
         y: pd.Series,
         knot_positions: bool = False,
         constant_constraints: bool = False,
         density: int = 5,
-        ax: Optional[plt.axes] = None,
-        col_pt: Optional[Iterable[str]] = None,
-        alpha: Union[int, float] = 0.25,
-        figsize: Tuple[Union[int, float]] = (15, 10),
+        ax: plt.Axes | None = None,
+        col_pt: Iterable[str] | None = None,
+        alpha: int | float = 0.25,
+        figsize: tuple[int | float] = (15, 10),
         **kwargs,
     ):
         """Create a curve fitting display from an estimator.
@@ -140,8 +140,8 @@ class CurvesDisplay:
 
         # If it is required, threshold of the zero-order derivative constraints
         if constant_constraints:
-            if estimator.int_constraints:
-                d = estimator.int_constraints[next(iter(estimator.int_constraints))]
+            if estimator.shape_constraints:
+                d = estimator.shape_constraints[next(iter(estimator.shape_constraints))]
                 if 0 in d:
                     for value in d[0].values():
                         _ = ax.axhline(
@@ -154,9 +154,9 @@ class CurvesDisplay:
         # If the prediction region is not empty, plot vertical dashed lines at
         # the extremes of the fitting region
         if bsp.int_back > 0:
-            _ = ax.axvline(bsp.xsample.min(), linewidth=1.0, linestyle="--", **kwargs)
+            _ = ax.axvline(bsp.x.min(), linewidth=1.0, linestyle="--", **kwargs)
         if bsp.int_forw > 0:
-            _ = ax.axvline(bsp.xsample.max(), linewidth=1.0, linestyle="--", **kwargs)
+            _ = ax.axvline(bsp.x.max(), linewidth=1.0, linestyle="--", **kwargs)
 
         _ = ax.scatter(x=X, y=y, c=col_pt, alpha=alpha)
 

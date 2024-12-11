@@ -1,5 +1,5 @@
 from functools import reduce
-from typing import Dict, Iterable, Tuple, Union
+from typing import Iterable
 
 import mosek.fusion
 import numpy as np
@@ -35,7 +35,7 @@ class ObjectiveFunction:
         self.bspline = bspline
         self.model = model
 
-    def _create_var_dict(self, n: int) -> Dict[str, mosek.fusion.LinearVariable]:
+    def _create_var_dict(self, n: int) -> dict[str, mosek.fusion.LinearVariable]:
         """
         Creates the variables of the optimization problem. These variables are:
 
@@ -77,11 +77,11 @@ class ObjectiveFunction:
 
     def create_obj_function(
         self,
-        obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
-        sp: Iterable[Union[int, float]],
+        obj_matrices: dict[str, np.ndarray | Iterable[np.ndarray]],
+        sp: Iterable[int | float],
         family: Family,
         data_arrangement: str,
-    ) -> Tuple[Union[None, mosek.fusion.ConicConstraint]]:
+    ) -> tuple[mosek.fusion.ConicConstraint | None]:
         """
         Creates the objective function to be minimized. Although the penalized
         sum of squares is directly stated as a quadratic optimization function,

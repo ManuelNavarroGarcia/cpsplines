@@ -1,4 +1,6 @@
 import numpy as np
+
+
 from cpsplines.psplines.bspline_basis import BsplineBasis
 
 
@@ -42,8 +44,8 @@ class PenaltyMatrix:
 
         Returns
         -------
-        np.ndarray of shape (`bspline.n_int` + `bspline.int_forw` +
-        `bspline.int_back` + `bspline.deg`, `bspline.n_int` + `bspline.int_forw`
+        np.ndarray of shape (`bspline.k` + `bspline.int_forw` +
+        `bspline.int_back` + `bspline.deg`, `bspline.k` + `bspline.int_forw`
         + `bspline.int_back` + `bspline.deg`)
             The penalty matrix of 'diff' variation
 
@@ -63,13 +65,13 @@ class PenaltyMatrix:
             raise ValueError("The penalty order must be a non-negative integer.")
 
         dim = (
-            self.bspline.n_int
+            self.bspline.k
             + self.bspline.int_forw
             + self.bspline.int_back
             + self.bspline.deg
             + ord_d
         )
-        # Generate an identity matrix of order `bspline.n_int` +
+        # Generate an identity matrix of order `bspline.k` +
         # `bspline.int_forw` +  `bspline.int_back` + `bspline.deg` and generate
         # its difference matrix. Then, remove the first and last `ord_d` rows
         return np.diff(np.eye(dim, dtype=np.int32), n=ord_d)[ord_d:-ord_d, :]
@@ -81,8 +83,8 @@ class PenaltyMatrix:
 
         Returns
         -------
-        np.ndarray of shape (`bspline.n_int` + `bspline.int_forw` +
-        `bspline.int_back` + `bspline.deg`, `bspline.n_int` + `bspline.int_forw`
+        np.ndarray of shape (`bspline.k` + `bspline.int_forw` +
+        `bspline.int_back` + `bspline.deg`, `bspline.k` + `bspline.int_forw`
         + `bspline.int_back` + `bspline.deg`)
             The penalty matrix.
 

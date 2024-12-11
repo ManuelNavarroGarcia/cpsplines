@@ -561,7 +561,7 @@ y_fit_7 = np.array(
 
 
 @pytest.mark.parametrize(
-    "deg, ord_d, n_int, sp, family, data_arrangement, x, y, y_fit",
+    "deg, ord_d, k, sp, family, data_arrangement, x, y, y_fit",
     [
         (
             [3],
@@ -642,15 +642,8 @@ y_fit_7 = np.array(
         ),
     ],
 )
-def test_gcv(deg, ord_d, n_int, sp, family, data_arrangement, x, y, y_fit):
-    bspline = [
-        BsplineBasis(deg=d, xsample=xsam, n_int=n) for d, xsam, n in zip(deg, x, n_int)
-    ]
-    B = []
-    for bsp in bspline:
-        bsp.get_matrix_B()
-        B.append(bsp.matrixB)
-
+def test_gcv(deg, ord_d, k, sp, family, data_arrangement, x, y, y_fit):
+    bspline = [BsplineBasis(deg=d, x=x_, k=n) for d, x_, n in zip(deg, x, k)]
     D_mul = [
         PenaltyMatrix(bspline=bsp).get_penalty_matrix(**{"ord_d": o})
         for bsp, o in zip(bspline, ord_d)
@@ -659,7 +652,7 @@ def test_gcv(deg, ord_d, n_int, sp, family, data_arrangement, x, y, y_fit):
     penalty_list = penalization_term(matrices=D_mul)
     penalty_term = np.add.reduce([np.multiply(s, P) for P, s in zip(penalty_list, sp)])
 
-    obj_matrices = {"B": B, "y": y}
+    obj_matrices = {"B": [bsp.matrixB for bsp in bspline], "y": y}
 
     out = fit_irls(
         obj_matrices=obj_matrices,

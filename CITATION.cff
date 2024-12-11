@@ -8,10 +8,10 @@ date-released: "2022-11-23"
 keywords:
   - "P-splines"
   - "MOSEK"
-  - "Python 3.9"
+  - "Python 3.12"
   - "Constraints"
   - "Optimization"
 license: MIT License
 repository-code: "https://github.com/ManuelNavarroGarcia/cpsplines"
 title: "cpsplines"
-version: 0.2.3
+version: 0.3.0

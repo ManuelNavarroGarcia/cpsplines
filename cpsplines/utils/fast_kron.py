@@ -1,4 +1,4 @@
-from typing import Iterable, List
+from typing import Iterable
 
 import numpy as np
 import tensorly as tl
@@ -103,7 +103,7 @@ def matrix_by_tensor_product(
     return T
 
 
-def penalization_term(matrices: Iterable[np.ndarray]) -> List[np.ndarray]:
+def penalization_term(matrices: Iterable[np.ndarray]) -> list[np.ndarray]:
     """
     Given the penalty matrices defined over every axis, computes the
     penalization term of the objective function.

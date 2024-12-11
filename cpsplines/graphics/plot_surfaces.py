@@ -1,5 +1,3 @@
-from typing import Optional, Tuple, Union
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
@@ -29,15 +27,15 @@ class SurfacesDisplay:
         Figure containing the contour plot of the fitted surface.
     """
 
-    def __init__(self, X: Union[pd.Series, pd.DataFrame], y_pred: pd.Series):
+    def __init__(self, X: pd.Series | pd.DataFrame, y_pred: pd.Series):
         self.X = X
         self.y_pred = y_pred
 
     def plot(
         self,
         contour_plot: bool = True,
-        ax: Optional[plt.axes] = None,
-        ax_contour: Optional[plt.axes] = None,
+        ax: plt.Axes | None = None,
+        ax_contour: plt.Axes | None = None,
         **kwargs,
     ):
         """Plot visualization. Extra keyword arguments will be passed to
@@ -98,13 +96,13 @@ class SurfacesDisplay:
         cls,
         estimator: CPsplines,
         contour_plot: bool = True,
-        ax: Optional[plt.axes] = None,
-        ax_contour: Optional[plt.axes] = None,
+        ax: plt.Axes | None = None,
+        ax_contour: plt.Axes | None = None,
         knot_positions: bool = False,
         density: int = 5,
-        zlim: Optional[Tuple[Union[int, float]]] = None,
-        orientation: Optional[Tuple[Union[int, float]]] = None,
-        figsize: Tuple[Union[int, float]] = (15, 10),
+        zlim: tuple[int | float] | None = None,
+        orientation: tuple[int | float] | None = None,
+        figsize: tuple[int | float] = (15, 10),
         **kwargs,
     ):
         """Create a surface fitting display from an estimator.

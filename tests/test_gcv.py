@@ -78,7 +78,7 @@ out6 = 1.0015657008978232
 
 
 @pytest.mark.parametrize(
-    "deg, ord_d, n_int, sp, family, data_arrangement, x, y, gcv",
+    "deg, ord_d, k, sp, family, data_arrangement, x, y, gcv",
     [
         (
             [3],
@@ -152,19 +152,13 @@ out6 = 1.0015657008978232
         ),
     ],
 )
-def test_gcv(deg, ord_d, n_int, sp, family, data_arrangement, x, y, gcv):
-    bspline = [
-        BsplineBasis(deg=d, xsample=xsam, n_int=n) for d, xsam, n in zip(deg, x, n_int)
-    ]
-    B = []
-    for bsp in bspline:
-        bsp.get_matrix_B()
-        B.append(bsp.matrixB)
+def test_gcv(deg, ord_d, k, sp, family, data_arrangement, x, y, gcv):
+    bspline = [BsplineBasis(deg=d, x=x_, k=n) for d, x_, n in zip(deg, x, k)]
     D_mul = [
         PenaltyMatrix(bspline=bsp).get_penalty_matrix(**{"ord_d": o})
         for bsp, o in zip(bspline, ord_d)
     ]
-    obj_matrices = {"B": B, "D_mul": D_mul, "y": y}
+    obj_matrices = {"B": [bsp.matrixB for bsp in bspline], "D_mul": D_mul, "y": y}
 
     gcv_out = GCV(
         sp=sp,
