@@ -1,4 +1,4 @@
-from typing import Dict, Iterable, Union
+from typing import Iterable
 
 import numpy as np
 from statsmodels.genmod.families.family import Family
@@ -8,8 +8,8 @@ from cpsplines.utils.irls import fit_irls
 
 
 def GCV(
-    sp: Iterable[Union[int, float]],
-    obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
+    sp: Iterable[int | float],
+    obj_matrices: dict[str, np.ndarray | Iterable[np.ndarray]],
     family: Family,
     data_arrangement: str,
 ) -> float:

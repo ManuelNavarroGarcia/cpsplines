@@ -1,7 +1,7 @@
 import itertools
 import logging
 from functools import reduce
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Iterable
 
 import mosek.fusion
 import numpy as np
@@ -143,14 +143,12 @@ class CPsplines:
         deg: Iterable[int] = (3,),
         ord_d: Iterable[int] = (2,),
         k: Iterable[int] = (40,),
-        x_range: Optional[Dict[str, Tuple[Union[int, float]]]] = None,
+        x_range: dict[str, tuple[int | float]] | None = None,
         sp_method: str = "optimizer",
-        sp_args: Optional[Dict[str, Any]] = None,
+        sp_args: dict[str, Any] | None = None,
         family: str = "gaussian",
-        shape_constraints: Optional[
-            Dict[str, Dict[int, Dict[str, Union[int, float]]]]
-        ] = None,
-        pt_constraints: Optional[Dict[Tuple[int], Dict[str, pd.DataFrame]]] = None,
+        shape_constraints: dict[str, dict[int, dict[str, int | float]]] | None = None,
+        pt_constraints: dict[tuple[int], dict[str, pd.DataFrame]] | None = None,
         pdf_constraint: bool = False,
     ):
         self.deg = deg
@@ -197,7 +195,7 @@ class CPsplines:
             raise ValueError(f"Family {family} is not implemented.")
         return family_statsmodels
 
-    def _get_bspline_bases(self, x: Iterable[np.ndarray]) -> List[BsplineBasis]:
+    def _get_bspline_bases(self, x: Iterable[np.ndarray]) -> list[BsplineBasis]:
         """
         Construct the B-spline bases on each axis.
 
@@ -257,7 +255,7 @@ class CPsplines:
             )
         return None
 
-    def _get_obj_func_arrays(self, y: np.ndarray) -> Dict[str, np.ndarray]:
+    def _get_obj_func_arrays(self, y: np.ndarray) -> dict[str, np.ndarray]:
         """
         Gather all the arrays used to define the objective function of the
         optimization funcion. These are the design matrices of the B-spline
@@ -295,9 +293,9 @@ class CPsplines:
 
     def _initialize_model(
         self,
-        obj_matrices: Union[np.ndarray, Iterable[np.ndarray]],
+        obj_matrices: np.ndarray | Iterable[np.ndarray],
         y_col: str,
-        data_normalizer: Optional[DataNormalizer] = None,
+        data_normalizer: DataNormalizer | None = None,
     ) -> mosek.fusion.Model:
         """
         Construct the optimization model.
@@ -434,8 +432,8 @@ class CPsplines:
 
     def _get_sp_grid_search(
         self,
-        obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
-    ) -> Tuple[Union[int, float]]:
+        obj_matrices: dict[str, np.ndarray | Iterable[np.ndarray]],
+    ) -> tuple[int | float]:
         """
         Get the best smoothing parameter vector with the GCV minimizer criteria
         using grid search selection.
@@ -483,8 +481,8 @@ class CPsplines:
 
     def _get_sp_optimizer(
         self,
-        obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
-    ) -> Tuple[Union[int, float]]:
+        obj_matrices: dict[str, np.ndarray | Iterable[np.ndarray]],
+    ) -> tuple[int | float]:
         """
         Get the best smoothing parameter vector with the GCV minimizer criteria
         using an optimizer from scipy.optimize.minimize.
@@ -523,7 +521,7 @@ class CPsplines:
 
     def _preprocessor(
         self, data: pd.DataFrame, y_col: str
-    ) -> Tuple[List[np.ndarray], np.ndarray]:
+    ) -> tuple[list[np.ndarray], np.ndarray]:
         """Preprocesses the input data, checking if it can be rearranged into a
         grid. If this is the case, the data is arranged accordingly.
 
@@ -559,7 +557,7 @@ class CPsplines:
         self,
         data: pd.DataFrame,
         y_col: str,
-        y_range: Optional[Iterable[Union[int, float]]] = None,
+        y_range: Iterable[int | float] | None = None,
         **kwargs,
     ):
         """
@@ -689,7 +687,7 @@ class CPsplines:
 
         return None
 
-    def predict(self, data: Union[pd.Series, pd.DataFrame]) -> np.ndarray:
+    def predict(self, data: pd.Series | pd.DataFrame) -> np.ndarray:
         """Generates output predictions for the input samples.
 
         Parameters

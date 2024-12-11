@@ -1,5 +1,4 @@
 import math
-from typing import Dict, Union
 
 import numpy as np
 from scipy.interpolate import BSpline
@@ -52,7 +51,7 @@ class BsplineBasis:
         x: np.ndarray,
         deg: int = 3,
         k: int = 20,
-        prediction: Dict[str, Union[int, float]] = {},
+        prediction: dict[str, int | float] = {},
     ):
         self.x = x
         self.deg = deg

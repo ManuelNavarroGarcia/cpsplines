@@ -1,5 +1,5 @@
 from functools import reduce
-from typing import Dict, Iterable, Optional, Union
+from typing import Iterable
 
 import mosek.fusion
 import numpy as np
@@ -30,7 +30,7 @@ class PDFConstraint:
 
     def integrate_to_one(
         self,
-        var_dict: Dict[str, mosek.fusion.LinearVariable],
+        var_dict: dict[str, mosek.fusion.LinearVariable],
         model: mosek.fusion.Model,
     ) -> mosek.fusion.LinearConstraint:
         """
@@ -89,9 +89,9 @@ class PDFConstraint:
 
     def nonneg_cons(
         self,
-        shape_constraints: Optional[Dict[str, Dict[int, Dict[str, Union[int, float]]]]],
+        shape_constraints: dict[str, dict[int, dict[str, int | float]]] | None,
         feature_names: Iterable[str],
-    ) -> Dict[int, Dict[int, Dict[str, Union[int, float]]]]:
+    ) -> dict[int, dict[int, dict[str, int | float]]]:
         """
         Includes non-negativity constraints to the problem if they were
         already not included.

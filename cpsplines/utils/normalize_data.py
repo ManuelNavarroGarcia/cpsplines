@@ -1,4 +1,4 @@
-from typing import Iterable, Union
+from typing import Iterable
 
 import numpy as np
 
@@ -29,7 +29,7 @@ class DataNormalizer:
 
     """
 
-    def __init__(self, feature_range: Iterable[Union[int, float]] = (0, 1)):
+    def __init__(self, feature_range: Iterable[int | float] = (0, 1)):
         self.feature_range = feature_range
 
     def fit(self, y: np.ndarray) -> object:
@@ -68,7 +68,7 @@ class DataNormalizer:
         return self
 
     def transform(
-        self, y: Union[int, float, np.ndarray], derivative: bool = False
+        self, y: int | float | np.ndarray, derivative: bool = False
     ) -> np.ndarray:
         """
         Transform the numeric array according to the desired range.
@@ -99,7 +99,7 @@ class DataNormalizer:
         return out
 
     def inverse_transform(
-        self, y: Union[int, float, np.ndarray], derivative: bool = False
+        self, y: int | float | np.ndarray, derivative: bool = False
     ) -> np.ndarray:
         """
         Transform the scaled numeric array into the original scale.

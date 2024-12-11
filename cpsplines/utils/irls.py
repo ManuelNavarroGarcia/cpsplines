@@ -1,5 +1,5 @@
 from functools import reduce
-from typing import Dict, Iterable, Union
+from typing import Iterable
 
 import numpy as np
 from statsmodels.genmod.families.family import Family
@@ -12,11 +12,11 @@ from cpsplines.utils.fast_kron import (
 
 
 def fit_irls(
-    obj_matrices: Dict[str, Union[np.ndarray, Iterable[np.ndarray]]],
+    obj_matrices: dict[str, np.ndarray | Iterable[np.ndarray]],
     penalty_term: np.ndarray,
     family: Family,
     data_arrangement: str,
-    threshold: Union[int, float] = 1e-8,
+    threshold: int | float = 1e-8,
     maxiter: int = 100,
     verbose: bool = False,
 ) -> np.ndarray:

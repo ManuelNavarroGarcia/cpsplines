@@ -1,9 +1,9 @@
-from typing import Iterable, Tuple
+from typing import Iterable
 
 from cpsplines.psplines.bspline_basis import BsplineBasis
 
 
-def get_idx_fitting_region(bspline_bases: Iterable[BsplineBasis]) -> Tuple[slice]:
+def get_idx_fitting_region(bspline_bases: Iterable[BsplineBasis]) -> tuple[slice]:
     """
     Get the fitting region indices on the expanded sample regressor vector
     (containing the extra knots from the extended B-spline basis and the sample

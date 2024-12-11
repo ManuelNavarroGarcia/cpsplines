@@ -1,10 +1,9 @@
 from contextlib import contextmanager
 from timeit import default_timer
-from typing import Optional
 
 
 @contextmanager
-def timer(tag: Optional[str] = None) -> None:
+def timer(tag: str | None = None):
     """
     Computes the elapsed time that a task last.
 

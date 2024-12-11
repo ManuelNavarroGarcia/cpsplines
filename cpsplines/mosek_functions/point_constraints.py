@@ -1,5 +1,5 @@
 from functools import reduce
-from typing import Dict, Iterable, Tuple
+from typing import Iterable
 
 import mosek.fusion
 import pandas as pd
@@ -42,9 +42,9 @@ class PointConstraints:
         self,
         data: pd.DataFrame,
         y_col: str,
-        var_dict: Dict[str, mosek.fusion.LinearVariable],
+        var_dict: dict[str, mosek.fusion.LinearVariable],
         model: mosek.fusion.Model,
-    ) -> Tuple[mosek.fusion.LinearConstraint]:
+    ) -> tuple[mosek.fusion.LinearConstraint]:
         """
         Constructs the point constraints for the fixed combination of
         derivative orders. These linear constraints are obtained evaluating the

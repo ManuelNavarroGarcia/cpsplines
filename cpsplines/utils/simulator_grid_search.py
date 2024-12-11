@@ -1,10 +1,11 @@
+from typing import Iterable
+
 import pandas as pd
-from typing import Iterable, Union
 
 
 def print_grid_search_results(
-    x_val: Iterable[Iterable[Union[int, float]]],
-    obj_val: Iterable[Union[int, float]],
+    x_val: Iterable[Iterable[int | float]],
+    obj_val: Iterable[int | float],
     top_n: int,
 ) -> None:
     """
