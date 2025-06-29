@@ -350,3 +350,9 @@ Specially, I would like to thank [Alberto Torres](https://github.com/albertotb),
 Gallego](https://github.com/vicgalle) for their constructive code structure suggestions
 that have helped notably to improve the computational efficiency and the usage
 of the algorithms.
+
+This publication is part of the project/grant PDC2022-133359-I00 funded by MCIN/AEI/10.13039/501100011033 and by the European Union “NextGenerationEU/PRTR”.
+
+Esta publicación forma parte del proyecto PDC2022-133359-I00, financiado por MCIN/AEI/10.13039/501100011033 y por la Unión Europea “NextGenerationEU/PRTR”.
+
+![Acknowledgment](./img/project_funding.png)
