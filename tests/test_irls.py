@@ -3,10 +3,10 @@ import pandas as pd
 import pytest
 from statsmodels.genmod.families.family import Binomial, Gaussian, Poisson
 
-from cpsplines.psplines.bspline_basis import BsplineBasis
-from cpsplines.psplines.penalty_matrix import PenaltyMatrix
-from cpsplines.utils.fast_kron import penalization_term
-from cpsplines.utils.irls import fit_irls
+from src.cpsplines.psplines.bspline_basis import BsplineBasis
+from src.cpsplines.psplines.penalty_matrix import PenaltyMatrix
+from src.cpsplines.utils.fast_kron import penalization_term
+from src.cpsplines.utils.irls import fit_irls
 
 # Test IRLS algorithm for multidimensional data. The results coincides with the
 # ones from R package JOPS, version 0.1.15. The code used to fit the models with
@@ -104,9 +104,7 @@ y_fit_2 = np.array(
     ]
 )
 
-x_2 = np.array(
-    [1.934375, 2.303125, 2.671875, 3.040625, 3.409375, 3.778125, 4.146875, 4.515625]
-)
+x_2 = np.array([1.934375, 2.303125, 2.671875, 3.040625, 3.409375, 3.778125, 4.146875, 4.515625])
 x_3 = np.array([49.5625, 54.6875, 59.8125, 64.9375, 70.0625, 75.1875, 80.3125, 85.4375])
 
 y_2 = np.array(
@@ -644,10 +642,7 @@ y_fit_7 = np.array(
 )
 def test_gcv(deg, ord_d, k, sp, family, data_arrangement, x, y, y_fit):
     bspline = [BsplineBasis(deg=d, x=x_, k=n) for d, x_, n in zip(deg, x, k)]
-    D_mul = [
-        PenaltyMatrix(bspline=bsp).get_penalty_matrix(**{"ord_d": o})
-        for bsp, o in zip(bspline, ord_d)
-    ]
+    D_mul = [PenaltyMatrix(bspline=bsp).get_penalty_matrix(**{"ord_d": o}) for bsp, o in zip(bspline, ord_d)]
 
     penalty_list = penalization_term(matrices=D_mul)
     penalty_term = np.add.reduce([np.multiply(s, P) for P, s in zip(penalty_list, sp)])

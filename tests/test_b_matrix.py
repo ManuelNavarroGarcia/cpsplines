@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from cpsplines.psplines.bspline_basis import BsplineBasis
-from cpsplines.utils.weighted_b import get_idx_fitting_region
+from src.cpsplines.psplines.bspline_basis import BsplineBasis
+from src.cpsplines.utils.weighted_b import get_idx_fitting_region
 
 B1 = (1 / 8) * np.array(
     [
@@ -117,11 +117,11 @@ BV3 = (1 / 98) * np.array(
 )
 def test_B_matrix(x_sam, deg, k, prediction, B):
     bspline = []
-    for x, d, n, pred in zip(x_sam, deg, k, prediction):
+    for x, d, n, pred in zip(x_sam, deg, k, prediction, strict=False):
         bsp = BsplineBasis(deg=d, x=x, k=n, prediction=pred)
         bspline.append(bsp)
 
-    for bsp, Q in zip(bspline, B):
+    for bsp, Q in zip(bspline, B, strict=False):
         np.testing.assert_allclose(bsp.matrixB, Q)
 
 
@@ -154,11 +154,11 @@ def test_B_matrix(x_sam, deg, k, prediction, B):
 )
 def test_get_idx_fit(x_sam, deg, k, prediction, x_range):
     bspline = []
-    for x, d, n, pred in zip(x_sam, deg, k, prediction):
+    for x, d, n, pred in zip(x_sam, deg, k, prediction, strict=False):
         bsp = BsplineBasis(deg=d, x=x, k=n, prediction=pred)
         bspline.append(bsp)
 
     range_out = get_idx_fitting_region(bspline_bases=bspline)
 
-    for slice_out, slice_in in zip(range_out, x_range):
+    for slice_out, slice_in in zip(range_out, x_range, strict=False):
         assert slice_in == slice_out

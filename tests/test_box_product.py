@@ -2,14 +2,13 @@ from functools import reduce
 
 import numpy as np
 import pytest
-from cpsplines.utils.box_product import box_product
-from cpsplines.utils.timer import timer
+
+from src.cpsplines.utils.box_product import box_product
+from src.cpsplines.utils.timer import timer
 
 
 def box_product_kron(A, B):
-    return np.multiply(
-        np.kron(A, np.ones(B.shape[1]).T), np.kron(np.ones(A.shape[1]).T, B)
-    )
+    return np.multiply(np.kron(A, np.ones(B.shape[1]).T), np.kron(np.ones(A.shape[1]).T, B))
 
 
 @pytest.mark.parametrize(

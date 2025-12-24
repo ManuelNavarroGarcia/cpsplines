@@ -1,0 +1,27 @@
+default_language_version:
+  python: python3.13
+
+ci:
+  autoupdate_commit_msg: "chore: update pre-commit hooks"
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+        args: [--maxkb=50000]
+      - id: check-executables-have-shebangs
+      - id: check-shebang-scripts-are-executable
+      - id: check-json
+        exclude: .vscode/
+      - id: check-toml
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: mixed-line-ending
+        args: [--fix=lf]
+        types: [yaml, toml]
+        exclude: '.*\.yml$|.*\.md$'
+      - id: trailing-whitespace
+      - id: pretty-format-json
+        args: [--autofix, --no-ensure-ascii]
+        exclude: .vscode/settings.json

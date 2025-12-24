@@ -1,14 +1,13 @@
-from typing import Iterable, Union
+from collections.abc import Iterable
 
 import numpy as np
 import pytest
-from cpsplines.utils.fast_kron import penalization_term
-from cpsplines.utils.timer import timer
+
+from src.cpsplines.utils.fast_kron import penalization_term
+from src.cpsplines.utils.timer import timer
 
 
-def penalty_brute_force(
-    D_mul: Iterable[np.ndarray], sp: Iterable[Union[int, float]]
-) -> np.ndarray:
+def penalty_brute_force(D_mul: Iterable[np.ndarray], sp: Iterable[int | float]) -> np.ndarray:
     """
     Computes the penalization term using the exact definition including all
     the matrices involved. It only supports three or less dimensions.
@@ -34,9 +33,7 @@ def penalty_brute_force(
     """
 
     if len(sp) != len(D_mul):
-        raise ValueError(
-            "Number of smoothing parameters must be equal to number of D elements."
-        )
+        raise ValueError("Number of smoothing parameters must be equal to number of D elements.")
     if len(D_mul) > 3:
         raise ValueError("Not implemented for more than three dimensions.")
 
@@ -79,10 +76,5 @@ def test_penalty_matrix(dim, sp):
         penalty_out = penalty_brute_force(D_mul=matrices, sp=sp)
 
     with timer(tag="Using fast kronecker products"):
-        penalty = np.add.reduce(
-            [
-                np.multiply(s, A)
-                for s, A in zip(sp, penalization_term(matrices=matrices))
-            ]
-        )
+        penalty = np.add.reduce([np.multiply(s, A) for s, A in zip(sp, penalization_term(matrices=matrices))])
     np.testing.assert_allclose(penalty_out, penalty)

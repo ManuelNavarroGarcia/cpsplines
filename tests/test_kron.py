@@ -4,11 +4,11 @@ import numpy as np
 import pytest
 from scipy.linalg import block_diag
 
-from cpsplines.utils.fast_kron import (
+from src.cpsplines.utils.fast_kron import (
     kronecker_matrix_by_identity,
     weighted_double_kronecker,
 )
-from cpsplines.utils.timer import timer
+from src.cpsplines.utils.timer import timer
 
 
 # Take the Kronecker product of a random matrix and an identity matrix
@@ -62,15 +62,9 @@ def test_weighted_double_kronecker(dim_mat, dim_W):
     W = np.random.rand(*dim_W)
 
     with timer(tag="Using np.kron"):
-        exp_out = (
-            reduce(np.kron, matrices).T
-            @ np.diag(W.flatten())
-            @ reduce(np.kron, matrices)
-        )
+        exp_out = reduce(np.kron, matrices).T @ np.diag(W.flatten()) @ reduce(np.kron, matrices)
 
     with timer(tag="Using reshaping and permuting"):
-        out = weighted_double_kronecker(
-            matrices=matrices, W=W, data_arrangement="gridded"
-        )
+        out = weighted_double_kronecker(matrices=matrices, W=W, data_arrangement="gridded")
 
     np.testing.assert_allclose(exp_out, out)

@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from cpsplines.psplines.bspline_basis import BsplineBasis
+from src.cpsplines.psplines.bspline_basis import BsplineBasis
 
 S1 = [
     np.array(

@@ -1,6 +1,6 @@
 name: Pytest
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
@@ -28,4 +28,4 @@ jobs:
         run: |
           pip install -r requirements.txt
           pip install pytest
-          pytest --ignore=tests/test_solution.py 
+          pytest --ignore=tests/test_solution.py

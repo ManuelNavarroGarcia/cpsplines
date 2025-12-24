@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
-from cpsplines.utils.normalize_data import DataNormalizer
+
+from src.cpsplines.utils.normalize_data import DataNormalizer
 
 
 @pytest.mark.parametrize(

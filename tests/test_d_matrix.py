@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from cpsplines.psplines.bspline_basis import BsplineBasis
-from cpsplines.psplines.penalty_matrix import PenaltyMatrix
+from src.cpsplines.psplines.bspline_basis import BsplineBasis
+from src.cpsplines.psplines.penalty_matrix import PenaltyMatrix
 
 P1 = np.array(
     [
