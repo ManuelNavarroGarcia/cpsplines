@@ -1,4 +1,4 @@
-from typing import Callable, Iterable
+from collections.abc import Callable, Iterable
 
 import numpy as np
 
@@ -80,10 +80,10 @@ class Simulator:
         # Set the title of the callback, with the smoothing parameter names and the
         # objective function label
         if not self.callback_count:
-            title_list = [f"sp{j+1}" for j, _ in enumerate(x_k)] + ["Objective"]
+            title_list = [f"sp{j + 1}" for j, _ in enumerate(x_k)] + ["Objective"]
             print("Starting the optimization algorithm")
             print(*title_list, sep="\t\t")
         # Print the actual solution and the actual objective function value
         print(sp_info)
         self.callback_count += 1
-        return None
+        return

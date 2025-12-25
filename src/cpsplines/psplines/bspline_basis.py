@@ -92,30 +92,16 @@ class BsplineBasis:
         if self.x.ndim != 1:
             raise ValueError("Regressor vector must be one-dimensional.")
         if self.k < 2:
-            raise ValueError(
-                "The fitting regions must be split in at least 2 intervals."
-            )
+            raise ValueError("The fitting regions must be split in at least 2 intervals.")
         if len(set(self.prediction) - set(["backwards", "forward"])) > 0:
-            raise ValueError(
-                "Prediction only admits as keys `forward` and `backwards`."
-            )
+            raise ValueError("Prediction only admits as keys `forward` and `backwards`.")
 
         if "backwards" in self.prediction:
             if self.prediction["backwards"] >= min_x:
-                raise ValueError(
-                    (
-                        "Backwards prediction limit must stand on the "
-                        "left-hand side of the regressor vector."
-                    )
-                )
+                raise ValueError("Backwards prediction limit must stand on the left-hand side of the regressor vector.")
         if "forward" in self.prediction:
             if self.prediction["forward"] <= max_x:
-                raise ValueError(
-                    (
-                        "Forward prediction limit must stand on the "
-                        "right-hand side of the regressor vector."
-                    )
-                )
+                raise ValueError("Forward prediction limit must stand on the right-hand side of the regressor vector.")
 
         # Compute the distance between adjacent knots
         step_length = (max_x - min_x) / self.k
@@ -124,15 +110,11 @@ class BsplineBasis:
         # to extend the basis backwards (forward). The step length between these new
         # knots must be the same
         self.int_back = (
-            math.ceil((min_x - self.prediction["backwards"]) / step_length)
-            if "backwards" in self.prediction
-            else 0
+            math.ceil((min_x - self.prediction["backwards"]) / step_length) if "backwards" in self.prediction else 0
         )
 
         self.int_forw = (
-            math.ceil((self.prediction["forward"] - max_x) / step_length)
-            if "forward" in self.prediction
-            else 0
+            math.ceil((self.prediction["forward"] - max_x) / step_length) if "forward" in self.prediction else 0
         )
         # Construct the knot sequence of the B-spline basis, consisting on `k` + 2 * `deg` + 1 equally spaced knots
         knots = np.linspace(
@@ -192,9 +174,7 @@ class BsplineBasis:
         C = np.zeros(shape=(self.deg + 1, self.deg + 1))
         for i in range(self.deg + 1):
             C[:, i] = BSpline.basis_element(t=self.knots[i : self.deg + 2 + i])(
-                x=np.linspace(
-                    self.knots[self.deg], self.knots[self.deg + 1], self.deg + 1
-                )
+                x=np.linspace(self.knots[self.deg], self.knots[self.deg + 1], self.deg + 1)
             )
         S = []
         # The matrices S_k that we are looking for satisfy that S_k @ T_k = C,
@@ -203,9 +183,7 @@ class BsplineBasis:
         #     linspace(knots[k + `deg`], knots[k + `deg` + 1], `deg` + 1)
         for k in range(self.k + self.int_back + self.int_forw):
             T_k = np.vander(
-                np.linspace(
-                    self.knots[k + self.deg], self.knots[k + self.deg + 1], self.deg + 1
-                ),
+                np.linspace(self.knots[k + self.deg], self.knots[k + self.deg + 1], self.deg + 1),
                 increasing=True,
             )
             S_k = np.linalg.solve(T_k, C)

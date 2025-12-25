@@ -1,4 +1,4 @@
-from typing import Iterable
+from collections.abc import Iterable
 
 import numpy as np
 import pandas as pd
@@ -58,9 +58,7 @@ def filter_covid_df(
 
     # If not Dataframe provided, download it
     if df is None:
-        df = pd.read_csv(
-            r"https://cnecovid.isciii.es/covid19/resources/casos_hosp_uci_def_sexo_edad_provres.csv"
-        )
+        df = pd.read_csv(r"https://cnecovid.isciii.es/covid19/resources/casos_hosp_uci_def_sexo_edad_provres.csv")
     # Select the columns of interest
     if response_var not in ["num_casos", "num_hosp", "num_uci", "num_def"]:
         raise ValueError("Provide a suitable response variable name.")
@@ -112,9 +110,7 @@ def get_days_from_covid_df(df: pd.DataFrame) -> np.ndarray:
         The ordered array containing the days from first record.
     """
 
-    return (
-        (df.index.to_series().diff() / np.timedelta64(1, "D")).fillna(0).cumsum().values
-    )
+    return (df.index.to_series().diff() / np.timedelta64(1, "D")).fillna(0).cumsum().values
 
 
 def displaced_forecast_covid(

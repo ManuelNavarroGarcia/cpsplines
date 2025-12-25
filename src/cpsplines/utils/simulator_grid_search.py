@@ -1,4 +1,4 @@
-from typing import Iterable
+from collections.abc import Iterable
 
 import pandas as pd
 
@@ -22,11 +22,11 @@ def print_grid_search_results(
     top_n : int
         The number of top results to be shown.
     """
-    df = pd.DataFrame(x_val, columns=[f"sp{i+1}" for i, _ in enumerate(x_val[0])])
+    df = pd.DataFrame(x_val, columns=[f"sp{i + 1}" for i, _ in enumerate(x_val[0])])
     df.loc[:, "Objective"] = obj_val
     df = df.sort_values(by="Objective")
     print(f"Top {top_n} combinations minimizing the GCV criterion")
     print(*df.columns, sep="\t\t")
     for i in range(min(top_n, df.shape[0])):
         print(*df.iloc[i, :], sep="\t\t")
-    return None
+    return
