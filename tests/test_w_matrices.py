@@ -69,6 +69,8 @@ W3 = [
 )
 def test_W_matrices(x, deg, k, prediction, deriv, W):
     bsp = BsplineBasis(deg=deg, x=x, k=k, prediction=prediction)
-    W_out = IntConstraints(bspline=[bsp], var_name=0, derivative=deriv, constraints={})._get_matrices_W()
+    W_out = IntConstraints(
+        bspline=[bsp], var_name=0, derivative=deriv, constraints={}
+    )._get_matrices_W()
     for mat, mat_out in zip(W, W_out):
         np.testing.assert_allclose(mat, mat_out, atol=1e-12)

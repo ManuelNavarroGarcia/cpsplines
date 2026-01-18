@@ -63,7 +63,9 @@ def grid_to_scatter(
     )
 
 
-def scatter_to_grid(data: pd.DataFrame, y_col: str) -> tuple[list[np.ndarray], np.ndarray]:
+def scatter_to_grid(
+    data: pd.DataFrame, y_col: str
+) -> tuple[list[np.ndarray], np.ndarray]:
     """
     Given a DataFrame containing the value of the covariates and the target
     variable, generates a list of arrays containing the value of the covariates

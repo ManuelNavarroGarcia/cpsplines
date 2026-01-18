@@ -60,9 +60,13 @@ class ObjectiveFunction:
         var_dict = {}
         # The coefficient multidimensional array
         variable_shape = [bsp.matrixB.shape[1] for bsp in self.bspline]
-        var_dict["theta"] = self.model.variable("theta", variable_shape, mosek.fusion.Domain.unbounded())
+        var_dict["theta"] = self.model.variable(
+            "theta", variable_shape, mosek.fusion.Domain.unbounded()
+        )
         for i in range(n):
-            var_dict[f"t_D_{i}"] = self.model.variable(f"t_D_{i}", 1, mosek.fusion.Domain.greaterThan(0.0))
+            var_dict[f"t_D_{i}"] = self.model.variable(
+                f"t_D_{i}", 1, mosek.fusion.Domain.greaterThan(0.0)
+            )
         return var_dict
 
     def create_obj_function(
@@ -124,7 +128,9 @@ class ObjectiveFunction:
         L_D = penalization_term(matrices=obj_matrices["D"])
 
         if len(sp) != len(L_D):
-            raise ValueError("The number of smoothing parameters and penalty matrices must agree.")
+            raise ValueError(
+                "The number of smoothing parameters and penalty matrices must agree."
+            )
 
         # Generate the decision variables involved in the objective function
         self.var_dict = self._create_var_dict(n=len(sp))
@@ -143,7 +149,9 @@ class ObjectiveFunction:
                     mosek.fusion.Expr.vstack(
                         self.var_dict[f"t_D_{i}"],
                         1,
-                        mosek.fusion.Expr.mul(mosek.fusion.Matrix.sparse(L), flatten_theta),
+                        mosek.fusion.Expr.mul(
+                            mosek.fusion.Matrix.sparse(L), flatten_theta
+                        ),
                     ),
                     mosek.fusion.Domain.inRotatedQCone(),
                 )
@@ -152,13 +160,24 @@ class ObjectiveFunction:
         # The rotated cone reformulation on the penalty term yield summands on
         # the objective function of the form sp*t_D, where t_D is the new
         # artificial variable introduced in the characterization
-        obj = mosek.fusion.Expr.add([mosek.fusion.Expr.dot(s, self.var_dict[f"t_D_{i}"]) for i, s in enumerate(sp)])
+        obj = mosek.fusion.Expr.add(
+            [
+                mosek.fusion.Expr.dot(s, self.var_dict[f"t_D_{i}"])
+                for i, s in enumerate(sp)
+            ]
+        )
 
         if isinstance(family, Gaussian):
-            self.var_dict |= {"t_B": self.model.variable("t_B", 1, mosek.fusion.Domain.greaterThan(0.0))}
+            self.var_dict |= {
+                "t_B": self.model.variable(
+                    "t_B", 1, mosek.fusion.Domain.greaterThan(0.0)
+                )
+            }
             if data_arrangement == "gridded":
                 # Compute the linear term coefficients of the objective function
-                lin_term = matrix_by_tensor_product([mat.T for mat in obj_matrices["B"]], obj_matrices["y"]).flatten()
+                lin_term = matrix_by_tensor_product(
+                    [mat.T for mat in obj_matrices["B"]], obj_matrices["y"]
+                ).flatten()
 
                 # Compute the Cholesky decompositions (A = L @ L.T)
                 L_B = reduce(np.kron, map(cholesky_semidef, obj_matrices["B_mul"]))
@@ -172,7 +191,11 @@ class ObjectiveFunction:
                 self.model.constraint(
                     "rot_cone_B",
                     mosek.fusion.Expr.vstack(
-                        self.var_dict["t_B"], 1, mosek.fusion.Expr.mul(mosek.fusion.Matrix.sparse(L_B.T), flatten_theta)
+                        self.var_dict["t_B"],
+                        1,
+                        mosek.fusion.Expr.mul(
+                            mosek.fusion.Matrix.sparse(L_B.T), flatten_theta
+                        ),
                     ),
                     mosek.fusion.Domain.inRotatedQCone(),
                 )
@@ -181,16 +204,26 @@ class ObjectiveFunction:
             # the artificial variable t_B included during the reformulation and
             # a linear term depending on the response variable sample
             obj = mosek.fusion.Expr.add(
-                mosek.fusion.Expr.sub(self.var_dict["t_B"], mosek.fusion.Expr.dot(lin_term, flatten_theta)), obj
+                mosek.fusion.Expr.sub(
+                    self.var_dict["t_B"], mosek.fusion.Expr.dot(lin_term, flatten_theta)
+                ),
+                obj,
             )
         elif isinstance(family, Poisson):
             self.var_dict |= {
-                "t": self.model.variable("t", np.prod(obj_matrices["y"].shape), mosek.fusion.Domain.greaterThan(0.0))
+                "t": self.model.variable(
+                    "t",
+                    np.prod(obj_matrices["y"].shape),
+                    mosek.fusion.Domain.greaterThan(0.0),
+                )
             }
             if data_arrangement == "gridded":
-                lin_term = matrix_by_tensor_product([mat.T for mat in obj_matrices["B"]], obj_matrices["y"]).flatten()
+                lin_term = matrix_by_tensor_product(
+                    [mat.T for mat in obj_matrices["B"]], obj_matrices["y"]
+                ).flatten()
                 coef = mosek.fusion.Expr.mul(
-                    reduce(np.kron, obj_matrices["B"]), mosek.fusion.Expr.flatten(self.var_dict["theta"])
+                    reduce(np.kron, obj_matrices["B"]),
+                    mosek.fusion.Expr.flatten(self.var_dict["theta"]),
                 )
 
             else:
@@ -200,7 +233,11 @@ class ObjectiveFunction:
             cons.append(
                 self.model.constraint(
                     mosek.fusion.Expr.hstack(
-                        self.var_dict["t"], mosek.fusion.Expr.constTerm(np.prod(obj_matrices["y"].shape), 1.0), coef
+                        self.var_dict["t"],
+                        mosek.fusion.Expr.constTerm(
+                            np.prod(obj_matrices["y"].shape), 1.0
+                        ),
+                        coef,
                     ),
                     mosek.fusion.Domain.inPExpCone(),
                 )
@@ -212,14 +249,27 @@ class ObjectiveFunction:
             )
         elif isinstance(family, Binomial):
             self.var_dict |= {
-                "t": self.model.variable("t", np.prod(obj_matrices["y"].shape), mosek.fusion.Domain.greaterThan(0.0)),
-                "u": self.model.variable("u", np.prod(obj_matrices["y"].shape), mosek.fusion.Domain.greaterThan(0.0)),
-                "v": self.model.variable("v", np.prod(obj_matrices["y"].shape), mosek.fusion.Domain.greaterThan(0.0)),
+                "t": self.model.variable(
+                    "t",
+                    np.prod(obj_matrices["y"].shape),
+                    mosek.fusion.Domain.greaterThan(0.0),
+                ),
+                "u": self.model.variable(
+                    "u",
+                    np.prod(obj_matrices["y"].shape),
+                    mosek.fusion.Domain.greaterThan(0.0),
+                ),
+                "v": self.model.variable(
+                    "v",
+                    np.prod(obj_matrices["y"].shape),
+                    mosek.fusion.Domain.greaterThan(0.0),
+                ),
             }
 
             if data_arrangement == "gridded":
                 coef = mosek.fusion.Expr.mul(
-                    reduce(np.kron, obj_matrices["B"]), mosek.fusion.Expr.flatten(self.var_dict["theta"])
+                    reduce(np.kron, obj_matrices["B"]),
+                    mosek.fusion.Expr.flatten(self.var_dict["theta"]),
                 )
             else:
                 B = reduce(box_product, obj_matrices["B"])
@@ -229,7 +279,9 @@ class ObjectiveFunction:
                 self.model.constraint(
                     mosek.fusion.Expr.hstack(
                         self.var_dict["u"],
-                        mosek.fusion.Expr.constTerm(np.prod(obj_matrices["y"].shape), 1.0),
+                        mosek.fusion.Expr.constTerm(
+                            np.prod(obj_matrices["y"].shape), 1.0
+                        ),
                         mosek.fusion.Expr.sub(coef, self.var_dict["t"]),
                     ),
                     mosek.fusion.Domain.inPExpCone(),
@@ -240,7 +292,9 @@ class ObjectiveFunction:
                 self.model.constraint(
                     mosek.fusion.Expr.hstack(
                         self.var_dict["v"],
-                        mosek.fusion.Expr.constTerm(np.prod(obj_matrices["y"].shape), 1.0),
+                        mosek.fusion.Expr.constTerm(
+                            np.prod(obj_matrices["y"].shape), 1.0
+                        ),
                         mosek.fusion.Expr.mul(-1, self.var_dict["t"]),
                     ),
                     mosek.fusion.Domain.inPExpCone(),
@@ -249,7 +303,8 @@ class ObjectiveFunction:
 
             cons.append(
                 self.model.constraint(
-                    mosek.fusion.Expr.add(self.var_dict["u"], self.var_dict["v"]), mosek.fusion.Domain.lessThan(1.0)
+                    mosek.fusion.Expr.add(self.var_dict["u"], self.var_dict["v"]),
+                    mosek.fusion.Domain.lessThan(1.0),
                 )
             )
             obj = mosek.fusion.Expr.sub(

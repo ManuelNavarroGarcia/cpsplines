@@ -57,7 +57,9 @@ class DataNormalizer:
         """
 
         if self.feature_range[0] >= self.feature_range[1]:
-            raise ValueError("Minimum of desired feature range must be smaller than maximum.")
+            raise ValueError(
+                "Minimum of desired feature range must be smaller than maximum."
+            )
         if len(self.feature_range) != 2:
             raise ValueError("Range must consist of two elements.")
 
@@ -65,7 +67,9 @@ class DataNormalizer:
         self.y_range = np.ptp(y)
         return self
 
-    def transform(self, y: int | float | np.ndarray, derivative: bool = False) -> np.ndarray:
+    def transform(
+        self, y: int | float | np.ndarray, derivative: bool = False
+    ) -> np.ndarray:
         """
         Transform the numeric array according to the desired range.
 
@@ -88,11 +92,15 @@ class DataNormalizer:
         else:
             out = (
                 self.feature_range[0]
-                + (y - self.y_min) * (self.feature_range[1] - self.feature_range[0]) / self.y_range
+                + (y - self.y_min)
+                * (self.feature_range[1] - self.feature_range[0])
+                / self.y_range
             )
         return out
 
-    def inverse_transform(self, y: int | float | np.ndarray, derivative: bool = False) -> np.ndarray:
+    def inverse_transform(
+        self, y: int | float | np.ndarray, derivative: bool = False
+    ) -> np.ndarray:
         """
         Transform the scaled numeric array into the original scale.
 

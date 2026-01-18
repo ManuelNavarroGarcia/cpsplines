@@ -57,11 +57,19 @@ class PenaltyMatrix:
         """
 
         if self.bspline.deg <= ord_d:
-            raise ValueError("The penalty order must be less than the B-spline basis degree.")
+            raise ValueError(
+                "The penalty order must be less than the B-spline basis degree."
+            )
         if ord_d < 0:
             raise ValueError("The penalty order must be a non-negative integer.")
 
-        dim = self.bspline.k + self.bspline.int_forw + self.bspline.int_back + self.bspline.deg + ord_d
+        dim = (
+            self.bspline.k
+            + self.bspline.int_forw
+            + self.bspline.int_back
+            + self.bspline.deg
+            + ord_d
+        )
         # Generate an identity matrix of order `bspline.k` +
         # `bspline.int_forw` +  `bspline.int_back` + `bspline.deg` and generate
         # its difference matrix. Then, remove the first and last `ord_d` rows

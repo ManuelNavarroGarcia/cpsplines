@@ -94,7 +94,9 @@ class IntConstraints:
         bsp = self.bspline[self.var_name]
         # Define deg_w, which coincides with the order of the matrices W
         if bsp.deg - self.derivative < 0:
-            raise ValueError("The derivative order must be lower than the B-spline basis degree.")
+            raise ValueError(
+                "The derivative order must be lower than the B-spline basis degree."
+            )
         self.deg_w = bsp.deg - self.derivative
         # Deriving a polynomial gives rise to a coefficient vector whose length
         # reduces by one the degree of the polynomial (only non-zero
@@ -103,7 +105,10 @@ class IntConstraints:
         # by the n column and the first (n-d) rows of the symmetric Pascal
         # matrix of order d.
         pascal_coef = np.array(
-            [factorial(self.derivative) * comb(self.derivative + i, self.derivative) for i in range(self.deg_w + 1)],
+            [
+                factorial(self.derivative) * comb(self.derivative + i, self.derivative)
+                for i in range(self.deg_w + 1)
+            ],
             dtype=np.int32,
         )
         W = []
@@ -150,15 +155,23 @@ class IntConstraints:
         # The elements from X in the homogeneous equations are located on its
         # even antidiagonals, while the ones from the non-homogeneous equations
         # are situated on the odd antidiagonals
-        diag_zero = np.linspace(1 - self.deg_w, self.deg_w - 1, self.deg_w, dtype=np.int8)
-        diag_nonzero = np.linspace(-self.deg_w, self.deg_w, self.deg_w + 1, dtype=np.int8)
+        diag_zero = np.linspace(
+            1 - self.deg_w, self.deg_w - 1, self.deg_w, dtype=np.int8
+        )
+        diag_nonzero = np.linspace(
+            -self.deg_w, self.deg_w, self.deg_w + 1, dtype=np.int8
+        )
         H = []
         for diag in [diag_zero, diag_nonzero]:
             for k in diag:
                 # Create an identity matrix along the corresponding diagonal and
                 # the rotate it 90 degrees to get the antidiagonal. Then convert
                 # it to a MOSEK sparse matrix
-                H.append(mosek.fusion.Matrix.sparse(np.rot90(np.eye(self.deg_w + 1, k=k, dtype=np.int32))))
+                H.append(
+                    mosek.fusion.Matrix.sparse(
+                        np.rot90(np.eye(self.deg_w + 1, k=k, dtype=np.int32))
+                    )
+                )
         return H
 
     def _create_PSD_var(self, model: mosek.fusion.Model) -> mosek.fusion.PSDVariable:
@@ -185,7 +198,11 @@ class IntConstraints:
         # The number of intervals where the constraint need to be enforced can
         # be computed as the product of interior intervals
         n = [bsp.matrixB.shape[1] - bsp.deg for bsp in self.bspline.values()]
-        return model.variable(mosek.fusion.Domain.inPSDCone(self.deg_w + 1, len(self.constraints.keys()) * np.prod(n)))
+        return model.variable(
+            mosek.fusion.Domain.inPSDCone(
+                self.deg_w + 1, len(self.constraints.keys()) * np.prod(n)
+            )
+        )
 
     def interval_cons(
         self,
@@ -252,15 +269,23 @@ class IntConstraints:
             # B-splines is periodic an it is always the same, so we pick up the
             # value of all the B-splines at the first knot
             else:
-                value_at_knots = np.vander(bsp.knots[bsp.deg : -bsp.deg], N=bsp.deg + 1, increasing=True)
-                matrices_S[name] = [value_at_knots[i, :] @ s for i, s in enumerate(matrices_S[name])]
+                value_at_knots = np.vander(
+                    bsp.knots[bsp.deg : -bsp.deg], N=bsp.deg + 1, increasing=True
+                )
+                matrices_S[name] = [
+                    value_at_knots[i, :] @ s for i, s in enumerate(matrices_S[name])
+                ]
         # For every interval on the `var_name` axis, count how many interval
         # constraints of the same sign and fixed derivative need to be
         # considered
         num_by_interval = (
             np.prod(
                 np.array(
-                    [bsp.matrixB.shape[1] - bsp.deg for name, bsp in self.bspline.items() if name != self.var_name]
+                    [
+                        bsp.matrixB.shape[1] - bsp.deg
+                        for name, bsp in self.bspline.items()
+                        if name != self.var_name
+                    ]
                 )
             )
             if len(matrices_S.keys()) > 1
@@ -279,15 +304,22 @@ class IntConstraints:
         # the equations
         ind_term_list = []
         # Loop over every interval on the `var_name` axis
-        for w in range(self.bspline[self.var_name].matrixB.shape[1] - self.bspline[self.var_name].deg):
+        for w in range(
+            self.bspline[self.var_name].matrixB.shape[1]
+            - self.bspline[self.var_name].deg
+        ):
             # Create a list containing the lists with the contribution to the
             # estimated function at the knots
             a = [s for name, s in matrices_S.items() if name != self.var_name]
             # Create a list containing ranges of the same length as previous list
-            a_idx = [range(len(s)) for name, s in matrices_S.items() if name != self.var_name]
+            a_idx = [
+                range(len(s)) for name, s in matrices_S.items() if name != self.var_name
+            ]
             # Insert at the position `var_name` the correct value/index of S
             # along the `var_name` direction
-            a.insert(list(self.bspline).index(self.var_name), [matrices_S[self.var_name][w]])
+            a.insert(
+                list(self.bspline).index(self.var_name), [matrices_S[self.var_name][w]]
+            )
             a_idx.insert(list(self.bspline).index(self.var_name), range(w, w + 1))
             # Generate all the combinations possible from previous lists
             iter_a = list(itertools.product(*a))
@@ -296,15 +328,19 @@ class IntConstraints:
             # positive semidefinite variables) and their corresponding values of
             # the contribution
             for j, (id, mat) in enumerate(zip(iter_idx, iter_a)):
-                last_id = [id[i] + bsp.deg + 1 for i, bsp in enumerate(self.bspline.values())]
+                last_id = [
+                    id[i] + bsp.deg + 1 for i, bsp in enumerate(self.bspline.values())
+                ]
                 # Slice the multidimensional coefficient variable on the
                 # interval on the values the corresponding B-spline is non-zero
-                coef_theta = var_dict["theta"].slice(np.array(id, dtype=np.int32), np.array(last_id, dtype=np.int32))
+                coef_theta = var_dict["theta"].slice(
+                    np.array(id, dtype=np.int32), np.array(last_id, dtype=np.int32)
+                )
                 # Multiply the sliced variable on each face by the correct
                 # contribution
-                poly_coef = mosek.fusion.Expr.mul(reduce(np.kron, mat), mosek.fusion.Expr.flatten(coef_theta)).slice(
-                    self.derivative, self.bspline[self.var_name].deg + 1
-                )
+                poly_coef = mosek.fusion.Expr.mul(
+                    reduce(np.kron, mat), mosek.fusion.Expr.flatten(coef_theta)
+                ).slice(self.derivative, self.bspline[self.var_name].deg + 1)
                 # Loop over the different sign constraints
                 for k, key in enumerate(self.constraints.keys()):
                     sign_cons = 1 if key == "+" else -1
@@ -324,7 +360,9 @@ class IntConstraints:
                         .reshape([self.deg_w + 1, self.deg_w + 1])
                     )
                     # Append the corresponding terms for this interval
-                    trace_list.append([mosek.fusion.Expr.dot(H, slice_X) for H in self.matricesH])
+                    trace_list.append(
+                        [mosek.fusion.Expr.dot(H, slice_X) for H in self.matricesH]
+                    )
                     coef_list.append(
                         mosek.fusion.Expr.vstack(
                             mosek.fusion.Expr.constTerm(self.deg_w, 0),
@@ -340,7 +378,9 @@ class IntConstraints:
             model.constraint(
                 mosek.fusion.Expr.sub(
                     mosek.fusion.Expr.vstack(coef_list),
-                    mosek.fusion.Expr.vstack(list(itertools.chain.from_iterable(trace_list))),
+                    mosek.fusion.Expr.vstack(
+                        list(itertools.chain.from_iterable(trace_list))
+                    ),
                 ),
                 mosek.fusion.Domain.equalsTo(np.concatenate(ind_term_list)),
             )

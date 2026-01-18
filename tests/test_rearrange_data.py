@@ -15,7 +15,9 @@ data = pd.DataFrame(
 x_cols = ["x", "y", "z"]
 y_col = "value"
 coordinates = [np.unique(x) for x in data[x_cols].values.T]
-arr = np.array([[[1.0, 2.0, np.nan], [3.0, np.nan, 4.0]], [[5.0, 6.0, 7.0], [8.0, 9.0, np.nan]]])
+arr = np.array(
+    [[[1.0, 2.0, np.nan], [3.0, np.nan, 4.0]], [[5.0, 6.0, 7.0], [8.0, 9.0, np.nan]]]
+)
 
 
 @pytest.mark.parametrize(

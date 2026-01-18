@@ -62,9 +62,15 @@ def test_weighted_double_kronecker(dim_mat, dim_W):
     W = np.random.rand(*dim_W)
 
     with timer(tag="Using np.kron"):
-        exp_out = reduce(np.kron, matrices).T @ np.diag(W.flatten()) @ reduce(np.kron, matrices)
+        exp_out = (
+            reduce(np.kron, matrices).T
+            @ np.diag(W.flatten())
+            @ reduce(np.kron, matrices)
+        )
 
     with timer(tag="Using reshaping and permuting"):
-        out = weighted_double_kronecker(matrices=matrices, W=W, data_arrangement="gridded")
+        out = weighted_double_kronecker(
+            matrices=matrices, W=W, data_arrangement="gridded"
+        )
 
     np.testing.assert_allclose(exp_out, out)

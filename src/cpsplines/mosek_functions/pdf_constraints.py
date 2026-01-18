@@ -57,7 +57,9 @@ class PDFConstraint:
             # For each B-spline basis, construct a Vandermonde matrix with only
             # the inner knots and with powers up to degree `deg` + 1. The first
             # column, containing ones, is dropped
-            vander = np.vander(bsp.knots, N=bsp.deg + 2, increasing=True)[bsp.deg : -bsp.deg, 1:]
+            vander = np.vander(bsp.knots, N=bsp.deg + 2, increasing=True)[
+                bsp.deg : -bsp.deg, 1:
+            ]
             # The vector of constants obtained when integrating monomials
             integrand_coef = 1 / np.linspace(1, bsp.deg + 1, bsp.deg + 1)
             # Take the difference of a row minus the previous on the Vandermonde
@@ -68,7 +70,9 @@ class PDFConstraint:
             # vector to create a banded matrix with inner knots rows nd inner
             # rows plus degree columns
             banded = diags(
-                np.array([np.dot(diff_mat[i], s) for i, s in enumerate(bsp.matrices_S)]).T,
+                np.array(
+                    [np.dot(diff_mat[i], s) for i, s in enumerate(bsp.matrices_S)]
+                ).T,
                 range(bsp.deg + 1),
                 shape=(bsp.matrixB.shape[1] - bsp.deg, bsp.matrixB.shape[1]),
             ).toarray()

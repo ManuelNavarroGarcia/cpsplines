@@ -78,7 +78,9 @@ class PointConstraints:
 
         x_cols = data.columns.drop([y_col, "tol"], errors="ignore").tolist()
         if len(x_cols) != len(self.bspline):
-            raise ValueError("The number of covariates and the derivative indexes must agree.")
+            raise ValueError(
+                "The number of covariates and the derivative indexes must agree."
+            )
 
         list_cons = []
         coef = []
@@ -91,14 +93,18 @@ class PointConstraints:
         # For every point constraint, extract the evaluation of the
         # corresponding coordinates and multiply them by the multidimensional
         # array of the expansion coefficients
-        coef = mosek.fusion.Expr.mul(reduce(box_product, bsp_eval), mosek.fusion.Expr.flatten(var_dict["theta"]))
+        coef = mosek.fusion.Expr.mul(
+            reduce(box_product, bsp_eval), mosek.fusion.Expr.flatten(var_dict["theta"])
+        )
         y = data.loc[:, y_col].values.astype(float)
 
         if self.sense == "equalsTo":
             # The output should be constrained in (v - tol, v + tol) vstack is
             # necessary since `coef` may be a column matrix
             if "tol" in data.columns:
-                right_side = mosek.fusion.Domain.inRange((y - data["tol"]).values, (y + data["tol"]).values)
+                right_side = mosek.fusion.Domain.inRange(
+                    (y - data["tol"]).values, (y + data["tol"]).values
+                )
             else:
                 right_side = mosek.fusion.Domain.equalsTo(y)
         elif self.sense == "greaterThan":

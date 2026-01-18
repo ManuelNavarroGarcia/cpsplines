@@ -76,7 +76,9 @@ def fit_irls(
         Z = eta + family.link.deriv(mu) * (obj_matrices["y"] - mu)
 
         # With this modified dependent variable, update the coefficients
-        bases_term = weighted_double_kronecker(matrices=obj_matrices["B"], W=W, data_arrangement=data_arrangement)
+        bases_term = weighted_double_kronecker(
+            matrices=obj_matrices["B"], W=W, data_arrangement=data_arrangement
+        )
 
         T = np.multiply(W, Z)
         if data_arrangement == "gridded":

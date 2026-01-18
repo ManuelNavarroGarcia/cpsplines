@@ -27,7 +27,9 @@ class CurvesDisplay:
         Figure containing the curve.
     """
 
-    def __init__(self, X: pd.Series | pd.DataFrame, y_true: pd.Series, y_pred: np.ndarray):
+    def __init__(
+        self, X: pd.Series | pd.DataFrame, y_true: pd.Series, y_pred: np.ndarray
+    ):
         self.X = X
         self.y_true = y_true
         self.y_pred = y_pred

@@ -21,4 +21,6 @@ def get_idx_fitting_region(bspline_bases: Iterable[BsplineBasis]) -> tuple[slice
         region, one by axis.
     """
 
-    return tuple(slice(bsp.int_back, bsp.int_back + len(bsp.x), None) for bsp in bspline_bases)
+    return tuple(
+        slice(bsp.int_back, bsp.int_back + len(bsp.x), None) for bsp in bspline_bases
+    )

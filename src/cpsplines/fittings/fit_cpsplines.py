@@ -241,7 +241,9 @@ class CPsplines:
         if self.sp_args is None:
             self.sp_args = {}
         if self.sp_method == "grid_search":
-            self.sp_args["grid"] = self.sp_args.get("grid", [(0.01, 0.1, 1, 10) for _ in range(len(self.deg))])
+            self.sp_args["grid"] = self.sp_args.get(
+                "grid", [(0.01, 0.1, 1, 10) for _ in range(len(self.deg))]
+            )
             self.sp_args["parallel"] = self.sp_args.get("parallel", False)
             self.sp_args["n_jobs"] = self.sp_args.get("n_jobs", -2)
             self.sp_args["top_n"] = self.sp_args.get("top_n", None)
@@ -249,7 +251,9 @@ class CPsplines:
             self.sp_args["verbose"] = self.sp_args.get("verbose", False)
             self.sp_args["x0"] = self.sp_args.get("x0", np.ones(len(self.deg)))
             self.sp_args["method"] = self.sp_args.get("method", "SLSQP")
-            self.sp_args["bounds"] = self.sp_args.get("bounds", [(1e-10, 1e16) for _ in range(len(self.deg))])
+            self.sp_args["bounds"] = self.sp_args.get(
+                "bounds", [(1e-10, 1e16) for _ in range(len(self.deg))]
+            )
         return
 
     def _get_obj_func_arrays(self, y: np.ndarray) -> dict[str, np.ndarray]:
@@ -289,7 +293,10 @@ class CPsplines:
         return obj_matrices
 
     def _initialize_model(
-        self, obj_matrices: np.ndarray | Iterable[np.ndarray], y_col: str, data_normalizer: DataNormalizer | None = None
+        self,
+        obj_matrices: np.ndarray | Iterable[np.ndarray],
+        y_col: str,
+        data_normalizer: DataNormalizer | None = None,
     ) -> mosek.fusion.Model:
         """
         Construct the optimization model.
@@ -316,19 +323,26 @@ class CPsplines:
         sp = [M.parameter(f"sp_{i}", 1) for i, _ in enumerate(self.deg)]
         # Build the objective function of the problem
         mos_obj_f.create_obj_function(
-            obj_matrices=obj_matrices, sp=sp, family=self.family, data_arrangement=self.data_arrangement
+            obj_matrices=obj_matrices,
+            sp=sp,
+            family=self.family,
+            data_arrangement=self.data_arrangement,
         )
 
         if self.pdf_constraint:
             if not isinstance(self.family, Gaussian):
-                raise ValueError("Probability density function constraints are only implemented for Gaussian data.")
+                raise ValueError(
+                    "Probability density function constraints are only implemented for Gaussian data."
+                )
             pdf_cons = PDFConstraint(bspline=self.bspline_bases)
             # Incorporate the condition that the integral over all the space
             # must equal to 1
             pdf_cons.integrate_to_one(var_dict=mos_obj_f.var_dict, model=M)
             # Enforce the non-negativity constraint if it is not imposed
             # explicitly
-            self.shape_constraints = pdf_cons.nonneg_cons(self.shape_constraints, self.feature_names)
+            self.shape_constraints = pdf_cons.nonneg_cons(
+                self.shape_constraints, self.feature_names
+            )
 
         if self.shape_constraints is not None:
             max_deriv = max([max(v.keys()) for v in self.shape_constraints.values()])
@@ -337,35 +351,50 @@ class CPsplines:
                     "Interval constraints are only implemented for non Gaussian data up to the first derivative "
                     f"Higher order derivative introduced in the constraints: {max_deriv})."
                 )
-            matrices_S = {name: bsp.matrices_S for name, bsp in zip(self.feature_names, self.bspline_bases)}
+            matrices_S = {
+                name: bsp.matrices_S
+                for name, bsp in zip(self.feature_names, self.bspline_bases)
+            }
             # Iterate for every variable with constraints and for every
             # derivative order
             for var_name in self.shape_constraints.keys():
                 for deriv, constraints in self.shape_constraints[var_name].items():
-                    if list(constraints.values())[0] != 0 and not isinstance(self.family, Gaussian):
-                        raise ValueError("No threshold is allowed in the shape constraints for non Gaussian data.")
+                    if list(constraints.values())[0] != 0 and not isinstance(
+                        self.family, Gaussian
+                    ):
+                        raise ValueError(
+                            "No threshold is allowed in the shape constraints for non Gaussian data."
+                        )
                     # Scale the integer constraints thresholds in the case the
                     # data is scaled
                     if data_normalizer is not None:
                         derivative = True if deriv != 0 else False
                         constraints = {
-                            k: data_normalizer.transform(y=v, derivative=derivative) for k, v in constraints.items()
+                            k: data_normalizer.transform(y=v, derivative=derivative)
+                            for k, v in constraints.items()
                         }
                     matrices_S_copy = matrices_S.copy()
                     # Build the interval constraints
                     cons = IntConstraints(
-                        bspline={name: bsp for name, bsp in zip(self.feature_names, self.bspline_bases)},
+                        bspline={
+                            name: bsp
+                            for name, bsp in zip(self.feature_names, self.bspline_bases)
+                        },
                         var_name=var_name,
                         derivative=deriv,
                         constraints=constraints,
                     )
-                    cons.interval_cons(var_dict=mos_obj_f.var_dict, model=M, matrices_S=matrices_S_copy)
+                    cons.interval_cons(
+                        var_dict=mos_obj_f.var_dict, model=M, matrices_S=matrices_S_copy
+                    )
         else:
             self.shape_constraints = {}
 
         if self.pt_constraints is not None:
             if not isinstance(self.family, Gaussian):
-                raise ValueError("Point constraints are only implemented for Gaussian data.")
+                raise ValueError(
+                    "Point constraints are only implemented for Gaussian data."
+                )
             # Iterate for every combination of the derivative orders where
             # constraints must be enforced
             for deriv, dict_deriv in self.pt_constraints.items():
@@ -374,10 +403,16 @@ class CPsplines:
                     # scaled
                     if data_normalizer is not None:
                         derivative = any(v != 0 for v in deriv)
-                        data = data.assign(y=data_normalizer.transform(y=data[y_col], derivative=derivative))
+                        data = data.assign(
+                            y=data_normalizer.transform(
+                                y=data[y_col], derivative=derivative
+                            )
+                        )
                         if "tol" in data.columns:
                             data = data.assign(
-                                tol=data_normalizer.transform(y=data["tol"], derivative=False)
+                                tol=data_normalizer.transform(
+                                    y=data["tol"], derivative=False
+                                )
                                 - data_normalizer.transform(y=0, derivative=False)
                             )
                     cons2 = PointConstraints(
@@ -423,7 +458,8 @@ class CPsplines:
         # Run in parallel if the argument `parallel` is present
         if self.sp_args["parallel"]:
             gcv = Parallel(n_jobs=self.sp_args["n_jobs"])(
-                delayed(GCV)(sp, obj_matrices, self.family, self.data_arrangement) for sp in iter_sp
+                delayed(GCV)(sp, obj_matrices, self.family, self.data_arrangement)
+                for sp in iter_sp
             )
         else:
             gcv = [
@@ -437,7 +473,9 @@ class CPsplines:
             ]
         # Print the `top_n` combinations that minimizes the GCV
         if self.sp_args["top_n"] is not None:
-            print_grid_search_results(x_val=iter_sp, obj_val=gcv, top_n=self.sp_args["top_n"])
+            print_grid_search_results(
+                x_val=iter_sp, obj_val=gcv, top_n=self.sp_args["top_n"]
+            )
 
         return iter_sp[gcv.index(min(gcv))]
 
@@ -481,7 +519,9 @@ class CPsplines:
         ).x
         return best_sp
 
-    def _preprocessor(self, data: pd.DataFrame, y_col: str) -> tuple[list[np.ndarray], np.ndarray]:
+    def _preprocessor(
+        self, data: pd.DataFrame, y_col: str
+    ) -> tuple[list[np.ndarray], np.ndarray]:
         """Preprocesses the input data, checking if it can be rearranged into a
         grid. If this is the case, the data is arranged accordingly.
 
@@ -513,7 +553,13 @@ class CPsplines:
             pass
         return x, y
 
-    def fit(self, data: pd.DataFrame, y_col: str, y_range: Iterable[int | float] | None = None, **kwargs):
+    def fit(
+        self,
+        data: pd.DataFrame,
+        y_col: str,
+        y_range: Iterable[int | float] | None = None,
+        **kwargs,
+    ):
         """
         Compute the fitted decision variables of the B-spline expansion and the fitted values for the response variable. The kwargs are referred to MOSEK parameters.
 
@@ -552,7 +598,9 @@ class CPsplines:
                     column_name = data.loc[:, key].name
                     for v in value:
                         df_pred.append(
-                            data.drop(columns=[y_col, column_name]).agg(["min", "max"]).assign(**{column_name: v})
+                            data.drop(columns=[y_col, column_name])
+                            .agg(["min", "max"])
+                            .assign(**{column_name: v})
                         )
             self.data_hull = Delaunay(pd.concat(df_pred))
 
@@ -560,7 +608,9 @@ class CPsplines:
             encoded_y = pd.get_dummies(data[y_col]).iloc[:, -1].astype(int)
             data = data.assign(**{y_col: encoded_y})
             if encoded_y.name != 1:
-                logging.warning(f" {encoded_y.name} is considered as the positive class.")
+                logging.warning(
+                    f" {encoded_y.name} is considered as the positive class."
+                )
         x, y = self._preprocessor(data=data, y_col=y_col)
 
         # Construct the B-spline bases
@@ -570,7 +620,9 @@ class CPsplines:
         _ = self._fill_sp_args()
         if y_range is not None:
             if not isinstance(self.family, Gaussian):
-                raise ValueError("The argument `y_range` is only available for Gaussian data.")
+                raise ValueError(
+                    "The argument `y_range` is only available for Gaussian data."
+                )
             if len(y_range) != 2:
                 raise ValueError("The range for `y` must be an interval.")
             data_normalizer = DataNormalizer(feature_range=y_range)
@@ -586,7 +638,9 @@ class CPsplines:
         obj_matrices["B_mul"] = list(map(matrix_by_transpose, obj_matrices["B"]))
 
         # Initialize the model
-        M = self._initialize_model(obj_matrices=obj_matrices, y_col=y_col, data_normalizer=data_normalizer)
+        M = self._initialize_model(
+            obj_matrices=obj_matrices, y_col=y_col, data_normalizer=data_normalizer
+        )
         model_params = {"theta": M.getVariable("theta")}
         for i, _ in enumerate(self.deg):
             model_params[f"sp_{i}"] = M.getParameter(f"sp_{i}")
@@ -608,7 +662,9 @@ class CPsplines:
             _ = M.setSolverParam(key, v)
         try:
             # Solve the problem
-            with timer(tag=f"Solve the problem with smoothing parameters {tuple(self.best_sp)}: "):
+            with timer(
+                tag=f"Solve the problem with smoothing parameters {tuple(self.best_sp)}: "
+            ):
                 M.solve()
             # Extract the fitted decision variables of the B-spline expansion
             self.sol = model_params["theta"].level().reshape(theta_shape)
@@ -659,9 +715,17 @@ class CPsplines:
         # If some coordinates are outside the range where the B-spline bases
         # were defined, the problem must be fitted again
         if (x_min < bsp_min).sum() > 0:
-            raise ValueError("Some of the coordinates are outside the definition range of the B-spline bases.")
+            raise ValueError(
+                "Some of the coordinates are outside the definition range of the B-spline bases."
+            )
         if (x_max > bsp_max).sum() > 0:
-            raise ValueError("Some of the coordinates are outside the definition range of the B-spline bases.")
+            raise ValueError(
+                "Some of the coordinates are outside the definition range of the B-spline bases."
+            )
         # Compute the basis matrix at the coordinates to be predicted
-        B_predict = [bsp.bspline_basis(x=x[i]) for i, bsp in enumerate(self.bspline_bases)]
-        return self.family.fitted(np.dot(reduce(box_product, B_predict), self.sol.flatten()))
+        B_predict = [
+            bsp.bspline_basis(x=x[i]) for i, bsp in enumerate(self.bspline_bases)
+        ]
+        return self.family.fitted(
+            np.dot(reduce(box_product, B_predict), self.sol.flatten())
+        )

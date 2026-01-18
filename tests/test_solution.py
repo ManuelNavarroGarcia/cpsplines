@@ -978,7 +978,8 @@ sol33 = np.array(
             pd.DataFrame(
                 {
                     "x": np.linspace(0, 200, 201),
-                    "y": np.exp(4 - np.linspace(0, 200, 201) / 25) + 4 * np.cos(np.linspace(0, 200, 201) / 8),
+                    "y": np.exp(4 - np.linspace(0, 200, 201) / 25)
+                    + 4 * np.cos(np.linspace(0, 200, 201) / 8),
                 }
             ),
             None,
@@ -998,7 +999,8 @@ sol33 = np.array(
             pd.DataFrame(
                 {
                     "x": np.linspace(0, 200, 201),
-                    "y": np.exp(4 - np.linspace(0, 200, 201) / 25) + 4 * np.cos(np.linspace(0, 200, 201) / 8),
+                    "y": np.exp(4 - np.linspace(0, 200, 201) / 25)
+                    + 4 * np.cos(np.linspace(0, 200, 201) / 8),
                 }
             ),
             None,
@@ -1318,7 +1320,13 @@ sol33 = np.array(
             },
             "gaussian",
             None,
-            {(0, 0): {"equalsTo": pd.DataFrame({"x1": [4], "x2": [3], "y": [4], "tol": [1e-8]})}},
+            {
+                (0, 0): {
+                    "equalsTo": pd.DataFrame(
+                        {"x1": [4], "x2": [3], "y": [4], "tol": [1e-8]}
+                    )
+                }
+            },
             False,
             grid_to_scatter(
                 x=(np.linspace(0, 3 * np.pi, 30), np.linspace(0, 2 * np.pi, 20)),
@@ -1422,7 +1430,11 @@ sol33 = np.array(
             grid_to_scatter(
                 x=(np.linspace(-3, 3, 50), np.linspace(-4, 4, 60)),
                 y=multivariate_normal(mean=[0, 0], cov=[[2, 0.5], [0.5, 1]])
-                .pdf(x=np.dstack(np.meshgrid(np.linspace(-3, 3, 50), np.linspace(-4, 4, 60))))
+                .pdf(
+                    x=np.dstack(
+                        np.meshgrid(np.linspace(-3, 3, 50), np.linspace(-4, 4, 60))
+                    )
+                )
                 .T,
             ),
             None,
@@ -1442,7 +1454,8 @@ sol33 = np.array(
             pd.DataFrame(
                 {
                     "x": np.linspace(0, 200, 201),
-                    "y": np.exp(4 - np.linspace(0, 200, 201) / 25) + 4 * np.cos(np.linspace(0, 200, 201) / 8),
+                    "y": np.exp(4 - np.linspace(0, 200, 201) / 25)
+                    + 4 * np.cos(np.linspace(0, 200, 201) / 8),
                 }
             ),
             (0, 1),
@@ -1621,7 +1634,9 @@ sol33 = np.array(
             pd.DataFrame(
                 {
                     "x": np.linspace(0, 80, 80),
-                    "y": np.concatenate((np.zeros(20), np.tile([0, 1], 20), np.ones(20))),
+                    "y": np.concatenate(
+                        (np.zeros(20), np.tile([0, 1], 20), np.ones(20))
+                    ),
                 }
             ),
             None,
@@ -1647,7 +1662,9 @@ sol33 = np.array(
             pd.DataFrame(
                 {
                     "x": np.linspace(0, 80, 80),
-                    "y": np.concatenate((np.zeros(20), np.tile([0, 1], 20), np.ones(20))),
+                    "y": np.concatenate(
+                        (np.zeros(20), np.tile([0, 1], 20), np.ones(20))
+                    ),
                 }
             ),
             None,
@@ -1706,7 +1723,9 @@ sol33 = np.array(
                 }
             },
             False,
-            pd.DataFrame({"x": np.linspace(1, 10, 100), "y": 3 + np.log(np.linspace(1, 10, 100))}),
+            pd.DataFrame(
+                {"x": np.linspace(1, 10, 100), "y": 3 + np.log(np.linspace(1, 10, 100))}
+            ),
             None,
             sol30,
         ),

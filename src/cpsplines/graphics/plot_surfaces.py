@@ -216,4 +216,6 @@ class SurfacesDisplay:
                     )
         viz = SurfacesDisplay(X, y_pred)
 
-        return viz.plot(contour_plot=contour_plot, ax=ax, ax_contour=ax_contour, **kwargs)
+        return viz.plot(
+            contour_plot=contour_plot, ax=ax, ax_contour=ax_contour, **kwargs
+        )

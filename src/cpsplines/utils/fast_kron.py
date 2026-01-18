@@ -76,7 +76,9 @@ def _fold(M: np.ndarray, mode: int, shape: list[int] | tuple[int, ...]) -> np.nd
     return np.moveaxis(Tm, 0, mode)
 
 
-def matrix_by_tensor_product(matrices: Iterable[np.ndarray], T: np.ndarray) -> np.ndarray:
+def matrix_by_tensor_product(
+    matrices: Iterable[np.ndarray], T: np.ndarray
+) -> np.ndarray:
     """
     Given a n_1 x n_2 x ... x n_N multidimensional array T, computes efficiently
     the product T x_N A_N x_{N-1} ... x_1 A_1, where A_i are the elements of
@@ -155,7 +157,9 @@ def penalization_term(matrices: Iterable[np.ndarray]) -> list[np.ndarray]:
     return output
 
 
-def weighted_double_kronecker(matrices: Iterable[np.ndarray], W: np.ndarray, data_arrangement: str) -> np.ndarray:
+def weighted_double_kronecker(
+    matrices: Iterable[np.ndarray], W: np.ndarray, data_arrangement: str
+) -> np.ndarray:
     """Computes np.kron(A_1, ..., A_N).T @ np.diag(W) @ np.kron(A_1, ..., A_N)
     efficiently, where A_i are matrices with dimensions m_i x n_i and W is a
     multidimensional array with shape n_1 x n_2 x ... x n_N. To do so, the
@@ -213,6 +217,6 @@ def weighted_double_kronecker(matrices: Iterable[np.ndarray], W: np.ndarray, dat
     # np.transpose is used here to permute. To get (0, 2, 4, ..., 1, 3, 5, ...),
     # we use np.arange, reshape the values in a matrix with two columns and then
     # flatten the array
-    return np.transpose(out, np.arange(2 * len(matrices)).reshape(len(matrices), 2).flatten("F")).reshape(
-        (np.prod(dim), np.prod(dim))
-    )
+    return np.transpose(
+        out, np.arange(2 * len(matrices)).reshape(len(matrices), 2).flatten("F")
+    ).reshape((np.prod(dim), np.prod(dim)))
