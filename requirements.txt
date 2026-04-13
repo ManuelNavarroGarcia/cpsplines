@@ -95,7 +95,7 @@ patsy==1.0.1
     # via statsmodels
 pexpect==4.9.0
     # via ipython
-pillow==12.1.1
+pillow==12.2.0
     # via matplotlib
 pip-tools==7.4.1
     # via cpsplines (setup.py)
