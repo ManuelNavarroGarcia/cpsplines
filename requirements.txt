@@ -105,7 +105,7 @@ platformdirs==4.3.6
     #   jupyter-core
 pluggy==1.5.0
     # via pytest
-prompt-toolkit==3.0.48
+prompt-toolkit==3.0.53
     # via ipython
 psutil==6.1.0
     # via ipykernel
