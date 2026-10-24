@@ -97,7 +97,7 @@ pexpect==4.9.0
     # via ipython
 pillow==13.0.0
     # via matplotlib
-pip-tools==7.4.1
+pip-tools==7.6.2
     # via cpsplines (setup.py)
 platformdirs==4.3.6
     # via
