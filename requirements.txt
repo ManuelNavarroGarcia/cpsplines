@@ -6,7 +6,7 @@
 #
 asttokens==3.0.0
     # via stack-data
-black[jupyter]==26.3.1
+black[jupyter]==26.10.1
     # via cpsplines (setup.py)
 build==1.2.2.post1
     # via pip-tools
@@ -83,7 +83,7 @@ packaging==24.2
     #   matplotlib
     #   pytest
     #   statsmodels
-pandas==2.2.3
+pandas==3.0.6
     # via
     #   cpsplines (setup.py)
     #   statsmodels
@@ -97,15 +97,15 @@ pexpect==4.9.0
     # via ipython
 pillow==13.0.0
     # via matplotlib
-pip-tools==7.4.1
+pip-tools==7.6.2
     # via cpsplines (setup.py)
 platformdirs==4.3.6
     # via
     #   black
     #   jupyter-core
-pluggy==1.5.0
+pluggy==1.7.0
     # via pytest
-prompt-toolkit==3.0.48
+prompt-toolkit==3.0.53
     # via ipython
 psutil==6.1.0
     # via ipykernel
@@ -136,7 +136,7 @@ pyzmq==26.2.0
     #   jupyter-client
 ruff==0.8.2
     # via cpsplines (setup.py)
-scipy==1.15.2
+scipy==1.18.1
     # via
     #   cpsplines (setup.py)
     #   statsmodels
@@ -145,13 +145,13 @@ six==1.17.0
     # via python-dateutil
 stack-data==0.6.3
     # via ipython
-statsmodels==0.14.4
+statsmodels==0.15.0
     # via cpsplines (setup.py)
 tensorly==0.9.0
     # via cpsplines (setup.py)
 tokenize-rt==6.1.0
     # via black
-tornado==6.5.7
+tornado==6.5.9
     # via
     #   ipykernel
     #   jupyter-client
