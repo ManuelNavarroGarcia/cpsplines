@@ -64,7 +64,7 @@ mypy-extensions==1.0.0
     #   mypy
 nest-asyncio==1.6.0
     # via ipykernel
-numpy==2.2.0
+numpy==2.5.4
     # via
     #   contourpy
     #   cpsplines (setup.py)
